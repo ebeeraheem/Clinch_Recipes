@@ -1,1 +1,20 @@
-﻿<h1>Details Page</h1>
+﻿@model Note
+
+<div class="container">
+    <div class="row">
+        <div class="row">
+            <div class="col-8">
+                <a class="btn btn-primary" asp-controller="Notes" asp-action="Index">Back To All Notes</a>
+            </div>
+            <div class="col-4 gx-2">
+                <a class="btn btn-secondary" asp-controller="Notes" asp-action="Edit" asp-route-id="@Model.Id">Edit Note</a>
+                <a class="btn btn-danger" asp-controller="Notes" asp-action="Delete" asp-route-id="@Model.Id">Delete Note</a>
+            </div>
+        </div>
+        <div class="row">
+            <h2 class="my-3">@Model.Title</h2>
+            <span>Created on @Model.CreatedDate</span>
+            <p class="mt-3">@Model.Content</p>
+        </div>
+    </div>
+</div>
