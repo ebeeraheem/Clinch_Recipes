@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Clinch_Recipes;
 
-public class NoteRepository
+public class NoteRepository : INoteRepository
 {
     private readonly ApplicationDbContext _context;
 
