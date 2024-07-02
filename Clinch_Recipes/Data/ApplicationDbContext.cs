@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Clinch_Recipes.Entities;
+using Microsoft.EntityFrameworkCore;
 
 namespace Clinch_Recipes.Data;
 
@@ -8,4 +9,6 @@ public class ApplicationDbContext : DbContext
         base(options)
     {
     }
+
+    public DbSet<Note> Notes { get; set; }
 }
