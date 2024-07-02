@@ -1,3 +1,21 @@
 ﻿@model IEnumerable<Note>
 
 <h1>All notes</h1>
+
+<a asp-controller="Notes" asp-action="Create" class="btn btn-primary">Take a note...</a>
+
+<input type="search" placeholder="Search notes" />
+
+<div class="container">
+    <div class="row">
+        @foreach (var note in Model)
+        {
+            <div class="row">
+                <a asp-controller="Notes" asp-action="Details" asp-route-id="@note.Id">
+                    <div class="col-6">@note.Title</div>
+                    <div class="col-4">@note.LastUpdatedDate</div>
+                </a>
+            </div>
+        }
+    </div>
+</div>
