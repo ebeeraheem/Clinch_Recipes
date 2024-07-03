@@ -20,3 +20,10 @@ html {
 body {
   margin-bottom: 60px;
 }
+
+/* Style for the title of the create view form */
+.h1-sized-input {
+    font-size: 2em;
+    padding: 0.25em;
+    line-height: 1.2em;
+}

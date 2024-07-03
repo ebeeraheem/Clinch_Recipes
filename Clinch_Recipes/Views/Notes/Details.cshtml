@@ -26,14 +26,97 @@
                         @Html.Raw(Model.Content)
                 </code>
             </pre>
+
+            <hr />
+            <p>Without code</p>
+            <div class="noteContent">@Html.Raw(Model.Content)</div>
         </div>
     </div>
 </div>
 
 
 @{
-    <link href="~/lib/highlightjs/styles/vs2015.css" rel="stylesheet" />
-    <link href="~/lib/highlightjs/styles/vs2015.min.css rel="stylesheet" />
+    <link href="~/lib/highlightjs/styles/stackoverflow-light.css" rel="stylesheet" />
+    <link href="~/lib/highlightjs/styles/stackoverflow-light.min.css rel="stylesheet" />
+
+    // Lato google font
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
+    <style>
+        /* .noteContent{
+            background-color: #f0f0f0;
+            line-height: 1.67;
+        } 
+        .noteContent p{
+            font-family: "Montserrat", sans-serif;
+        }
+       .noteContent code,
+        .noteContent pre {
+            background-color: #cacaca;
+            border-radius: 3px;
+            padding: 2px 4px;
+                }*/
+
+    </style>
+
+    // <style>
+    //     body {
+    //         font-family: Arial, sans-serif;
+    //     }
+
+    //     h1, h2, h3, h4, h5, h6 {
+    //         margin-top: 1em;
+    //         margin-bottom: 0.5em;
+    //     }
+
+    //     p {
+    //         margin-bottom: 1em;
+    //     }
+
+    //     code {
+    //         background-color: #f4f4f4;
+    //         padding: 0.2em 0.4em;
+    //         border-radius: 3px;
+    //     }
+
+    //     pre {
+    //         background-color: #f4f4f4;
+    //         padding: 1em;
+    //         border-radius: 5px;
+    //         overflow: auto;
+    //     }
+
+    //     blockquote {
+    //         margin: 1em 0;
+    //         padding: 0.5em 1em;
+    //         border-left: 0.25em solid #dfe2e5;
+    //         color: #6a737d;
+    //     }
+
+    //     strong {
+    //         font-weight: bold;
+    //     }
+
+    //     em {
+    //         font-style: italic;
+    //     }
+
+    //     ul, ol {
+    //         margin-bottom: 1em;
+    //         padding-left: 2em;
+    //     }
+
+    //     a {
+    //         color: #0366d6;
+    //         text-decoration: none;
+    //     }
+
+    //         a:hover {
+    //             text-decoration: underline;
+    //         }
+    // </style>
 }
 
 @section Scripts{
