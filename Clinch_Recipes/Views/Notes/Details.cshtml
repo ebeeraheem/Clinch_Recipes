@@ -19,7 +19,7 @@
         </div>
         <div class="row">
             <h2 class="my-3">@Model.Title</h2>
-            <span>Created on @Model.CreatedDate</span>
+            <span>Created on @Model.CreatedDate.ToCustomDateString()</span>
 
             <hr />
 
@@ -27,7 +27,6 @@
         </div>
     </div>
 </div>
-
 
 @{
     <link href="~/lib/highlightjs/styles/stackoverflow-light.css" rel="stylesheet" />
