@@ -1,4 +1,5 @@
 ﻿using Clinch_Recipes.Entities;
+using Markdig;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Clinch_Recipes.Controllers;
@@ -28,6 +29,8 @@ public class NotesController : Controller
         {
             note.CreatedDate = DateTime.Now;
             note.LastUpdatedDate = DateTime.Now;
+            note.Content = Markdown.ToHtml(note.Content);
+
             await _noteRepository.AddNoteAsync(note);
             return RedirectToAction(nameof(Index));
         }
