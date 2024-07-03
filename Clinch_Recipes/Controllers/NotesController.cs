@@ -38,7 +38,7 @@ public class NotesController : Controller
     {
         var note = await _noteRepository.GetNoteByIdAsync(id);
         if (note is null) return NotFound();
-        
+
         return View(note);
     }
 
