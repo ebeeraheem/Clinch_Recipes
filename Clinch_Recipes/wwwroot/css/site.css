@@ -1,5 +1,5 @@
 html {
-  font-size: 14px;
+    font-size: 14px;
 }
 
 @media (min-width: 768px) {
@@ -27,3 +27,32 @@ body {
     padding: 0.25em;
     line-height: 1.2em;
 }
+
+/* General styles for the site */
+body {
+    background-color: #E7E7FF;
+}
+/* Custom styles for the details view */
+.noteContent {
+    background-color: #E2E2FF;
+    line-height: 1.67;
+    border: 1px solid #9990FF80;
+    border-radius: 15px;
+}
+
+.noteContent code,
+.noteContent pre {
+    color: #292150;
+    background-color: #c8c8ff;
+    padding: 2px 4px;
+}
+
+.noteContent code {
+    border-radius: 3px;
+}
+
+.noteContent p {
+    font-family: "Futura Bk Bt", Helvetica, sans-serif;
+}
+
+
