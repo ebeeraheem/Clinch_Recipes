@@ -10,7 +10,7 @@
     <div class="row">
         @foreach (var note in Model)
         {
-            <div class="row">
+            <div class="row d-grid col-3">
                 <a class="noteItem" asp-controller="Notes" asp-action="Details" asp-route-id="@note.Id">
                     <h4>@note.Title</h4>
                     <h6>@note.LastUpdatedDate.ToCustomDateString()</h6>
@@ -25,9 +25,7 @@
     <style>
         .noteItem{
             color: #292150;
-            display: block;
             padding: 0.75em 0.35em;
-            margin-block: 0.2em;
             border: 1px solid #9990FF80;
             border-radius: 15px;
             text-decoration: none;
@@ -36,6 +34,10 @@
         .noteItem:hover {
                 color: #292150;
             background-color: #c8c8ff;
+        }
+
+        .noteItem h6{
+            font-size: 0.8em;
         }
     </style>
 }
