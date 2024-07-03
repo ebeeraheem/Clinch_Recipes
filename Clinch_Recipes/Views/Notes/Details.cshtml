@@ -1,5 +1,11 @@
 ﻿@model Note
 
+@{
+    ViewData["Title"] = "Details";
+}
+
+<h1>Details</h1>
+
 <div class="container">
     <div class="row">
         <div class="row">
@@ -15,6 +21,24 @@
             <h2 class="my-3">@Model.Title</h2>
             <span>Created on @Model.CreatedDate</span>
             <p class="mt-3">@Model.Content</p>
+
+            <hr />
+            
+            <h3>HighlightJS</h3>
+            <pre class="line-numbers">
+                <code class="language-csharp">
+                        @Html.Raw(Model.Content)
+                </code>
+            </pre>
+
+            <hr />
+
+            <h3>Not Raw</h3>
+            <pre class="line-numbers">
+                <code class="language-csharp">
+                    @Model.Content
+                </code>
+            </pre>
         </div>
     </div>
 </div>
