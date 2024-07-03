@@ -11,11 +11,32 @@
         @foreach (var note in Model)
         {
             <div class="row">
-                <a asp-controller="Notes" asp-action="Details" asp-route-id="@note.Id">
-                    <div class="col-6">@note.Title</div>
-                    <div class="col-4">@note.LastUpdatedDate</div>
+                <a class="noteItem" asp-controller="Notes" asp-action="Details" asp-route-id="@note.Id">
+                    <h4>@note.Title</h4>
+                    <h6>@note.LastUpdatedDate</h6>
+                    <p>@Html.Raw(@note.Content)</p>
                 </a>
             </div>
         }
     </div>
 </div>
+
+
+@{
+    <style>
+        .noteItem{
+            color: #292150;
+            display: block;
+            padding: 0.75em 0.35em;
+            margin-block: 0.2em;
+            border: 1px solid #9990FF80;
+            border-radius: 15px;
+            text-decoration: none;
+        }
+
+        .noteItem:hover {
+                color: #292150;
+            background-color: #c8c8ff;
+        }
+    </style>
+}
