@@ -2,30 +2,37 @@
 
 <h1>All notes</h1>
 
-<a asp-controller="Notes" asp-action="Create" class="btn btn-primary">Take a note...</a>
+<a asp-controller="Notes" asp-action="Create" class="btn btn-primary takeNote">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
+        <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2" />
+    </svg>
+    Add New Note
+</a>
 
 <input type="search" placeholder="Search notes" />
 
 <div class="container">
-    <div class="row">
-        @foreach (var note in Model)
-        {
-            <div class="row d-grid col-3">
+    <div class="row row-cols-2 row-cols-md-5 g-2">
+    @foreach (var note in Model)
+    {
+            <div class="col">
                 <a class="noteItem" asp-controller="Notes" asp-action="Details" asp-route-id="@note.Id">
                     <h4>@note.Title</h4>
                     <h6>@note.LastUpdatedDate.ToCustomDateString()</h6>
                 </a>
             </div>
-        }
-    </div>
+    }
+        </div>
 </div>
 
 
 @{
     <style>
         .noteItem{
+            display: block;
             color: #292150;
             padding: 0.75em 0.35em;
+            /*height: 120px;*/
             border: 1px solid #9990FF80;
             border-radius: 15px;
             text-decoration: none;
@@ -36,8 +43,34 @@
             background-color: #c8c8ff;
         }
 
+            .noteItem h4{
+                font-weight:700;
+                font-size: 90%;
+            }
+
         .noteItem h6{
-            font-size: 0.8em;
+                font-size: 80%;
+                /*position: absolute;
+            bottom: 10px;*/
+        }
+
+        .takeNote {
+            background-color: #6B4EFF;
+            border-color: #6B4EFF;
+            padding-block: 0.7em;
+            position: fixed;
+            border-radius: 50px;
+            bottom: calc(0vh + 20px);
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+        }
+        .takeNote:hover{
+                background-color: #292150;
+                border-color: #292150;
+        }
+        .takeNote svg{
+            vertical-align: sub;
         }
     </style>
 }
