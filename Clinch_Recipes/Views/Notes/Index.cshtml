@@ -2,9 +2,9 @@
 
 <h1>All notes</h1>
 
-<div class="input-group">
-    <input type="search" class="form-control rounded" placeholder="Search" aria-label="Search" aria-describedby="search-addon" />
-    <button type="button" class="btn btn-outline-primary">search</button>
+<div class="input-group mb-3">
+    <input type="search" class="form-control searchNotes rounded" placeholder="Search" aria-label="Search" aria-describedby="search-addon" />
+    <button type="button" class="btn btn-outline-primary searchNoteButton">search</button>
 </div>
 
 <a asp-controller="Notes" asp-action="Create" class="btn btn-primary takeNote">
@@ -75,6 +75,18 @@
         }
         .takeNote svg{
             vertical-align: sub;
+        }
+        .searchNotes{
+            border-radius: 7px 0 0 7px !important;
+            background: transparent;
+            border: 1px solid #9990FF80;
+        }
+
+        .searchNoteButton{
+            border-radius: 0 7px 7px 0 !important;
+            border: 1px solid #9990FF80;
+            color: #4D3EFF;
+            font-weight: 600;
         }
     </style>
 }
