@@ -1,4 +1,4 @@
-﻿using Clinch_Recipes.Entities;
+﻿using Clinch_Recipes.Note;
 using Microsoft.EntityFrameworkCore;
 
 namespace Clinch_Recipes.Data;
@@ -10,7 +10,7 @@ public class ApplicationDbContext : DbContext
     {
     }
 
-    public DbSet<Note> Notes { get; set; }
+    public DbSet<Note.Note> Notes { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

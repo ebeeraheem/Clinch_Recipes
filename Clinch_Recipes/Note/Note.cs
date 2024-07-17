@@ -1,4 +1,4 @@
-﻿namespace Clinch_Recipes.Entities;
+﻿namespace Clinch_Recipes.Note;
 
 public class Note
 {

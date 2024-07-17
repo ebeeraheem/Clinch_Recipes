@@ -22,7 +22,7 @@ namespace Clinch_Recipes.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("Clinch_Recipes.Entities.Note", b =>
+            modelBuilder.Entity("Clinch_Recipes.Note.Note", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
