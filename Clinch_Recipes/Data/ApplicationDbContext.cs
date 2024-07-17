@@ -1,4 +1,4 @@
-﻿using Clinch_Recipes.Entities;
+﻿using Clinch_Recipes.NoteEntity;
 using Microsoft.EntityFrameworkCore;
 
 namespace Clinch_Recipes.Data;
