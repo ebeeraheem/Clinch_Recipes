@@ -30,11 +30,12 @@ body {
 
 /* General styles for the site */
 body {
-    background-color: #E7E7FF;
+    background-color: #02182b;
+    color: #edf7f6;
 }
 /* Custom styles for the details view */
 .noteContent {
-    background-color: #E2E2FF;
+    /*background-color: #E2E2FF;*/
     line-height: 1.67;
     border: 1px solid #9990FF80;
     border-radius: 15px;
