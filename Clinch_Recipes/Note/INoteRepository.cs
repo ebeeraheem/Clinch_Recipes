@@ -1,4 +1,4 @@
-﻿namespace Clinch_Recipes.Note;
+﻿namespace Clinch_Recipes.Entities;
 public interface INoteRepository
 {
     Task<IEnumerable<Note>> GetAllNotesAsync();

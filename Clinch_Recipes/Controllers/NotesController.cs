@@ -1,4 +1,4 @@
-﻿using Clinch_Recipes.Note;
+﻿using Clinch_Recipes.Entities;
 using Markdig;
 using Microsoft.AspNetCore.Mvc;
 
@@ -23,7 +23,7 @@ public class NotesController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Create(Note.Note note)
+    public async Task<IActionResult> Create(Note note)
     {
         if (ModelState.IsValid)
         {
@@ -46,7 +46,7 @@ public class NotesController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Edit(Note.Note note)
+    public async Task<IActionResult> Edit(Note note)
     {
         if (ModelState.IsValid)
         {

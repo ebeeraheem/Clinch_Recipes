@@ -1,7 +1,7 @@
 ﻿using Clinch_Recipes.Data;
 using Microsoft.EntityFrameworkCore;
 
-namespace Clinch_Recipes.Note;
+namespace Clinch_Recipes.Entities;
 
 public class NoteRepository : INoteRepository
 {

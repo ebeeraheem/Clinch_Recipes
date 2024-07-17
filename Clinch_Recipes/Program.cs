@@ -1,5 +1,5 @@
 using Clinch_Recipes.Data;
-using Clinch_Recipes.Note;
+using Clinch_Recipes.Entities;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
