@@ -2,7 +2,7 @@
 
 <h1>All notes</h1>
 
-<div class="input-group">
+<div class="input-group mb-3 searchNotes">
     <input type="search" class="form-control rounded" placeholder="Search" aria-label="Search" aria-describedby="search-addon" />
     <button type="button" class="btn btn-outline-primary">search</button>
 </div>
@@ -31,20 +31,44 @@
 
 @{
     <style>
+        .searchNotes:focus-within{
+            outline: 2px solid #b5f8fe;
+            border-radius: 5px;
+        }
+        .searchNotes input,
+        .searchNotes input:focus{
+            background-color: transparent;
+            border-radius: 5px 0 0 5px !important;
+            border: 1px solid #edf7f6;
+            color: #edf7f6;
+            box-shadow: none;
+        }
+        .searchNotes button{
+            border-radius: 0 5px 5px 0;
+            border-color: #edf7f6;
+            background-color: #edf7f6;
+            color: #02182b;
+        }
+
+        .searchNotes button:hover{
+            border-color: #edf7f6;
+            background-color: #b5f8fe;
+            color: #02182b;
+        }
         .noteItem{
             display: block;
-            color: #292150;
+            color: #edf7f6dd;
             padding: 0.75em 0.35em;
             padding-block-end: 3em;
-            border: 1px solid #9990FF80;
+            border: 1px solid #b5f8fe99;
             border-radius: 15px;
             text-decoration: none;
             position: relative;
         }
 
         .noteItem:hover {
-                color: #292150;
-            background-color: #c8c8ff;
+                color: #edf7f6dd;
+                background-color: #b5f8fe22;
         }
 
             .noteItem h4{
@@ -59,8 +83,9 @@
         }
 
         .takeNote {
-            background-color: #6B4EFF;
-            border-color: #6B4EFF;
+            background-color: #b5f8fe;
+            border-color: #b5f8fe;
+            color: #02182b;
             padding-block: 0.7em;
             position: fixed;
             border-radius: 50px;
@@ -70,8 +95,9 @@
             z-index: 1000;
         }
         .takeNote:hover{
-                background-color: #292150;
-                border-color: #292150;
+                border-color: #b5f8fe;
+                background-color: #02182b;
+                color: #b5f8fe;
         }
         .takeNote svg{
             vertical-align: sub;

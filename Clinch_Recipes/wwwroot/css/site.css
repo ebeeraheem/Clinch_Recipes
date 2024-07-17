@@ -35,25 +35,38 @@ body {
 }
 /* Custom styles for the details view */
 .noteContent {
-    /*background-color: #E2E2FF;*/
     line-height: 1.67;
-    border: 1px solid #9990FF80;
+    border: 1px solid #b5f8fe;
     border-radius: 15px;
+    margin-top: 1rem;
+    background-color: #b5f8fe14;
+    padding: 2em 1em;
 }
 
-.noteContent code,
-.noteContent pre {
-    color: #292150;
-    background-color: #c8c8ff;
-    padding: 2px 4px;
-}
+    .noteContent code,
+    .noteContent pre {
+        padding: 2px 4px;
+        border: 1px solid #b5f8fe;
+    }
 
 .noteContent code {
     border-radius: 3px;
+}
+
+.noteContent pre{
+    border: none;
 }
 
 .noteContent p {
     font-family: "Futura Bk Bt", Helvetica, sans-serif;
 }
 
+.noteContent p code{
+    white-space: nowrap;
+}
 
+
+/* Editor container styles*/
+.editor-container__editor{
+    color: initial;
+}
