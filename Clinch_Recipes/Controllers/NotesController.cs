@@ -57,25 +57,15 @@ public class NotesController : Controller
         return View(note);
     }
 
+    [HttpPost]
     public async Task<IActionResult> Delete(int id)
-    {
-        var note = await _noteRepository.GetNoteByIdAsync(id);
-        if (note is null)
-        {
-            return NotFound();
-        }
-        return View(note);
-    }
-
-    [HttpPost, ActionName("Delete")]
-    public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var isDeleted = await _noteRepository.DeleteNoteAsync(id);
         if (isDeleted)
         {
-            return RedirectToAction(nameof(Index));
+            return Json(new { success = true });
         }
-        return View(await _noteRepository.GetNoteByIdAsync(id));
+        return Json(new { success = false });
     }
 
     public async Task<IActionResult> Details(int id)

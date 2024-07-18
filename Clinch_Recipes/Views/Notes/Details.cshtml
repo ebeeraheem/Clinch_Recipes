@@ -14,7 +14,7 @@
             </div>
             <div class="col-4 gx-2">
                 <a class="btn btn-secondary" asp-controller="Notes" asp-action="Edit" asp-route-id="@Model.Id">Edit Note</a>
-                <a class="btn btn-danger" asp-controller="Notes" asp-action="Delete" asp-route-id="@Model.Id">Delete Note</a>
+                <a class="btn btn-danger" href="javascript:void(0);" onclick="confirmDelete('@Model.Id')">Delete Note</a>
             </div>
         </div>
         <div class="row">
@@ -35,4 +35,71 @@
     <script src="~/lib/highlightjs/highlight.js"></script>
     <script src="~/lib/highlightjs/highlight.min.js"></script>
     <script>hljs.highlightAll();</script>
+
+    @* Add sweet alert cdn*@
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.12.2/dist/sweetalert2.all.min.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.12.2/dist/sweetalert2.min.css">
+
+    <script type="text/javascript">
+        function confirmDelete(noteId) {
+            Swal.fire({
+                title: "Are you sure?",
+                text: "The note will be permanently deleted!",
+                icon: "warning",
+                reverseButtons: true,
+                showCancelButton: true,
+                confirmButtonColor: "#f00",
+                cancelButtonColor: "#6c757d",
+                confirmButtonText: "Delete"
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    deleteNote(noteId);
+                }
+            });
+        }
+
+        function deleteNote(noteId) {
+            fetch(`/Notes/Delete/${noteId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        Swal.fire({
+                            title: "Deleted!",
+                            text: "Note deleted successfully.",
+                            icon: "success",
+                            timer: 2000,
+                            showConfirmButton: false
+                        }).then(() => {
+                            // Redirect to the notes list
+                            window.location.href = '/';
+                        });
+
+                        // In case the timer expires, still redirect
+                        setTimeout(() => {
+                            window.location.href = '/';
+                        }, 2000);
+                    } else {
+                        Swal.fire({
+                            title: "Error!",
+                            text: "There was an error deleting the note.",
+                            icon: "error"
+                        });
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    Swal.fire({
+                        title: "Error!",
+                        text: "There was an error deleting the note.",
+                        icon: "error"
+                    });
+                });
+        }
+    </script>
+
 }
