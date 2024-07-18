@@ -36,8 +36,6 @@ body {
 /* Custom styles for the details view */
 .noteContent {
     line-height: 1.67;
-    border: 1px solid #b5f8fe;
-    border-radius: 15px;
     margin-top: 1rem;
     background-color: #b5f8fe14;
     padding: 2em 1em;
@@ -45,8 +43,8 @@ body {
 
     .noteContent code,
     .noteContent pre {
+        border: 1px solid #b5f8fe99;
         padding: 2px 4px;
-        border: 1px solid #b5f8fe;
     }
 
 .noteContent code {
@@ -61,10 +59,16 @@ body {
     font-family: "Futura Bk Bt", Helvetica, sans-serif;
 }
 
-.noteContent p code{
+.noteContent p code {
     white-space: nowrap;
+    padding: 2px 4px;
+    background-color: #02182b;
+    color: #b5f8fe;
 }
 
+code{
+    font-size: 0.85em;
+}
 
 /* Editor container styles*/
 .editor-container__editor{
