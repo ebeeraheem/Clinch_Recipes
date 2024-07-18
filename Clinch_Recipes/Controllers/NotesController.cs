@@ -57,6 +57,48 @@ public class NotesController : Controller
         return View(note);
     }
 
+    public async Task<IActionResult> Upsert(int? id)
+    {
+        var note = new Note();
+
+        if (id is not null)
+        {
+            // get the note with the specified id
+            note = await _noteRepository.GetNoteByIdAsync((int)id);
+
+            return note is null ?
+                NotFound() :
+                View(note);
+            
+        }
+
+        return View(note);
+    }
+
+    [HttpPost]
+    public async Task<IActionResult> Upsert(Note note)
+    {
+        if (ModelState.IsValid)
+        {
+            note.LastUpdatedDate = DateTime.Now;
+            note.Content = Markdown.ToHtml(note.Content);
+
+            if (note.Id == 0)
+            {
+                note.CreatedDate = DateTime.Now;                
+                await _noteRepository.AddNoteAsync(note);
+            }
+            else
+            {
+                await _noteRepository.UpdateNoteAsync(note);
+            }
+
+            return RedirectToAction(nameof(Index));
+        }
+
+        return View(note);
+    }
+
     [HttpPost]
     public async Task<IActionResult> Delete(int id)
     {

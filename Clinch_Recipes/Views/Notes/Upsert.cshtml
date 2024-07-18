@@ -1,8 +1,12 @@
 ﻿@model Note
 
-<h2>Write a secret recipe...</h2>
+<h2>@(Model.Id == 0 ? "Write a" : "Update your") secret recipe...</h2>
 
-<form asp-action="Create" method="post" id="editorForm">
+<form asp-action="Upsert" method="post" id="editorForm">
+    <input asp-for="@Model.Id" hidden />
+    <input type="hidden" id="noteContent" value="@Model.Content" />
+    <input asp-for="@Model.CreatedDate" hidden />
+
     @* The CKEditor 5 *@
     <div>
         <div class="main-container">
@@ -20,7 +24,9 @@
     </div>
 
     <div class="form-group d-flex col-md-6 mt-2 gap-3">
-        <button type="submit" class="btn btn-primary w-50">Save Note</button>
+        <button type="submit" class="btn btn-primary w-50">
+            @(Model.Id == 0 ? "Create" : "Update") Note
+        </button>
 
         <a class="btn btn-outline-primary w-50" asp-controller="Notes" asp-action="Index">Back To All Notes</a>
     </div>
@@ -31,7 +37,7 @@
     <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/42.0.0/ckeditor5.css">
 }
 
-@section Scripts{
+@section Scripts {
     <script type="importmap">
         {
             "imports": {

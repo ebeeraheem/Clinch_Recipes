@@ -219,11 +219,17 @@ const editorConfig = {
 
 // Add client-side validation to editor content
 let editorInstance;
+const initialContent = document.querySelector("#noteContent").value;
 
 ClassicEditor
 	.create(document.querySelector('#editor'), editorConfig)
 	.then(editor => {
 		editorInstance = editor;
+
+		// Set initial data if noteContent is not null
+		if (noteContent !== '') {
+			editor.setData(initialContent);
+		}
 
 		// Add event listener for content changes in CKEditor
 		editor.model.document.on('change:data', () => {
@@ -239,7 +245,6 @@ ClassicEditor
 	});
 
 const formContent = document.querySelector("#editorForm");
-
 formContent.addEventListener("submit", function (event) {
 	const editorContent = editorInstance.getData().trim();
 
@@ -258,5 +263,5 @@ formContent.addEventListener("submit", function (event) {
 		errorMessage.className = 'text-danger';
 		errorMessage.textContent = 'The Content field is required.';
 		document.querySelector('.editor-container__editor').appendChild(errorMessage);
-	}
+	}		
 });
