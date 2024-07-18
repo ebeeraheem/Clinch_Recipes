@@ -214,4 +214,49 @@ const editorConfig = {
 	}
 };
 
-ClassicEditor.create(document.querySelector('#editor'), editorConfig);
+// The original unmodified editor
+// ClassicEditor.create(document.querySelector('#editor'), editorConfig);
+
+// Add client-side validation to editor content
+let editorInstance;
+
+ClassicEditor
+	.create(document.querySelector('#editor'), editorConfig)
+	.then(editor => {
+		editorInstance = editor;
+
+		// Add event listener for content changes in CKEditor
+		editor.model.document.on('change:data', () => {
+			// Remove any previous error message when content changes
+			const existingErrorMessage = document.querySelector('.editor-container__editor .text-danger');
+			if (existingErrorMessage) {
+				existingErrorMessage.remove();
+			}
+		});
+	})
+	.catch(error => {
+		console.error('Error initializing CKEditor:', error);
+	});
+
+const formContent = document.querySelector("#editorForm");
+
+formContent.addEventListener("submit", function (event) {
+	const editorContent = editorInstance.getData().trim();
+
+	// Remove any previous error message
+	const existingErrorMessage = document.querySelector('.editor-container__editor .text-danger');
+	if (existingErrorMessage) {
+		existingErrorMessage.remove();
+	}
+
+	// Check if editor content is empty
+	if (editorContent === '' || editorContent === '<p class="ck-placeholder" data-placeholder="Type or paste your content here!"><br data-cke-filler="true"></p>') {
+		event.preventDefault(); // Prevent form submission
+
+		// Create and append error message
+		const errorMessage = document.createElement('span');
+		errorMessage.className = 'text-danger';
+		errorMessage.textContent = 'The Content field is required.';
+		document.querySelector('.editor-container__editor').appendChild(errorMessage);
+	}
+});

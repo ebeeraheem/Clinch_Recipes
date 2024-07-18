@@ -2,7 +2,7 @@
 
 <h2>Write a secret recipe...</h2>
 
-<form asp-action="Create" method="post">
+<form asp-action="Create" method="post" id="editorForm">
     @* The CKEditor 5 *@
     <div>
         <div class="main-container">
@@ -27,8 +27,8 @@
 </form>
 
 @{
-    <link href="~/lib/ckeditor-5/style.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/42.0.0/ckeditor5.css">
+                <link href="~/lib/ckeditor-5/style.css" rel="stylesheet" />
+                <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/42.0.0/ckeditor5.css">
 }
 
 @section Scripts{
@@ -41,4 +41,9 @@
         }
     </script>
     <script type="module" src="~/lib/ckeditor-5/main.js"></script>
+
+    @{
+        <partial name="_ValidationScriptsPartial" />
+    }
+
 }
