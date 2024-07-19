@@ -37,7 +37,7 @@ public class NotesController : Controller
         return View(note);
     }
 
-    public async Task<IActionResult> Edit(int id)
+    public async Task<IActionResult> Edit(Guid id)
     {
         var note = await _noteRepository.GetNoteByIdAsync(id);
         if (note is null) return NotFound();
@@ -57,19 +57,18 @@ public class NotesController : Controller
         return View(note);
     }
 
-    public async Task<IActionResult> Upsert(int? id)
+    public async Task<IActionResult> Upsert(Guid? id)
     {
         var note = new Note();
 
         if (id is not null)
         {
-            // get the note with the specified id
-            note = await _noteRepository.GetNoteByIdAsync((int)id);
+            // Get the note with the specified id
+            note = await _noteRepository.GetNoteByIdAsync((Guid)id);
 
             return note is null ?
                 NotFound() :
-                View(note);
-            
+                View(note);            
         }
 
         return View(note);
@@ -83,7 +82,7 @@ public class NotesController : Controller
             note.LastUpdatedDate = DateTime.Now;
             note.Content = Markdown.ToHtml(note.Content);
 
-            if (note.Id == 0)
+            if (note.Id == Guid.Empty)
             {
                 note.CreatedDate = DateTime.Now;                
                 await _noteRepository.AddNoteAsync(note);
@@ -100,7 +99,7 @@ public class NotesController : Controller
     }
 
     [HttpPost]
-    public async Task<IActionResult> Delete(int id)
+    public async Task<IActionResult> Delete(Guid id)
     {
         var isDeleted = await _noteRepository.DeleteNoteAsync(id);
         if (isDeleted)
@@ -110,7 +109,7 @@ public class NotesController : Controller
         return Json(new { success = false });
     }
 
-    public async Task<IActionResult> Details(int id)
+    public async Task<IActionResult> Details(Guid id)
     {
         var note = await _noteRepository.GetNoteByIdAsync(id);
         if (note is null)

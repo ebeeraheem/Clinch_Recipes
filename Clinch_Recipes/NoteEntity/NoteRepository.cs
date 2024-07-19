@@ -17,7 +17,7 @@ public class NoteRepository : INoteRepository
         return await _context.Notes.ToListAsync();
     }
 
-    public async Task<Note?> GetNoteByIdAsync(int id)
+    public async Task<Note?> GetNoteByIdAsync(Guid id)
     {
         return await _context.Notes.FindAsync(id);
     }
@@ -34,7 +34,7 @@ public class NoteRepository : INoteRepository
         await _context.SaveChangesAsync();
     }
 
-    public async Task<bool> DeleteNoteAsync(int id)
+    public async Task<bool> DeleteNoteAsync(Guid id)
     {
         var note = await _context.Notes.FindAsync(id);
         if (note is not null)

@@ -1,6 +1,6 @@
 ﻿@model Note
 
-<h2>@(Model.Id == 0 ? "Write a" : "Update your") secret recipe...</h2>
+<h2>@(Model.Id == Guid.Empty ? "Write a" : "Update your") secret recipe...</h2>
 
 <form asp-action="Upsert" method="post" id="editorForm">
     <input asp-for="@Model.Id" hidden />
@@ -25,7 +25,7 @@
 
     <div class="form-group d-flex col-md-6 mt-2 gap-3">
         <button type="submit" class="btn btn-primary w-50">
-            @(Model.Id == 0 ? "Create" : "Update") Note
+            @(Model.Id == Guid.Empty ? "Create" : "Update") Note
         </button>
 
         <a class="btn btn-outline-primary w-50" asp-controller="Notes" asp-action="Index">Back To All Notes</a>

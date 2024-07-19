@@ -2,8 +2,8 @@
 public interface INoteRepository
 {
     Task<IEnumerable<Note>> GetAllNotesAsync();
-    Task<Note?> GetNoteByIdAsync(int id);
+    Task<Note?> GetNoteByIdAsync(Guid id);
     Task AddNoteAsync(Note note);
     Task UpdateNoteAsync(Note note);
-    Task<bool> DeleteNoteAsync(int id);
+    Task<bool> DeleteNoteAsync(Guid id);
 }

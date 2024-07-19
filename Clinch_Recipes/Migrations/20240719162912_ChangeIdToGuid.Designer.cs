@@ -12,26 +12,24 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace Clinch_Recipes.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240702203251_Initial_Create")]
-    partial class Initial_Create
+    [Migration("20240719162912_ChangeIdToGuid")]
+    partial class ChangeIdToGuid
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "8.0.6")
+                .HasAnnotation("ProductVersion", "8.0.7")
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
             modelBuilder.Entity("Clinch_Recipes.NoteEntity.Note", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("uniqueidentifier");
 
                     b.Property<string>("Content")
                         .IsRequired()
