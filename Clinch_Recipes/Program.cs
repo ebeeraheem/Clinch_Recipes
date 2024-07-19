@@ -7,7 +7,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<ApplicationDbContext>(
     options => options.UseSqlServer(
-    builder.Configuration.GetConnectionString("DockerConnection")));
+    builder.Configuration.GetConnectionString("SomeeConnection")));
 
 builder.Services.AddScoped<INoteRepository, NoteRepository>();
 
