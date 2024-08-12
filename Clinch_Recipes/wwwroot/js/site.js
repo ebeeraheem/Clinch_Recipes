@@ -1,7 +1,7 @@
-﻿// Please see documentation at https://learn.microsoft.com/aspnet/core/client-side/bundling-and-minification
-// for details on configuring this project to bundle and minify static web assets.
+﻿
 
-// Write your JavaScript code.
+
+// Convert date to local time format
 function formatDate(dateString) {
     const date = new Date(dateString);
     const now = new Date();
@@ -33,5 +33,37 @@ document.addEventListener('DOMContentLoaded', function () {
     document.querySelectorAll('.note-date').forEach(function (element) {
         const utcDate = element.getAttribute('data-utc-date');
         element.textContent = formatDate(utcDate);
+    });
+});
+
+// Search button functionality
+document.addEventListener('DOMContentLoaded', function () {
+    const searchInput = document.querySelector('.searchNotes input[type="search"]');
+    const searchButton = document.querySelector('.searchNotes button');
+    const notesContainer = document.getElementById('notes-container');
+    const noteItems = Array.from(notesContainer.getElementsByClassName('note-item'));
+
+    function filterNotes(query) {
+        query = query.toLowerCase();
+        noteItems.forEach(item => {
+            const title = item.getAttribute('data-title').toLowerCase();
+            if (title.toLowerCase().includes(query)) {
+                item.style.display = 'grid';
+            } else {
+                item.style.display = 'none';
+            }
+        });
+    }
+
+    // Search when button is clicked
+    searchButton.addEventListener('click', () => {
+        filterNotes(searchInput.value);
+    });
+
+    // Search as user types (debounced)
+    let timeout;
+    searchInput.addEventListener('input', () => {
+        clearTimeout(timeout);
+        timeout = setTimeout(() => filterNotes(searchInput.value), 300);
     });
 });
