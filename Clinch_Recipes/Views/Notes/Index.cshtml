@@ -21,7 +21,7 @@
             <div class="col d-grid">
                 <a class="noteItem" asp-controller="Notes" asp-action="Details" asp-route-id="@note.Id">
                     <h4>@note.Title</h4>
-                    <h6>@note.LastUpdatedDate.ToCustomDateString()</h6>
+                    <h6 class="note-date" data-utc-date="@note.LastUpdatedDate.ToString("o")"></h6>
                 </a>
             </div>
     }
@@ -30,77 +30,77 @@
 
 
 @{
-    <style>
-        .searchNotes:focus-within{
-            outline: 2px solid #b5f8fe;
-            border-radius: 5px;
-        }
-        .searchNotes input,
-        .searchNotes input:focus{
-            background-color: transparent;
-            border-radius: 5px 0 0 5px !important;
-            border: 1px solid #edf7f6;
-            color: #edf7f6;
-            box-shadow: none;
-        }
-        .searchNotes button{
-            border-radius: 0 5px 5px 0;
-            border-color: #edf7f6;
-            background-color: #edf7f6;
-            color: #02182b;
-        }
-
-        .searchNotes button:hover{
-            border-color: #edf7f6;
-            background-color: #b5f8fe;
-            color: #02182b;
-        }
-        .noteItem{
-            display: block;
-            color: #edf7f6dd;
-            padding: 0.75em 0.35em;
-            padding-block-end: 3em;
-            border: 1px solid #b5f8fe99;
-            border-radius: 10px;
-            text-decoration: none;
-            position: relative;
-        }
-
-        .noteItem:hover {
-                color: #edf7f6dd;
-                background-color: #b5f8fe22;
-        }
-
-            .noteItem h4{
-                font-weight:700;
-                font-size: 90%;
+        <style>
+            .searchNotes:focus-within{
+                outline: 2px solid #b5f8fe;
+                border-radius: 5px;
+            }
+            .searchNotes input,
+            .searchNotes input:focus{
+                background-color: transparent;
+                border-radius: 5px 0 0 5px !important;
+                border: 1px solid #edf7f6;
+                color: #edf7f6;
+                box-shadow: none;
+            }
+            .searchNotes button{
+                border-radius: 0 5px 5px 0;
+                border-color: #edf7f6;
+                background-color: #edf7f6;
+                color: #02182b;
             }
 
-        .noteItem h6{
-                font-size: 80%;
-                position: absolute;
-            bottom: 5px;
-        }
+            .searchNotes button:hover{
+                border-color: #edf7f6;
+                background-color: #b5f8fe;
+                color: #02182b;
+            }
+            .noteItem{
+                display: block;
+                color: #edf7f6dd;
+                padding: 0.75em 0.35em;
+                padding-block-end: 3em;
+                border: 1px solid #b5f8fe99;
+                border-radius: 10px;
+                text-decoration: none;
+                position: relative;
+            }
 
-        .takeNote {
-            background-color: #b5f8fe;
-            border-color: #b5f8fe;
-            color: #02182b;
-            padding-block: 0.7em;
-            position: fixed;
-            border-radius: 50px;
-            bottom: calc(0vh + 20px);
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 1000;
-        }
-        .takeNote:hover{
+            .noteItem:hover {
+                    color: #edf7f6dd;
+                    background-color: #b5f8fe22;
+            }
+
+                .noteItem h4{
+                    font-weight:700;
+                    font-size: 90%;
+                }
+
+            .noteItem h6{
+                    font-size: 80%;
+                    position: absolute;
+                bottom: 5px;
+            }
+
+            .takeNote {
+                background-color: #b5f8fe;
                 border-color: #b5f8fe;
-                background-color: #02182b;
-                color: #b5f8fe;
-        }
-        .takeNote svg{
-            vertical-align: sub;
-        }
-    </style>
+                color: #02182b;
+                padding-block: 0.7em;
+                position: fixed;
+                border-radius: 50px;
+                bottom: calc(0vh + 20px);
+                left: 50%;
+                transform: translateX(-50%);
+                z-index: 1000;
+            }
+            .takeNote:hover{
+                    border-color: #b5f8fe;
+                    background-color: #02182b;
+                    color: #b5f8fe;
+            }
+            .takeNote svg{
+                vertical-align: sub;
+            }
+        </style>
 }

@@ -19,7 +19,7 @@
         </div>
         <div class="row">
             <h2 class="my-3">@Model.Title</h2>
-            <span>Created on @Model.CreatedDate.ToCustomDateString()</span>
+            <span class ="note-date" data-utc-date="@Model.CreatedDate.ToString("o")"></span>
 
             <div class="noteContent">@Html.Raw(Model.Content)</div>
         </div>
