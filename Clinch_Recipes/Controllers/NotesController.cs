@@ -27,8 +27,8 @@ public class NotesController : Controller
     {
         if (ModelState.IsValid)
         {
-            note.CreatedDate = DateTime.Now;
-            note.LastUpdatedDate = DateTime.Now;
+            note.CreatedDate = DateTime.UtcNow;
+            note.LastUpdatedDate = DateTime.UtcNow;
             note.Content = Markdown.ToHtml(note.Content);
 
             await _noteRepository.AddNoteAsync(note);
@@ -79,12 +79,12 @@ public class NotesController : Controller
     {
         if (ModelState.IsValid)
         {
-            note.LastUpdatedDate = DateTime.Now;
+            note.LastUpdatedDate = DateTime.UtcNow;
             note.Content = Markdown.ToHtml(note.Content);
 
             if (note.Id == Guid.Empty)
             {
-                note.CreatedDate = DateTime.Now;                
+                note.CreatedDate = DateTime.UtcNow;                
                 await _noteRepository.AddNoteAsync(note);
             }
             else

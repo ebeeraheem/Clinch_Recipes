@@ -7,7 +7,7 @@ public static class DateHelper
         string daySuffix = GetDaySuffix(date.Day);
         string formattedDate = $"{date:dd}{daySuffix} {date:MMM}";
 
-        if (date.Year != DateTime.Now.Year)
+        if (date.Year != DateTime.UtcNow.Year)
         {
             formattedDate += date.ToString(", yyyy");
         }
