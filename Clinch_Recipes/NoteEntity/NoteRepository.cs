@@ -14,7 +14,9 @@ public class NoteRepository : INoteRepository
 
     public async Task<IEnumerable<Note>> GetAllNotesAsync()
     {
-        return await _context.Notes.ToListAsync();
+        return await _context.Notes
+            .OrderByDescending(n => n.CreatedDate)
+            .ToListAsync();
     }
 
     public async Task<Note?> GetNoteByIdAsync(Guid id)
