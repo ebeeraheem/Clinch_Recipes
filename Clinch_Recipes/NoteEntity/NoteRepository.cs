@@ -3,46 +3,39 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Clinch_Recipes.NoteEntity;
 
-public class NoteRepository : INoteRepository
+public class NoteRepository(ApplicationDbContext context) : INoteRepository
 {
-    private readonly ApplicationDbContext _context;
-
-    public NoteRepository(ApplicationDbContext context)
-    {
-        _context = context;
-    }
-
     public async Task<IEnumerable<Note>> GetAllNotesAsync()
     {
-        return await _context.Notes
+        return await context.Notes
             .OrderByDescending(n => n.CreatedDate)
             .ToListAsync();
     }
 
     public async Task<Note?> GetNoteByIdAsync(Guid id)
     {
-        return await _context.Notes.FindAsync(id);
+        return await context.Notes.FindAsync(id);
     }
 
     public async Task AddNoteAsync(Note note)
     {
-        await _context.Notes.AddAsync(note);
-        await _context.SaveChangesAsync();
+        await context.Notes.AddAsync(note);
+        await context.SaveChangesAsync();
     }
 
     public async Task UpdateNoteAsync(Note note)
     {
-        _context.Notes.Update(note);
-        await _context.SaveChangesAsync();
+        context.Notes.Update(note);
+        await context.SaveChangesAsync();
     }
 
     public async Task<bool> DeleteNoteAsync(Guid id)
     {
-        var note = await _context.Notes.FindAsync(id);
+        var note = await context.Notes.FindAsync(id);
         if (note is not null)
         {
-            _context.Notes.Remove(note);
-            await _context.SaveChangesAsync();
+            context.Notes.Remove(note);
+            await context.SaveChangesAsync();
 
             return true;
         }

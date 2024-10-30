@@ -3,17 +3,11 @@ using Markdig;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Clinch_Recipes.Controllers;
-public class NotesController : Controller
+public class NotesController(INoteRepository noteRepository) : Controller
 {
-    private readonly INoteRepository _noteRepository;
-
-    public NotesController(INoteRepository noteRepository)
-    {
-        _noteRepository = noteRepository;
-    }
     public async Task<IActionResult> Index()
     {
-        var notes = await _noteRepository.GetAllNotesAsync();
+        var notes = await noteRepository.GetAllNotesAsync();
         return View(notes);
     }
     
@@ -24,7 +18,7 @@ public class NotesController : Controller
         if (id is not null)
         {
             // Get the note with the specified id
-            note = await _noteRepository.GetNoteByIdAsync((Guid)id);
+            note = await noteRepository.GetNoteByIdAsync((Guid)id);
 
             return note is null ?
                 NotFound() :
@@ -45,11 +39,11 @@ public class NotesController : Controller
             if (note.Id == Guid.Empty)
             {
                 note.CreatedDate = DateTime.UtcNow;                
-                await _noteRepository.AddNoteAsync(note);
+                await noteRepository.AddNoteAsync(note);
             }
             else
             {
-                await _noteRepository.UpdateNoteAsync(note);
+                await noteRepository.UpdateNoteAsync(note);
             }
 
             return RedirectToAction(nameof(Index));
@@ -61,7 +55,7 @@ public class NotesController : Controller
     [HttpPost]
     public async Task<IActionResult> Delete(Guid id)
     {
-        var isDeleted = await _noteRepository.DeleteNoteAsync(id);
+        var isDeleted = await noteRepository.DeleteNoteAsync(id);
         if (isDeleted)
         {
             return Json(new { success = true });
@@ -71,7 +65,7 @@ public class NotesController : Controller
 
     public async Task<IActionResult> Details(Guid id)
     {
-        var note = await _noteRepository.GetNoteByIdAsync(id);
+        var note = await noteRepository.GetNoteByIdAsync(id);
         if (note is null)
         {
             return NotFound();
