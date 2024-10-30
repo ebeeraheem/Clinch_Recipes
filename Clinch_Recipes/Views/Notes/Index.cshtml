@@ -1,36 +1,36 @@
-﻿@model IEnumerable<Note>
+﻿@model List<NoteViewModel>
 
 <h1>All notes</h1>
 
 <div class="input-group mb-3 searchNotes">
-    <input type="search" class="form-control rounded" placeholder="Search" aria-label="Search" aria-describedby="search-addon" />
+    <input type="search" class="form-control rounded" placeholder="Search" aria-label="Search" aria-describedby="search-addon"/>
     <button type="button" class="btn btn-outline-primary">search</button>
 </div>
 
 <a asp-controller="Notes" asp-action="Upsert" class="btn btn-primary takeNote">
     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-plus-lg" viewBox="0 0 16 16">
-        <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2" />
+        <path fill-rule="evenodd" d="M8 2a.5.5 0 0 1 .5.5v5h5a.5.5 0 0 1 0 1h-5v5a.5.5 0 0 1-1 0v-5h-5a.5.5 0 0 1 0-1h5v-5A.5.5 0 0 1 8 2"/>
     </svg>
     Add New Note
 </a>
 
 <div class="container">
     <div class="row row-cols-2 row-cols-md-4 g-2" id="notes-container">
-    @foreach (var note in Model)
-    {
+        @foreach (var note in Model)
+        {
             <div class="col note-item" data-title="@note.Title">
                 <a class="noteItem" asp-controller="Notes" asp-action="Details" asp-route-id="@note.Id">
                     <h4>@note.Title</h4>
                     <h6 class="note-date" data-utc-date="@note.LastUpdatedDate.ToString("o")"></h6>
                 </a>
             </div>
-    }
-        </div>
+        }
+    </div>
 </div>
 
 
 @{
-        <style>
+    <style>
             .searchNotes:focus-within{
                 outline: 2px solid #b5f8fe;
                 border-radius: 5px;

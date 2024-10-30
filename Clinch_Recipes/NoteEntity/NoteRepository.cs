@@ -5,11 +5,9 @@ namespace Clinch_Recipes.NoteEntity;
 
 public class NoteRepository(ApplicationDbContext context) : INoteRepository
 {
-    public async Task<IEnumerable<Note>> GetAllNotesAsync()
+    public IQueryable<Note> GetAllNotesAsync()
     {
-        return await context.Notes
-            .OrderByDescending(n => n.CreatedDate)
-            .ToListAsync();
+        return context.Notes.AsQueryable();
     }
 
     public async Task<Note?> GetNoteByIdAsync(Guid id)
@@ -32,14 +30,11 @@ public class NoteRepository(ApplicationDbContext context) : INoteRepository
     public async Task<bool> DeleteNoteAsync(Guid id)
     {
         var note = await context.Notes.FindAsync(id);
-        if (note is not null)
-        {
-            context.Notes.Remove(note);
-            await context.SaveChangesAsync();
+        if (note is null) return false;
+        
+        context.Notes.Remove(note);
+        await context.SaveChangesAsync();
 
-            return true;
-        }
-
-        return false;
+        return true;
     }
 }
