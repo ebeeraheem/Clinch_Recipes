@@ -3,7 +3,7 @@
 
 // Convert date to local time format
 function formatDate(dateString) {
-    const date = new Date(dateString);
+    const date = new Date(dateString + 'Z');
     const now = new Date();
 
     const isToday = date.toDateString() === now.toDateString();
