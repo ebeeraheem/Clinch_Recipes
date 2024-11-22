@@ -34,15 +34,15 @@
 
 @{
     <link href="~/lib/ckeditor-5/style.css" rel="stylesheet" />
-    <link rel="stylesheet" href="https://cdn.ckeditor.com/ckeditor5/42.0.0/ckeditor5.css">
+    <link href="~/lib/ckeditor-5/ckeditor5.css" rel="stylesheet" />
 }
 
 @section Scripts {
     <script type="importmap">
         {
             "imports": {
-                "ckeditor5": "https://cdn.ckeditor.com/ckeditor5/42.0.0/ckeditor5.js",
-                "ckeditor5/": "https://cdn.ckeditor.com/ckeditor5/42.0.0/"
+                "ckeditor5": "/lib/ckeditor-5/ckeditor5.js",
+                "ckeditor5/": "/lib/ckeditor-5/"
             }
         }
     </script>
@@ -51,5 +51,4 @@
     @{
         <partial name="_ValidationScriptsPartial" />
     }
-
 }
