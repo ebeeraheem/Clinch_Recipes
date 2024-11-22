@@ -49,14 +49,11 @@ public class NotesController(INoteRepository noteRepository) : Controller
         {
             note.CreatedDate = DateTime.UtcNow;                
             await noteRepository.AddNoteAsync(note);
-        }
-        else
-        {
-            await noteRepository.UpdateNoteAsync(note);
+            return RedirectToAction(nameof(Index));
         }
 
-        return RedirectToAction(nameof(Index));
-
+        await noteRepository.UpdateNoteAsync(note);
+        return RedirectToAction(nameof(Details), new { id = note.Id });
     }
 
     [HttpPost]
