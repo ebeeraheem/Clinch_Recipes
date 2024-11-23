@@ -23,6 +23,25 @@ public class NotesController(INoteRepository noteRepository) : Controller
         return View(notes);
     }
     
+    public async Task<IActionResult> GetMoreNotes(int page = 2, int pageSize = 20)
+    {
+        var query = noteRepository.GetAllNotesAsync();
+        var notes = await query
+            .Select(x => new NoteViewModel
+            {
+                Id = x.Id,
+                Title = x.Title,
+                CreatedDate = x.CreatedDate,
+                LastUpdatedDate = x.LastUpdatedDate
+            })
+            .OrderByDescending(x => x.CreatedDate)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+
+        return Json(notes);
+    }
+    
     public async Task<IActionResult> Upsert(Guid? id)
     {
         var note = new Note();
