@@ -64,6 +64,9 @@ builder.Services.AddScoped<TokenHelper>();
 
 var app = builder.Build();
 
+await app.Services.SeedRoles();
+await app.Services.SeedDefaultUsers();
+
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
