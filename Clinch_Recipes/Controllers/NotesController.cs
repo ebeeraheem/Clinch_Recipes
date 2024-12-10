@@ -66,7 +66,7 @@ public class NotesController(INoteRepository noteRepository) : Controller
 
         if (note.Id == Guid.Empty)
         {
-            note.CreatedDate = DateTime.UtcNow;                
+            note.CreatedDate = DateTime.UtcNow;
             await noteRepository.AddNoteAsync(note);
             return RedirectToAction(nameof(Index));
         }

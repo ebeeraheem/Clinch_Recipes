@@ -8,10 +8,10 @@ using System.Security.Claims;
 namespace Clinch_Recipes.Controllers;
 public class AccountController(UserManager<ApplicationUser> userManager) : Controller
 {
-    public IActionResult Index()
-    {
-        return View();
-    }
+    //public IActionResult Index()
+    //{
+    //    return View();
+    //}
 
     [HttpGet]
     public ActionResult Login()
@@ -20,15 +20,15 @@ public class AccountController(UserManager<ApplicationUser> userManager) : Contr
     }
 
     [HttpPost]
-    public async Task<ActionResult> Login(string email, string password)
+    public async Task<ActionResult> Login(LoginModel model)
     {
         if (!ModelState.IsValid)
         {
             ViewBag.ErrorMessage = "ModelState is invalid.";
-            return View(ModelState);
+            return View();
         }
 
-        var user = await userManager.FindByEmailAsync(email);
+        var user = await userManager.FindByEmailAsync(model.Email);
 
         if (user is null)
         {
@@ -36,7 +36,7 @@ public class AccountController(UserManager<ApplicationUser> userManager) : Contr
             return View();
         }
 
-        var isValidPassword = await userManager.CheckPasswordAsync(user, password);
+        var isValidPassword = await userManager.CheckPasswordAsync(user, model.Password);
 
         if (!isValidPassword)
         {
