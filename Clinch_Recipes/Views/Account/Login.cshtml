@@ -1,6 +1,10 @@
-﻿@{
+﻿@using Clinch_Recipes.UserEntity
+@model LoginModel
+
+@{
     ViewBag.Title = "Login";
 }
+
 <h2>Login</h2>
 <a class="btn btn-primary" asp-controller="Notes" asp-action="Index">Back To Homepage</a>
 
@@ -12,11 +16,11 @@
 <form method="post">
     <div>
         <label for="username">Username</label>
-        <input type="text" id="username" name="username" />
+        <input asp-for="Email" type="text" />
     </div>
     <div>
         <label for="password">Password</label>
-        <input type="password" id="password" name="password" />
+        <input asp-for="Password" type="password" />
     </div>
     <button type="submit">Login</button>
 </form>

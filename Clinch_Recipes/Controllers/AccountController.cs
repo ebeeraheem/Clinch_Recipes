@@ -6,13 +6,10 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
 namespace Clinch_Recipes.Controllers;
-public class AccountController(UserManager<ApplicationUser> userManager) : Controller
+public class AccountController(
+    UserManager<ApplicationUser> userManager,
+    SignInManager<ApplicationUser> signInManager) : Controller
 {
-    //public IActionResult Index()
-    //{
-    //    return View();
-    //}
-
     [HttpGet]
     public ActionResult Login()
     {
@@ -44,32 +41,21 @@ public class AccountController(UserManager<ApplicationUser> userManager) : Contr
             return View();
         }
 
-        var claims = new List<Claim>
+        var result = await signInManager.PasswordSignInAsync(
+            user, model.Password, false, false);
+
+        if (!result.Succeeded)
         {
-            new(ClaimTypes.NameIdentifier, user.Id),
-            new(ClaimTypes.Email, user.Email ?? string.Empty),
-        };
-
-        var claimsIdentity = new ClaimsIdentity(
-            claims, CookieAuthenticationDefaults.AuthenticationScheme);
-
-        var authProperties = new AuthenticationProperties
-        {
-            AllowRefresh = true,
-            IsPersistent = true,
-            IssuedUtc = DateTime.UtcNow
-        };
-
-        await HttpContext.SignInAsync(
-            new ClaimsPrincipal(claimsIdentity),
-            authProperties);
+            ViewBag.ErrorMessage = "Error signing in user.";
+            return View();
+        }
 
         return RedirectToAction("Index", "Notes");
     }
 
     public async Task<ActionResult> Logout()
     {
-        await HttpContext.SignOutAsync();
+        await signInManager.SignOutAsync();
         return RedirectToAction("Index", "Notes");
     }
 }
