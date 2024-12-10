@@ -1,4 +1,5 @@
 using Clinch_Recipes.Data;
+using Clinch_Recipes.HelperMethods;
 using Clinch_Recipes.NoteEntity;
 using Clinch_Recipes.UserEntity;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -50,6 +51,7 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
    .AddDefaultTokenProviders();
 
 builder.Services.AddScoped<INoteRepository, NoteRepository>();
+builder.Services.AddScoped<TokenHelper>();
 
 var app = builder.Build();
 
