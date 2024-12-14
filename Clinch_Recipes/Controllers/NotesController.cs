@@ -1,6 +1,7 @@
 ﻿using Clinch_Recipes.Models;
 using Clinch_Recipes.NoteEntity;
 using Markdig;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -41,7 +42,8 @@ public class NotesController(INoteRepository noteRepository) : Controller
 
         return Json(notes);
     }
-    
+
+    [Authorize]
     public async Task<IActionResult> Upsert(Guid? id)
     {
         var note = new Note();
@@ -56,6 +58,7 @@ public class NotesController(INoteRepository noteRepository) : Controller
             View(note);
     }
 
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> Upsert(Note note)
     {
@@ -75,6 +78,7 @@ public class NotesController(INoteRepository noteRepository) : Controller
         return RedirectToAction(nameof(Details), new { id = note.Id });
     }
 
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> Delete(Guid id)
     {

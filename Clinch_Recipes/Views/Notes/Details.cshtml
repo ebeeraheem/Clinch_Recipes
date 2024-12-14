@@ -12,10 +12,15 @@
             <div class="col-8">
                 <a class="btn btn-primary" asp-controller="Notes" asp-action="Index">Back To All Notes</a>
             </div>
-            <div class="col-4 gx-2">
-                <a class="btn btn-secondary" asp-controller="Notes" asp-action="Upsert" asp-route-id="@Model.Id">Edit Note</a>
-                <a class="btn btn-danger" href="javascript:void(0);" onclick="confirmDelete('@Model.Id')">Delete Note</a>
-            </div>
+
+            @if (User.Identity?.IsAuthenticated is true)
+            {
+                <div class="col-4 gx-2">
+                    <a class="btn btn-secondary" asp-controller="Notes" asp-action="Upsert" asp-route-id="@Model.Id">Edit Note</a>
+                    <a class="btn btn-danger" href="javascript:void(0);" onclick="confirmDelete('@Model.Id')">Delete Note</a>
+                </div>
+            }
+            
         </div>
         <div class="row">
             <h2 class="my-3">@Model.Title</h2>
