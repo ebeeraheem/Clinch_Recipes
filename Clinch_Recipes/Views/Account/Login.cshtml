@@ -1,8 +1,10 @@
-﻿@using Clinch_Recipes.UserEntity
+﻿@* @using System.Web *@
+@using Clinch_Recipes.UserEntity
 @model LoginModel
 
 @{
     ViewBag.Title = "Login";
+    string? returnUrl = Context.Request.Query["ReturnUrl"];
 }
 
 <h2>Login</h2>
@@ -22,5 +24,6 @@
         <label for="password">Password</label>
         <input asp-for="Password" type="password" />
     </div>
+    <input hidden id="returnUrl" name="returnUrl" value="@returnUrl"/>
     <button type="submit">Login</button>
 </form>

@@ -11,13 +11,14 @@ public class AccountController(
     SignInManager<ApplicationUser> signInManager) : Controller
 {
     [HttpGet]
-    public ActionResult Login()
+    public ActionResult Login(string? returnUrl = null)
     {
+        ViewData["ReturnUrl"] = returnUrl;
         return View();
     }
 
     [HttpPost]
-    public async Task<ActionResult> Login(LoginModel model)
+    public async Task<ActionResult> Login(LoginModel model, string? returnUrl = null)
     {
         if (!ModelState.IsValid)
         {
@@ -50,7 +51,9 @@ public class AccountController(
             return View();
         }
 
-        return RedirectToAction("Index", "Notes");
+        return !string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl) ?
+            Redirect(returnUrl)
+            : RedirectToAction("Index", "Notes");
     }
 
     public async Task<ActionResult> Logout()
