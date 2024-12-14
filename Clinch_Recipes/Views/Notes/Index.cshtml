@@ -1,15 +1,13 @@
 ﻿@model List<NoteViewModel>
 
 <h1>All notes</h1>
-<a asp-controller="Account" asp-action="Login">Login</a>
 
 @if (User.Identity?.IsAuthenticated is null or false)
 {
-    <div style="color: red">Bad</div>
+    <a asp-controller="Account" asp-action="Login">Login</a>
 }
 else
 {
-    <div style="color: teal">Good</div>
     <a asp-controller="Account" asp-action="Logout">Logout</a>
 }
 

@@ -31,14 +31,6 @@ public class AccountController(
             return View();
         }
 
-        var isValidPassword = await userManager.CheckPasswordAsync(user, model.Password);
-
-        if (!isValidPassword)
-        {
-            ViewBag.ErrorMessage = "Invalid credentials.";
-            return View();
-        }
-
         var result = await signInManager.PasswordSignInAsync(
             user, model.Password, false, false);
 
