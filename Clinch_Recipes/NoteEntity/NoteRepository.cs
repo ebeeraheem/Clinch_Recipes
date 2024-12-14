@@ -1,5 +1,4 @@
 ﻿using Clinch_Recipes.Data;
-using Microsoft.EntityFrameworkCore;
 
 namespace Clinch_Recipes.NoteEntity;
 
@@ -27,14 +26,12 @@ public class NoteRepository(ApplicationDbContext context) : INoteRepository
         await context.SaveChangesAsync();
     }
 
-    public async Task<bool> DeleteNoteAsync(Guid id)
+    public async Task<int> DeleteNoteAsync(Guid id)
     {
         var note = await context.Notes.FindAsync(id);
-        if (note is null) return false;
-        
-        context.Notes.Remove(note);
-        await context.SaveChangesAsync();
+        if (note is null) return 0;
 
-        return true;
+        context.Notes.Remove(note);
+        return await context.SaveChangesAsync();
     }
 }

@@ -3,11 +3,8 @@ using Clinch_Recipes.HelperMethods;
 using Clinch_Recipes.NoteEntity;
 using Clinch_Recipes.UserEntity;
 using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -51,6 +48,8 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 
 builder.Services.AddScoped<INoteRepository, NoteRepository>();
 builder.Services.AddScoped<TokenHelper>();
+
+builder.Services.AddMemoryCache();
 
 var app = builder.Build();
 
