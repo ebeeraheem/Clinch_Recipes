@@ -29,24 +29,14 @@ builder.Services.AddAuthentication(options =>
     options.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = CookieAuthenticationDefaults.AuthenticationScheme;
 })
-    //.AddJwtBearer(options =>
-    //{
-    //    options.TokenValidationParameters = new TokenValidationParameters
-    //    {
-    //        ValidateIssuer = true,
-    //        ValidateAudience = true,
-    //        ValidateLifetime = true,
-    //        ValidateIssuerSigningKey = true,
-    //        ValidIssuer = issuer,
-    //        ValidAudience = audience,
-    //        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(key))
-    //    };
-    //})
     .AddCookie(options =>
     {
-        options.ExpireTimeSpan = TimeSpan.FromMinutes(20);
+        options.Cookie.HttpOnly = true;
         options.SlidingExpiration = true;
+        options.Cookie.IsEssential = true;
         options.AccessDeniedPath = "/Forbidden/";
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(45);
+        options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     });
 
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
