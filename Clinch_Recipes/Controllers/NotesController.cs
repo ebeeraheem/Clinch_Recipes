@@ -94,18 +94,21 @@ public class NotesController(INoteRepository noteRepository, IMemoryCache memory
 
         // Invalidate cache for notes, as new note is added or updated
         var cacheKey = "notes";
+        var noteCacheKey = $"note:{note.Id}";
 
         if (note.Id == Guid.Empty)
         {
             note.CreatedDate = DateTime.UtcNow;
             await noteRepository.AddNoteAsync(note);
             memoryCache.Remove(cacheKey);
+            memoryCache.Remove(noteCacheKey);
 
             return RedirectToAction(nameof(Index));
         }
 
         await noteRepository.UpdateNoteAsync(note);
         memoryCache.Remove(cacheKey);
+        memoryCache.Remove(noteCacheKey);
 
         return RedirectToAction(nameof(Details), new { id = note.Id });
     }
@@ -123,8 +126,10 @@ public class NotesController(INoteRepository noteRepository, IMemoryCache memory
 
         // Invalidate cache for notes if note is deleted
         var cacheKey = "notes";
+        var noteCacheKey = $"note:{id}";
 
         memoryCache.Remove(cacheKey);
+        memoryCache.Remove(noteCacheKey);
         return Json(new { success = true });
     }
 

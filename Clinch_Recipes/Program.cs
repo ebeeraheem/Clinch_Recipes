@@ -11,7 +11,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<ApplicationDbContext>(
     options => options.UseSqlServer(
-    builder.Configuration.GetConnectionString("SomeeConnection")));
+    builder.Configuration.GetConnectionString("DefaultConnection")));
 
 var issuer = builder.Configuration.GetValue<string>("Jwt:Issuer");
 var audience = builder.Configuration.GetValue<string>("Jwt:Audience");
@@ -31,7 +31,6 @@ builder.Services.AddAuthentication(options =>
         options.Cookie.HttpOnly = true;
         options.SlidingExpiration = true;
         options.Cookie.IsEssential = true;
-        options.AccessDeniedPath = "/Forbidden/";
         options.ExpireTimeSpan = TimeSpan.FromMinutes(45);
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     });
