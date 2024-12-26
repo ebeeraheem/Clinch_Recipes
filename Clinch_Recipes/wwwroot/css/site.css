@@ -57,6 +57,7 @@ body {
 
 .noteContent p {
     font-family: "Futura Bk Bt", Helvetica, sans-serif;
+    overflow-wrap: anywhere;
 }
 
 .noteContent li code,
