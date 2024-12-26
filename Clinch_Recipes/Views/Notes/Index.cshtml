@@ -1,15 +1,17 @@
 ﻿@model List<NoteViewModel>
 
-<h1>All notes</h1>
+<div class="header-container">
+    <h1>All notes</h1>
 
-@if (User.Identity?.IsAuthenticated is null or false)
-{
-    <a asp-controller="Account" asp-action="Login">Login</a>
-}
-else
-{
-    <a asp-controller="Account" asp-action="Logout">Logout</a>
-}
+    @if (User.Identity?.IsAuthenticated is null or false)
+    {
+        <a asp-controller="Account" asp-action="Login">Login</a>
+    }
+    else
+    {
+        <a asp-controller="Account" asp-action="Logout">Logout</a>
+    }
+</div>
 
 <div class="input-group mb-3 searchNotes">
     <input type="search" autofocus class="form-control rounded" placeholder="Search" aria-label="Search" aria-describedby="search-addon"/>
@@ -39,7 +41,7 @@ else
             </div>
         }
     </div>
-    <div id="loading" class="text-center my-4" style="display:none;">Loading...</div>
+    <div id="loading" class="my-4 text-center" style="display:none;">Loading...</div>
     <div id="end-message" class="mb-4" style="display: none; text-align: center;">No more notes to load</div>
 </div>
 
@@ -120,7 +122,85 @@ else
     </script>
 
     <style>
-            .searchNotes:focus-within{
+        /* Header section container */
+        .header-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: clamp(1rem, 2vw, 2rem);
+            margin-bottom: clamp(1rem, 3vw, 2rem);
+        }
+        /* Header styles */
+        h1 {
+            font-size: 2.5rem;
+            border-bottom: 2px solid #b5f8fe99;
+            padding-bottom: 0.5rem;
+        }
+
+        /* Login/Logout link styles */
+        a[href^="/Account"] {
+            display: inline-block;
+            padding: clamp(6px, 1vw, 8px) clamp(12px, 2vw, 16px);
+            text-decoration: none;
+            color: #edf7f6;
+            border: 1px solid #b5f8fe99;
+            border-radius: 4px;
+            transition: all 0.3s ease;
+            font-size: clamp(0.9rem, 1.5vw, 1rem);
+        }
+
+            a[href^="/Account"]:hover {
+                background-color: #b5f8fe22;
+            }
+
+        /* Search section styles */
+        .searchNotes {
+            display: flex;
+            margin: 0 auto;
+            flex-wrap: nowrap;
+        }
+
+            .searchNotes input[type="search"] {
+                flex: 1 1 250px;
+                padding: 10px 15px;
+                border: 1px solid #b5f8fe99;
+                border-radius: 4px;
+                background-color: #02182b;
+                color: #edf7f6;
+                font-size: clamp(0.9rem, 1.5vw, 1rem);
+                min-width: 0; /* Prevents flex items from overflowing */
+                border-top-right-radius: 0 !important;
+                border-bottom-right-radius: 0 !important;
+            }
+
+                .searchNotes input[type="search"]::placeholder {
+                    color: #edf7f699;
+                }
+
+                .searchNotes input[type="search"]:focus {
+                    outline: none;
+                    border-color: #b5f8fe;
+                    box-shadow: 0 0 5px #b5f8fe66;
+                }
+
+            .searchNotes button {
+                flex: 0 1 auto;
+                padding: 10px 20px;
+                background-color: transparent;
+                color: #edf7f6;
+                border: 1px solid #b5f8fe99;
+                border-radius: 4px;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                min-width: max-content;
+            }
+
+                .searchNotes button:hover {
+                    background-color: #b5f8fe22;
+                }
+
+            /* .searchNotes:focus-within{
                 outline: 2px solid #b5f8fe;
                 border-radius: 5px;
             }
@@ -143,7 +223,7 @@ else
                 border-color: #edf7f6;
                 background-color: #b5f8fe;
                 color: #02182b;
-            }
+            } */
             .noteItem{
                 display: block;
                 color: #edf7f6dd;
