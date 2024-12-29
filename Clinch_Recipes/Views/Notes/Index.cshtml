@@ -44,6 +44,15 @@
     </div>
     <div id="loading" class="my-4 text-center" style="display:none;">Loading...</div>
     <div id="end-message" class="mb-4" style="display: none; text-align: center;">No more notes to load</div>
+
+    <div class="load-more">
+        <div class="loader">
+            <div class="circle" id="a"></div>
+            <div class="circle" id="b"></div>
+            <div class="circle" id="c"></div>
+        </div>
+        <div class="caption">Getting more recipes...</div>
+    </div>
 </div>
 
 
@@ -51,6 +60,57 @@
     <script src="~/js/notes-index.js"></script>
 
     <style>
+        .load-more {
+            display: flex;
+            max-width: max-content;
+            flex-direction: column;
+            margin: auto;
+        }
+
+        .loader {
+            width: 180px;
+            height: 20px;
+            margin: 30px auto 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .circle {
+            width: 10px;
+            height: 10px;
+            background: white;
+            border-radius: 50%;
+            margin: 0 5px;
+            animation: jump 1s linear infinite;
+        }
+
+        @@keyframes jump {
+            0% {
+                margin-top: 0;
+            }
+
+            35% {
+                margin-top: -25px;
+            }
+
+            70% {
+                margin-top: 0px;
+            }
+        }
+
+
+        #b {
+            animation-delay: 0.1s;
+        }
+
+        #c {
+            animation-delay: 0.2s;
+        }
+
+        .caption {
+            margin: auto;
+        }
         /* Header section container */
         .header-container {
             display: flex;

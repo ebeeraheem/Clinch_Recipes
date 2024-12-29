@@ -4,6 +4,49 @@ let isLoading = false;
 let hasMoreNotes = true;
 const notesCache = {}; // Object to store cached pages
 
+const pageSize = 30;
+let pageNumber = 2;
+
+async function loadMore() {
+    const moreNotesUrl = '/Notes/GetMoreNotes';
+
+    // Display the loading spinner
+    document.getElementById('loading').style.display = 'block';
+
+    // Fetch the next page of notes
+    const response = await fetch(`${moreNotesUrl}?pageNumber=${pageNumber}`);
+    if (!response.ok) {
+        console.error(`Failed to load notes. Page: ${pageNumber}`);
+        return;
+    }
+
+    const pagedResult = await response.json();
+    
+    if (pagedResult.Items.length <= 0) {
+        // Hide the loading spinner and display the end message
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('end-message').style.display = 'block';
+        return;
+    }
+
+    // Render the notes
+    renderNotes(pagedResult.Items);
+
+    // Increment the page number
+    pageNumber++;
+
+    // Hide the loading spinner
+    document.getElementById('loading').style.display = 'none';
+
+    // Check if there are more notes to load
+    if (pagedResult.Items.length < pageSize) {
+        document.getElementById('end-message').style.display = 'block';
+    } else {
+        // Display the load more button
+        document.getElementById('load-more').style.display = 'block';
+    }
+}
+
 async function loadMoreNotes() {
     if (isLoading || !hasMoreNotes) return;
     isLoading = true;
