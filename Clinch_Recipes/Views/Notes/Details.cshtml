@@ -1,7 +1,7 @@
 ﻿@model Note
 
 @{
-    ViewData["Title"] = @Model.Title;
+    ViewData["Title"] = @Model?.Title;
 }
 
 <h1>Details</h1>
@@ -16,17 +16,17 @@
             @if (User.Identity?.IsAuthenticated is true)
             {
                 <div class="col-4 gx-2">
-                    <a class="btn btn-secondary" asp-controller="Notes" asp-action="Upsert" asp-route-id="@Model.Id">Edit Note</a>
-                    <a class="btn btn-danger" href="javascript:void(0);" onclick="confirmDelete('@Model.Id')">Delete Note</a>
+                    <a class="btn btn-secondary upsert" asp-controller="Notes" asp-action="Upsert" asp-route-id="@Model?.Id">Edit Note</a>
+                    <a class="btn btn-danger delete" href="javascript:void(0);" onclick="confirmDelete('@Model?.Id')">Delete Note</a>
                 </div>
             }
             
         </div>
         <div class="row">
-            <h2 class="my-3">@Model.Title</h2>
-            <span class ="note-date" data-utc-date="@Model.CreatedDate.ToString("o")"></span>
-
-            <div class="noteContent">@Html.Raw(Model.Content)</div>
+            <h2 class="my-3">@Model?.Title</h2>
+            <h6 class="note-date" style="display:none;" data-utc-date="@Model?.LastUpdatedDate.ToString("o")"></h6>
+            <span class ="note-date created-date" data-utc-date="@Model?.CreatedDate.ToString("o")"></span>
+            <div class="noteContent">@Html.Raw(Model?.Content)</div>
         </div>
     </div>
 </div>
@@ -41,71 +41,11 @@
     <script src="~/lib/highlightjs/highlight.min.js"></script>
     <script>hljs.highlightAll();</script>
 
+    <script src="~/js/notes-details.js"></script>
+
     @* Add sweet alert cdn*@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.12.2/dist/sweetalert2.all.min.js"></script>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.12.2/dist/sweetalert2.min.css">
-
-    <script type="text/javascript">
-        function confirmDelete(noteId) {
-            Swal.fire({
-                title: "Are you sure?",
-                text: "The note will be permanently deleted!",
-                icon: "warning",
-                reverseButtons: true,
-                showCancelButton: true,
-                confirmButtonColor: "#f00",
-                cancelButtonColor: "#6c757d",
-                confirmButtonText: "Delete"
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    deleteNote(noteId);
-                }
-            });
-        }
-
-        function deleteNote(noteId) {
-            fetch(`/Notes/Delete/${noteId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        Swal.fire({
-                            title: "Deleted!",
-                            text: "Note deleted successfully.",
-                            icon: "success",
-                            timer: 2000,
-                            showConfirmButton: false
-                        }).then(() => {
-                            // Redirect to the notes list
-                            window.location.href = '/';
-                        });
-
-                        // In case the timer expires, still redirect
-                        setTimeout(() => {
-                            window.location.href = '/';
-                        }, 2000);
-                    } else {
-                        Swal.fire({
-                            title: "Error!",
-                            text: "There was an error deleting the note.",
-                            icon: "error"
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.error('Error:', error);
-                    Swal.fire({
-                        title: "Error!",
-                        text: "There was an error deleting the note.",
-                        icon: "error"
-                    });
-                });
-        }
-    </script>
 
     <style>
         /* Header styles */

@@ -38,7 +38,7 @@
                 <a class="noteItem" data-id="@note.Id" asp-controller="Notes" asp-action="Details" asp-route-id="@note.Id">
                     <h4>@note.Title</h4>
                     <h6 class="note-date" data-utc-date="@note.LastUpdatedDate.ToString("o")"></h6>
-                    <h6 style="display:none;" class="created-date">@note.CreatedDate</h6>
+                    <h6 class="note-date created-date" data-utc-date="@note.CreatedDate.ToString("o")" style="display:none;">@note.CreatedDate</h6>
                     <p style ="display:none;">@note.Content</p>
                 </a>
             </div>

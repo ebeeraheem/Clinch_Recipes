@@ -96,23 +96,23 @@ public class NotesController(INoteRepository noteRepository,
         note.LastUpdatedDate = DateTime.UtcNow;
         note.Content = Markdown.ToHtml(note.Content);
 
-        // Invalidate cache for notes, as new note is added or updated
-        var cacheKey = "notes";
-        var noteCacheKey = $"note:{note.Id}";
+        // Remove cache for updated note
+        var noteCacheKey = $"note_{note.Id}";
+        memoryCache.Remove(noteCacheKey);
+
+        // Invalidate cache for all notes
+        if (memoryCache is MemoryCache concreteCache)
+            concreteCache.Clear();
 
         if (note.Id == Guid.Empty)
         {
             note.CreatedDate = DateTime.UtcNow;
             await noteRepository.AddNoteAsync(note);
-            memoryCache.Remove(cacheKey);
-            memoryCache.Remove(noteCacheKey);
 
             return RedirectToAction(nameof(Index));
         }
 
         await noteRepository.UpdateNoteAsync(note);
-        memoryCache.Remove(cacheKey);
-        memoryCache.Remove(noteCacheKey);
 
         return RedirectToAction(nameof(Details), new { id = note.Id });
     }
@@ -128,18 +128,22 @@ public class NotesController(INoteRepository noteRepository,
             return Json(new { success = false });
         }
 
-        // Invalidate cache for notes if note is deleted
-        var cacheKey = "notes";
-        var noteCacheKey = $"note:{id}";
+        if (memoryCache is MemoryCache concreteCache)
+        {
+            concreteCache.Clear();
+        }
 
-        memoryCache.Remove(cacheKey);
-        memoryCache.Remove(noteCacheKey);
         return Json(new { success = true });
     }
 
-    public async Task<IActionResult> Details(Guid id)
+    public IActionResult Details(Guid id)
     {
-        var cacheKey = $"note:{id}";
+        return View();
+    }
+
+    public async Task<IActionResult> GetNoteFromServer(Guid id, bool redirected)
+    {
+        var cacheKey = $"note_{id}";
 
         if (!memoryCache.TryGetValue(cacheKey, out Note? note))
         {
@@ -157,6 +161,6 @@ public class NotesController(INoteRepository noteRepository,
             return NotFound();
         }
 
-        return View(note);
+        return View(nameof(Details), note);
     }
 }
