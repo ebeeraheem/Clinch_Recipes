@@ -1,73 +1,77 @@
-﻿using Clinch_Recipes.Models;
+﻿using Clinch_Recipes.HelperMethods.Pagination;
 using Clinch_Recipes.NoteEntity;
 using Markdig;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Clinch_Recipes.Controllers;
-public class NotesController(INoteRepository noteRepository, IMemoryCache memoryCache) : Controller
+public class NotesController(INoteRepository noteRepository,
+                             IMemoryCache memoryCache,
+                             IPagedResultService pagedResultService) : Controller
 {
+    private const int PageSize = 30;
+
     public async Task<IActionResult> Index()
     {
-        var cacheKey = "notes";
-        if (!memoryCache.TryGetValue(cacheKey, out List<NoteViewModel>? notes))
+        const int pageNumber = 1;
+
+        var pagedResult = await GetCachedOrFreshNotesAsync(pageNumber);
+
+        if (pagedResult is null)
         {
-            var query = noteRepository.GetAllNotesAsync();
-
-            notes = await query.Select(note => new NoteViewModel
+            return View(new PagedResult<Note>()
             {
-                Id = note.Id,
-                Title = note.Title,
-                CreatedDate = note.CreatedDate,
-                LastUpdatedDate = note.LastUpdatedDate
-            })
-            .OrderByDescending(n => n.CreatedDate)
-            .ToListAsync();
+                CurrentPage = pageNumber,
+                PageSize = PageSize,
+                Items = [],
+                TotalCount = 0
+            });
+        }
 
+        return View(pagedResult);
+    }
+
+    private async Task<PagedResult<Note>?> GetCachedOrFreshNotesAsync(int pageNumber)
+    {
+        var cacheKey = $"notes_page_{pageNumber}";
+
+        // Check if the cache contains the notes
+        if (memoryCache.TryGetValue(cacheKey, out PagedResult<Note>? cachedResult))
+        {
+            return cachedResult;
+        }
+
+        // Get the notes from the database
+        var query = noteRepository.GetAllNotesAsync();
+        var ordered = query.OrderByDescending(n => n.CreatedDate);
+
+        var pagedResult = await pagedResultService
+            .GetPagedResultAsync(ordered, pageNumber, PageSize);
+
+        // Cache the notes if they exist
+        if (pagedResult.Items.Count != 0)
+        {
             var cacheOptions = new MemoryCacheEntryOptions()
                 .SetPriority(CacheItemPriority.NeverRemove)
                 .SetSize(2048);
 
-            memoryCache.Set(cacheKey, notes, cacheOptions);
+            memoryCache.Set(cacheKey, pagedResult, cacheOptions);
         }
 
-
-        return View(notes);
+        return pagedResult;
     }
 
-    public async Task<IActionResult> GetMoreNotes(int page = 2, int pageSize = 20)
+    public async Task<IActionResult> GetMoreNotes(int pageNumber = 2)
     {
-        var cacheKey = $"notes_page_{page}";
-        if (!memoryCache.TryGetValue(cacheKey, out List<NoteViewModel>? notes))
+        var pagedResult = await GetCachedOrFreshNotesAsync(pageNumber);
+
+        if (pagedResult is null)
         {
-            var query = noteRepository.GetAllNotesAsync();
-
-            notes = await query
-                .Select(x => new NoteViewModel
-                {
-                    Id = x.Id,
-                    Title = x.Title,
-                    CreatedDate = x.CreatedDate,
-                    LastUpdatedDate = x.LastUpdatedDate
-                })
-                .OrderByDescending(x => x.CreatedDate)
-                .Skip((page - 1) * pageSize)
-                .Take(pageSize)
-                .ToListAsync();
-
-            if (notes.Count != 0)
-            {
-                var cacheOptions = new MemoryCacheEntryOptions()
-                .SetPriority(CacheItemPriority.NeverRemove)
-                .SetSize(512);
-
-                memoryCache.Set(cacheKey, notes, cacheOptions);
-            }
+            return Json(new { success = false });
         }
 
-        return Json(notes);
+        return Json(pagedResult);
     }
 
     [Authorize]
