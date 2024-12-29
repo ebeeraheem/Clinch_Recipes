@@ -1,5 +1,4 @@
 using Clinch_Recipes.Data;
-using Clinch_Recipes.HelperMethods;
 using Clinch_Recipes.NoteEntity;
 using Clinch_Recipes.UserEntity;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -16,14 +15,6 @@ builder.Services.AddDbContext<ApplicationDbContext>(
     {
         options.EnableRetryOnFailure(3);
     }));
-
-var issuer = builder.Configuration.GetValue<string>("Jwt:Issuer");
-var audience = builder.Configuration.GetValue<string>("Jwt:Audience");
-var key = builder.Configuration.GetValue<string>("Jwt:Key");
-
-ArgumentNullException.ThrowIfNull(issuer);
-ArgumentNullException.ThrowIfNull(audience);
-ArgumentNullException.ThrowIfNull(key);
 
 builder.Services.AddAuthentication(options =>
 {
@@ -50,7 +41,6 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
    .AddDefaultTokenProviders();
 
 builder.Services.AddScoped<INoteRepository, NoteRepository>();
-builder.Services.AddScoped<TokenHelper>();
 
 builder.Services.AddMemoryCache();
 
