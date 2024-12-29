@@ -1,4 +1,5 @@
 using Clinch_Recipes.Data;
+using Clinch_Recipes.HelperMethods;
 using Clinch_Recipes.NoteEntity;
 using Clinch_Recipes.UserEntity;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -30,8 +31,6 @@ builder.Services.AddAuthentication(options =>
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     });
 
-builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
-
 builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
 {
     options.User.RequireUniqueEmail = true;
@@ -41,6 +40,9 @@ builder.Services.AddIdentity<ApplicationUser, IdentityRole>(options =>
    .AddDefaultTokenProviders();
 
 builder.Services.AddScoped<INoteRepository, NoteRepository>();
+
+builder.Services.AddHttpContextAccessor();
+builder.Services.AddScoped<UserHelper>();
 
 builder.Services.AddMemoryCache();
 
