@@ -4,7 +4,7 @@
 <div class="header-container">
     <h1>All notes</h1>
 
-    @if (UserHelper.IsAuthenticated())
+    @if (!UserHelper.IsAuthenticated())
     {
         <a asp-controller="Account" asp-action="Login">Login</a>
     }
@@ -42,17 +42,21 @@
             </div>
         }
     </div>
-    <div id="loading" class="my-4 text-center" style="display:none;">Loading...</div>
-    <div id="end-message" class="mb-4" style="display: none; text-align: center;">No more notes to load</div>
 
-    <div class="load-more">
+    <div class="text-center">
+        <button id="load-more" class="btn btn-primary">Load more</button>
+    </div>
+
+    <div class="load-more-spinner">
         <div class="loader">
             <div class="circle" id="a"></div>
             <div class="circle" id="b"></div>
             <div class="circle" id="c"></div>
         </div>
-        <div class="caption">Getting more recipes...</div>
     </div>
+
+    <hr />
+
 </div>
 
 
@@ -60,8 +64,34 @@
     <script src="~/js/notes-index.js"></script>
 
     <style>
-        .load-more {
-            display: flex;
+        #load-more {
+            color: #02182b;
+            background-color: #edf7f6;
+            border: 1px solid #b5f8fe99;
+            padding: clamp(6px, 1vw, 8px) clamp(12px, 2vw, 16px);
+            width: 100%;
+            max-width: 150px;
+            transition: all 0.3s ease;
+            margin-block: 16px;
+            font-weight: bold;
+            display: inline-block;
+        }
+
+            #load-more:hover {
+                color: #edf7f6;
+                border-color: #b5f8fe;
+                background-color: #b5f8fe22;
+            }
+
+        hr {
+            margin-block: 36px;
+            border: 1px solid #b5f8fe99;
+            opacity: .5;
+            display: none;
+        }
+
+        .load-more-spinner {
+            display: none;
             max-width: max-content;
             flex-direction: column;
             margin: auto;
@@ -108,9 +138,6 @@
             animation-delay: 0.2s;
         }
 
-        .caption {
-            margin: auto;
-        }
         /* Header section container */
         .header-container {
             display: flex;
@@ -189,30 +216,6 @@
                     background-color: #b5f8fe22;
                 }
 
-            /* .searchNotes:focus-within{
-                outline: 2px solid #b5f8fe;
-                border-radius: 5px;
-            }
-            .searchNotes input,
-            .searchNotes input:focus{
-                background-color: transparent;
-                border-radius: 5px 0 0 5px !important;
-                border: 1px solid #edf7f6;
-                color: #edf7f6;
-                box-shadow: none;
-            }
-            .searchNotes button{
-                border-radius: 0 5px 5px 0;
-                border-color: #edf7f6;
-                background-color: #edf7f6;
-                color: #02182b;
-            }
-
-            .searchNotes button:hover{
-                border-color: #edf7f6;
-                background-color: #b5f8fe;
-                color: #02182b;
-            } */
             .noteItem{
                 display: block;
                 color: #edf7f6dd;
