@@ -61,3 +61,20 @@ function renderNotes(notes) {
 // Load more notes on button click
 document.getElementById('load-more').addEventListener('click', loadMore);
 
+// Save note to session storage on click
+document.querySelectorAll('.noteItem').forEach(note => {
+    note.addEventListener('click', function () {
+        // Construct the note object from the note item
+        const noteData = {
+            id: note.getAttribute('data-id'),
+            title: note.querySelector('h4').textContent,
+            lastUpdatedDate: note.querySelector('.note-date').textContent,
+            createdDate: note.querySelector('.created-date').textContent,
+            content: note.querySelector('p').textContent
+        };
+
+        // Save the note object to session storage
+        sessionStorage.setItem(`note_${noteData.id}`, JSON.stringify(noteData));
+    });
+});
+
