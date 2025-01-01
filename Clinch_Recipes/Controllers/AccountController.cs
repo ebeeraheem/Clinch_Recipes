@@ -1,43 +1,43 @@
-﻿using Clinch_Recipes.UserEntity;
+﻿using Clinch_Recipes.HelperMethods;
+using Clinch_Recipes.UserEntity;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Clinch_Recipes.Controllers;
 public class AccountController(
-    UserManager<ApplicationUser> userManager,
-    SignInManager<ApplicationUser> signInManager) : Controller
+    SignInManager<ApplicationUser> signInManager,
+    UserHelper userHelper) : Controller
 {
-    [HttpGet]
+    [AllowAnonymous]
     public ActionResult Login(string? returnUrl = null)
     {
+        if (userHelper.IsAuthenticated())
+        {
+            return RedirectToAction("Index", "Notes");
+        }
+
         ViewData["ReturnUrl"] = returnUrl;
         return View();
     }
 
     [HttpPost]
+    [AllowAnonymous]
+    [ValidateAntiForgeryToken]
     public async Task<ActionResult> Login(LoginModel model, string? returnUrl = null)
     {
         if (!ModelState.IsValid)
         {
-            ViewBag.ErrorMessage = "ModelState is invalid.";
-            return View();
-        }
-
-        var user = await userManager.FindByEmailAsync(model.Email);
-
-        if (user is null)
-        {
-            ViewBag.ErrorMessage = "User not found.";
-            return View();
+            return View(model);
         }
 
         var result = await signInManager.PasswordSignInAsync(
-            user, model.Password, false, false);
+            model.Email, model.Password, model.RememberMe, false);
 
         if (!result.Succeeded)
         {
-            ViewBag.ErrorMessage = "Error signing in user.";
-            return View();
+            ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+            return View(model);
         }
 
         return !string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl) ?
@@ -45,6 +45,9 @@ public class AccountController(
             : RedirectToAction("Index", "Notes");
     }
 
+    [HttpPost]
+    [Authorize]
+    [ValidateAntiForgeryToken]
     public async Task<ActionResult> Logout()
     {
         await signInManager.SignOutAsync();

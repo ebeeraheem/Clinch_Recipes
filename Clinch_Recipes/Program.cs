@@ -34,7 +34,6 @@ builder.Services.AddAuthentication(options =>
         options.Cookie.HttpOnly = true;
         options.SlidingExpiration = true;
         options.Cookie.IsEssential = true;
-        options.ExpireTimeSpan = TimeSpan.FromMinutes(45);
         options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
     });
 
@@ -65,7 +64,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseDelta<ApplicationDbContext>();
+//app.UseDelta<ApplicationDbContext>();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

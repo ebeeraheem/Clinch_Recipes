@@ -10,7 +10,15 @@
     }
     else
     {
-        <a asp-controller="Account" asp-action="Logout">Logout</a>
+        @* <a asp-controller="Account" asp-action="Logout">Logout</a> *@
+        <form asp-controller="Account"
+              asp-action="Logout"
+              method="post"
+              class="d-inline">
+            <button type="submit" class="btn btn-primary logout">
+                Logout
+            </button>
+        </form>
     }
 </div>
 
@@ -157,7 +165,7 @@
         }
 
         /* Login/Logout link styles */
-        a[href^="/Account"] {
+        a[href^="/Account"], button.logout {
             display: inline-block;
             padding: clamp(6px, 1vw, 8px) clamp(12px, 2vw, 16px);
             text-decoration: none;
@@ -168,7 +176,7 @@
             font-size: clamp(0.9rem, 1.5vw, 1rem);
         }
 
-            a[href^="/Account"]:hover {
+            a[href^="/Account"]:hover, button.logout:hover {
                 background-color: #b5f8fe22;
             }
 
