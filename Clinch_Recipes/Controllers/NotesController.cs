@@ -32,25 +32,42 @@ public class NotesController(INoteRepository noteRepository,
         return View(pagedResult);
     }
 
-    private async Task<PagedResult<Note>?> GetCachedOrFreshNotesAsync(int pageNumber)
+    private async Task<PagedResult<Note>?> GetCachedOrFreshNotesAsync(
+        int pageNumber,
+        string? searchTerm = null)
     {
         var cacheKey = $"notes_page_{pageNumber}";
 
         // Check if the cache contains the notes
         if (memoryCache.TryGetValue(cacheKey, out PagedResult<Note>? cachedResult))
         {
+            // Apply filter if search term is provided
+            if (cachedResult is not null && !string.IsNullOrWhiteSpace(searchTerm))
+            {
+                cachedResult.Items = cachedResult.Items
+                    .Where(n => n.Title.Contains(searchTerm))
+                    .ToList();
+            }
+
             return cachedResult;
         }
 
         // Get the notes from the database
         var query = noteRepository.GetAllNotesAsync();
+
+        // Apply filter if search term is provided
+        if (!string.IsNullOrWhiteSpace(searchTerm))
+        {
+            query = query.Where(n => n.Title.Contains(searchTerm));
+        }
+
         var ordered = query.OrderByDescending(n => n.CreatedDate);
 
         var pagedResult = await pagedResultService
             .GetPagedResultAsync(ordered, pageNumber, PageSize);
 
         // Cache the notes if they exist
-        if (pagedResult.Items.Count != 0)
+        if (pagedResult.Items.Count != 0 && string.IsNullOrWhiteSpace(searchTerm)) // Do NOT cache search results
         {
             var cacheOptions = new MemoryCacheEntryOptions()
                 .SetPriority(CacheItemPriority.NeverRemove)
@@ -62,7 +79,7 @@ public class NotesController(INoteRepository noteRepository,
         return pagedResult;
     }
 
-    public async Task<IActionResult> GetMoreNotes(int pageNumber = 2)
+    public async Task<IActionResult> GetNotes(int pageNumber = 2)
     {
         var pagedResult = await GetCachedOrFreshNotesAsync(pageNumber);
 
