@@ -190,7 +190,7 @@ function showErrorMessage(message) {
 
 // Event listener with debouncing
 elements.loadMoreBtn.addEventListener('click', () => {
-    loadMore(elements.searchInput.value);
+    loadMore();
 });
 
 //// Load more notes on button click

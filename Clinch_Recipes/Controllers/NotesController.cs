@@ -32,34 +32,18 @@ public class NotesController(INoteRepository noteRepository,
         return View(pagedResult);
     }
 
-    private async Task<PagedResult<Note>?> GetCachedOrFreshNotesAsync(
-        int pageNumber,
-        string? searchTerm = null)
+    private async Task<PagedResult<Note>?> GetCachedOrFreshNotesAsync(int pageNumber)
     {
         var cacheKey = $"notes_page_{pageNumber}";
 
         // Check if the cache contains the notes
         if (memoryCache.TryGetValue(cacheKey, out PagedResult<Note>? cachedResult))
         {
-            // Apply filter if search term is provided
-            if (cachedResult is not null && !string.IsNullOrWhiteSpace(searchTerm))
-            {
-                cachedResult.Items = cachedResult.Items
-                    .Where(n => n.Title.Contains(searchTerm))
-                    .ToList();
-            }
-
             return cachedResult;
         }
 
         // Get the notes from the database
         var query = noteRepository.GetAllNotesAsync();
-
-        // Apply filter if search term is provided
-        if (!string.IsNullOrWhiteSpace(searchTerm))
-        {
-            query = query.Where(n => n.Title.Contains(searchTerm));
-        }
 
         var ordered = query.OrderByDescending(n => n.CreatedDate);
 
@@ -67,7 +51,7 @@ public class NotesController(INoteRepository noteRepository,
             .GetPagedResultAsync(ordered, pageNumber, PageSize);
 
         // Cache the notes if they exist
-        if (pagedResult.Items.Count != 0 && string.IsNullOrWhiteSpace(searchTerm)) // Do NOT cache search results
+        if (pagedResult.Items.Count != 0)
         {
             var cacheOptions = new MemoryCacheEntryOptions()
                 .SetPriority(CacheItemPriority.NeverRemove)
@@ -158,7 +142,7 @@ public class NotesController(INoteRepository noteRepository,
         return View();
     }
 
-    public async Task<IActionResult> GetNoteFromServer(Guid id, bool redirected)
+    public async Task<IActionResult> GetNoteFromServer(Guid id)
     {
         var cacheKey = $"note_{id}";
 
