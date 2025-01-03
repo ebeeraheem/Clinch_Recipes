@@ -3,6 +3,7 @@ using Clinch_Recipes.NoteEntity;
 using Markdig;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace Clinch_Recipes.Controllers;
@@ -10,7 +11,7 @@ public class NotesController(INoteRepository noteRepository,
                              IMemoryCache memoryCache,
                              IPagedResultService pagedResultService) : Controller
 {
-    private const int PageSize = 30;
+    private const int PageSize = 40;
 
     public async Task<IActionResult> Index()
     {
@@ -73,6 +74,20 @@ public class NotesController(INoteRepository noteRepository,
         }
 
         return Json(pagedResult);
+    }
+
+    public async Task<IActionResult> Search(string term)
+    {
+        if (string.IsNullOrWhiteSpace(term))
+        {
+            return Json(Array.Empty<Note>());
+        }
+
+        var notes = await noteRepository.GetAllNotesAsync()
+            .Where(n => n.Title.Contains(term))
+            .ToListAsync();
+
+        return Json(notes);
     }
 
     [Authorize]

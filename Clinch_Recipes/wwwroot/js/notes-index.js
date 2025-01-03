@@ -1,17 +1,117 @@
 ﻿const moreNotesUrl = '/Notes/GetNotes';
-const pageSize = 30;
+const pageSize = 40;
 let pageNumber = 2;
 let isLoading = false;
+let isSearchMode = false;
+let searchTimeout;
+let hasMorePages;
+let notesOnFirstPage = 0;
 
 // Elements cache for better performance
 const elements = {
-    loadMoreBtn: document.getElementById('load-more'),
+    loadMoreBtn: document.querySelector('#load-more'),
     spinner: document.querySelector('.load-more-spinner'),
-    container: document.getElementById('notes-container'),
+    container: document.querySelector('#notes-container'),
     endMarker: document.querySelector('hr'),
-    searchInput: document.querySelector('.searchNotes input[type="search"]')
+    searchInput: document.querySelector('.searchNotes input[type="search"]'),
+    searchButton: document.querySelector('.searchNotes button')
 };
 
+
+// Actions to be performed after the DOM content has loaded
+document.addEventListener('DOMContentLoaded', function () {
+    // Format date before displaying
+    document.querySelectorAll('.note-date').forEach(function (element) {
+        const utcDate = element.getAttribute('data-utc-date');
+        element.textContent = formatDate(utcDate);
+
+        notesOnFirstPage++;
+    });
+
+    // Save the loaded notes to local storage
+    localStorage.setItem('existingNotes', JSON.stringify(elements.container.innerHTML));
+    localStorage.setItem('firstPageNotes', notesOnFirstPage);
+
+    // Listen to load more notes event
+    elements.loadMoreBtn.addEventListener('click', loadMore);
+
+    // Event listener for search input with debounce
+    elements.searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        searchTimeout = setTimeout(() => {
+            handleSearch(e.target.value.trim());
+        }, 300);
+    });
+
+    // Event listener for search button
+    elements.searchButton.addEventListener('click', () => {
+        handleSearch(elements.searchInput.value.trim());
+    });
+});
+
+// Save note to session storage when navigating to details page
+document.querySelectorAll('.noteItem').forEach(note => {
+    note.addEventListener('click', function () {
+        // Construct the note object from the note item
+        const noteData = {
+            id: note.getAttribute('data-id'),
+            title: note.querySelector('h4').textContent,
+            lastUpdatedDate: note.querySelector('.note-date').textContent,
+            createdDate: note.querySelector('.created-date').textContent,
+            content: note.querySelector('p').textContent
+        };
+
+        // Save the note object to session storage
+        sessionStorage.setItem(`note_${noteData.id}`, JSON.stringify(noteData));
+    });
+});
+
+// Function to handle search
+async function handleSearch(searchTerm) {
+    isSearchMode = searchTerm.length > 0;
+
+    if (isSearchMode) {
+        // Clear existing notes and show loading UI
+        elements.container.innerHTML = '';
+        updateUIState('loading');
+
+        try {
+            const response = await fetch(`/Notes/Search?term=${encodeURIComponent(searchTerm)}`);
+            if (!response.ok) throw new Error('Search failed');
+
+            const searchResults = await response.json();
+
+            // Handle no more results
+            if (searchResults.length === 0) {
+                showNoResultsMessage('No matching items found.');
+                updateUIState('end');
+                return;
+            }
+
+            // Render the new notes
+            renderNotes(searchResults);
+            updateUIState('end');
+        } catch (error) {
+            console.error('Search error:', error);
+            // Show user-friendly error message
+            showErrorMessage('Failed to load more notes. Please try again.');
+            updateUIState('error');
+        }
+    } else {
+        const existingNotes = localStorage.getItem('existingNotes');
+        elements.container.innerHTML = JSON.parse(existingNotes);
+
+        // Get displayed alert
+        const alert = document.querySelector('.alert');
+        alert.style.display = 'none';
+
+        // Update UI based on whether there are more pages
+        const notesCount = localStorage.getItem('firstPageNotes');
+        updateUIState(notesCount >= pageSize ? 'more' : 'end');
+    }
+}
+
+// Load more notes
 async function loadMore() {
     // Prevent multiple simultaneous requests
     if (isLoading) return;
@@ -68,56 +168,16 @@ async function loadMore() {
     } finally {
         isLoading = false;
     }
-
-
-    //// Hide the load more button and display the loading spinner
-    //document.querySelector('#load-more').style.display = 'none';
-    //document.querySelector('.load-more-spinner').style.display = 'flex';
-
-    //// Fetch the next page of notes
-    //const response = await fetch(`${moreNotesUrl}?pageNumber=${pageNumber}&searchTerm=${query}`);
-    //if (!response.ok) {
-    //    console.error(`Failed to load notes. Page: ${pageNumber}. Error: ${response.statusText}`);
-    //    document.querySelector('#load-more').style.display = 'inline-block';
-    //    document.querySelector('.load-more-spinner').style.display = 'none';
-    //    return;
-    //}
-
-    //const pagedResult = await response.json();
-    
-    //if (pagedResult.items.length <= 0) {
-    //    // Hide the loading spinner and display the end message
-    //    document.querySelector('.load-more-spinner').style.display = 'none';
-    //    document.querySelector('hr').style.display = 'block';
-    //    return;
-    //} else {
-    //    // Hide the end message and display the load more button
-    //    document.querySelector('hr').style.display = 'none';
-    //    document.querySelector('#load-more').style.display = 'inline-block';
-    //}
-
-    //// Render the notes
-    //renderNotes(pagedResult.items);
-
-    //// Increment the page number
-    //pageNumber++;
-
-    //// Hide the load more spinner
-    //document.querySelector('.load-more-spinner').style.display = 'none';
-
-    //if (pagedResult.currentPage >= pagedResult.totalPages || pagedResult.items.length < pageSize) {
-    //    document.querySelector('hr').style.display = 'block';
-    //    document.querySelector('#load-more').style.display = 'none';
-    //} else {
-    //    document.querySelector('#load-more').style.display = 'inline-block';
-    //}
 }
 
+// Function to display notes
 function renderNotes(notes) {
+    const sortedNotes = notes.sort((a, b) => new Date(b.lastUpdatedDate) - new Date(a.lastUpdatedDate));
+
     // Create document fragment for better performance
     const fragment = document.createDocumentFragment();
 
-    notes.forEach(note => {
+    sortedNotes.forEach(note => {
         const noteDiv = document.createElement('div');
         noteDiv.classList.add('col', 'note-item');
         noteDiv.setAttribute('data-title', note.title);
@@ -146,7 +206,8 @@ function escapeHtml(unsafe) {
         .replace(/</g, "&lt;")
         .replace(/>/g, "&gt;")
         .replace(/"/g, "&quot;")
-        .replace(/'/g, "&#039;");
+        .replace(/'/g, "&#039;")
+        .replace(/`/g, "&#96;");
 }
 
 // Helper function to update UI state
@@ -177,8 +238,6 @@ function updateUIState(state) {
 
 // Helper function to show error message
 function showErrorMessage(message) {
-    // You can implement your preferred error display method here
-    // For example, showing a toast notification or an alert
     const errorDiv = document.createElement('div');
     errorDiv.classList.add('alert', 'alert-danger', 'mt-3');
     errorDiv.textContent = message;
@@ -188,104 +247,10 @@ function showErrorMessage(message) {
     setTimeout(() => errorDiv.remove(), 5000);
 }
 
-// Event listener with debouncing
-elements.loadMoreBtn.addEventListener('click', () => {
-    loadMore();
-});
-
-//// Load more notes on button click
-//document.getElementById('load-more').addEventListener('click', function () {
-//    const searchInput = document.querySelector('.searchNotes input[type="search"]');
-//    loadMore(searchInput.value);
-//});
-
-//// Create a function to clear notes from the page
-//function clearNotes() {
-//    const notesContainer = document.getElementById('notes-container');
-//    while (notesContainer.firstChild) {
-//        notesContainer.removeChild(notesContainer.firstChild);
-//    }
-
-//    // Reset the page number
-//    pageNumber = 2;
-
-//    // Hide the end message
-//    document.querySelector('hr').style.display = 'none';
-//}
-
-// Save note to session storage on click
-document.querySelectorAll('.noteItem').forEach(note => {
-    note.addEventListener('click', function () {
-        // Construct the note object from the note item
-        const noteData = {
-            id: note.getAttribute('data-id'),
-            title: note.querySelector('h4').textContent,
-            lastUpdatedDate: note.querySelector('.note-date').textContent,
-            createdDate: note.querySelector('.created-date').textContent,
-            content: note.querySelector('p').textContent
-        };
-
-        // Save the note object to session storage
-        sessionStorage.setItem(`note_${noteData.id}`, JSON.stringify(noteData));
-    });
-});
-
-// Format date before displaying
-document.addEventListener('DOMContentLoaded', function () {
-    document.querySelectorAll('.note-date').forEach(function (element) {
-        const utcDate = element.getAttribute('data-utc-date');
-        element.textContent = formatDate(utcDate);
-    });
-});
-
-//// Search notes functionality
-//document.addEventListener('DOMContentLoaded', function () {
-//    const searchInput = document.querySelector('.searchNotes input[type="search"]');
-//    const searchButton = document.querySelector('.searchNotes button');
-//    const notesContainer = document.querySelector('#notes-container');
-//    const noteItems = Array.from(notesContainer.querySelectorAll('.note-item'));
-
-//    function filterNotes(query) {
-//        query = query.toLowerCase();
-//        noteItems.forEach(item => {
-//            const title = item.getAttribute('data-title').toLowerCase();
-//            if (title.toLowerCase().includes(query)) {
-//                item.style.display = 'grid';
-//            } else {
-//                item.style.display = 'none';
-//            }
-//        });
-//    }
-
-//    // Write function to search notes from the GetNotes endpoint
-//    async function searchNotes(query) {
-//        pageNumber = 1;
-//        const response = await fetch(`${moreNotesUrl}?pageNumber=${pageNumber}&searchTerm=${query}`);
-
-//        if (!response.ok) {
-//            console.error(`Failed to load notes. Page: ${pageNumber}. Status: ${response.status}. Message: ${response.statusText}`);
-//            return;
-//        }
-
-//        noteItems.forEach(item => {
-//            item.style.display = 'none';
-//        });
-
-//        const pagedResult = await response.json();
-//        renderNotes(pagedResult.items);
-
-//        pageNumber++;
-//    }
-
-//    // Search when button is clicked
-//    searchButton.addEventListener('click', () => {
-//        searchNotes(searchInput.value);
-//    });
-
-//    // Search as user types (debounced)
-//    let timeout;
-//    searchInput.addEventListener('input', () => {
-//        clearTimeout(timeout);
-//        timeout = setTimeout(() => searchNotes(searchInput.value), 300);
-//    });
-//});
+// Helper function to show no items found
+function showNoResultsMessage(message) {
+    const messageDiv = document.createElement('div');
+    messageDiv.classList.add('alert', 'alert-info', 'mt-3');
+    messageDiv.textContent = message;
+    elements.container.insertAdjacentElement('afterend', messageDiv);
+}
