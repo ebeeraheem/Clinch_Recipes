@@ -3,7 +3,6 @@ using Clinch_Recipes.HelperMethods;
 using Clinch_Recipes.HelperMethods.Pagination;
 using Clinch_Recipes.NoteEntity;
 using Clinch_Recipes.UserEntity;
-using Delta;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -63,8 +62,6 @@ if (!app.Environment.IsDevelopment())
     app.UseExceptionHandler("/Home/Error");
     app.UseHsts();
 }
-
-//app.UseDelta<ApplicationDbContext>();
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
