@@ -35,8 +35,8 @@ jobs:
     - name: Deploy to Plesk via FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       with:
-        server: ${{ secrets.FTP_HOST }}
-        username: ${{ secrets.FTP_USERNAME }}
-        password: ${{ secrets.FTP_PASSWORD }}
+        server: recipes.codestash.ng
+        username: eonfycab_recipes
+        password: R3xqb1h8$l21
         local-dir: ./output/
-        server-dir: ${{ secrets.FTP_PATH }}
+ #       server-dir: ${{ secrets.FTP_PATH }}
