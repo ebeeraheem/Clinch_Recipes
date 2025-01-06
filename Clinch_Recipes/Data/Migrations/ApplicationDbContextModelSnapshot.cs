@@ -4,19 +4,16 @@ using Clinch_Recipes.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Clinch_Recipes.Migrations
+namespace Clinch_Recipes.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241210212035_AddApplicationUser")]
-    partial class AddApplicationUser
+    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -274,6 +271,10 @@ namespace Clinch_Recipes.Migrations
 
                     b.Property<DateTime?>("RefreshTokenExpiryTime")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasDiscriminator().HasValue("ApplicationUser");
                 });

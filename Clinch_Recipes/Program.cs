@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+var connectionString = builder.Configuration.GetConnectionString("Default");
 ArgumentException.ThrowIfNullOrWhiteSpace(connectionString);
 
 builder.Services.AddControllersWithViews();

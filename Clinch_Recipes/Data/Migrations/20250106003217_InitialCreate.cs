@@ -3,23 +3,14 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace Clinch_Recipes.Migrations
+namespace Clinch_Recipes.Data.Migrations
 {
     /// <inheritdoc />
-    public partial class AddApplicationUser : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.AlterColumn<Guid>(
-                name: "Id",
-                table: "Notes",
-                type: "uniqueidentifier",
-                nullable: false,
-                oldClrType: typeof(Guid),
-                oldType: "uniqueidentifier",
-                oldDefaultValueSql: "NEWSEQUENTIALID()");
-
             migrationBuilder.CreateTable(
                 name: "AspNetRoles",
                 columns: table => new
@@ -42,6 +33,7 @@ namespace Clinch_Recipes.Migrations
                     Discriminator = table.Column<string>(type: "nvarchar(21)", maxLength: 21, nullable: false),
                     FirstName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     LastName = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Role = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     RefreshToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     RefreshTokenExpiryTime = table.Column<DateTime>(type: "datetime2", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -62,6 +54,21 @@ namespace Clinch_Recipes.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_AspNetUsers", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "Notes",
+                columns: table => new
+                {
+                    Id = table.Column<Guid>(type: "uniqueidentifier", nullable: false),
+                    Title = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Content = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    LastUpdatedDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Notes", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -229,19 +236,13 @@ namespace Clinch_Recipes.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
+                name: "Notes");
+
+            migrationBuilder.DropTable(
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");
-
-            migrationBuilder.AlterColumn<Guid>(
-                name: "Id",
-                table: "Notes",
-                type: "uniqueidentifier",
-                nullable: false,
-                defaultValueSql: "NEWSEQUENTIALID()",
-                oldClrType: typeof(Guid),
-                oldType: "uniqueidentifier");
         }
     }
 }

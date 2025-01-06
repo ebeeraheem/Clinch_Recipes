@@ -9,11 +9,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
 
-namespace Clinch_Recipes.Migrations
+namespace Clinch_Recipes.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20241210215838_AddRoleField")]
-    partial class AddRoleField
+    [Migration("20250106003217_InitialCreate")]
+    partial class InitialCreate
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
