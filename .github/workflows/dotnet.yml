@@ -31,6 +31,9 @@ jobs:
 #      run: dotnet test --no-build --verbosity normal
     - name: Publish Application
       run: dotnet publish ./Clinch_Recipes/Clinch_Recipes.csproj -c Release -o output
+
+    - name: Debug Secrets
+      run: echo "FTP Host is ${{ secrets.FTP_HOST }}"
       
     - name: Deploy to Plesk via FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
@@ -40,3 +43,6 @@ jobs:
         password: R3xqb1h8$l21
         local-dir: ./output/
  #       server-dir: ${{ secrets.FTP_PATH }}
+        passive: true
+        retry: 3
+        cleanup: true
