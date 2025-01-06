@@ -30,7 +30,7 @@ jobs:
 #    - name: Test
 #      run: dotnet test --no-build --verbosity normal
     - name: Publish Application
-      run: dotnet publish -c Release -o output
+      run: dotnet publish ./Clinch_Recipes/Clinch_Recipes.csproj -c Release -o output
       
     - name: Deploy to Plesk via FTP
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
