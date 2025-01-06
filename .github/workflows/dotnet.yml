@@ -15,24 +15,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
     - name: Setup .NET
       uses: actions/setup-dotnet@v4
       with:
         dotnet-version: 8.0.x
-#    - name: Restore dependencies
-#      run: dotnet restore
-#    - name: Build
-#      run: dotnet build --no-restore
+        
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore
 #    - name: Test
 #      run: dotnet test --no-build --verbosity normal
     - name: Publish Application
       run: dotnet publish -c Release -o output
-    - name: Deploy to Plesk
-      uses: appleboy/scp-action@v0.1.0
+      
+    - name: Deploy to Plesk via FTP
+      uses: SamKirkland/FTP-Deploy-Action@v4
       with:
-        host: ${{ secrets.FTP_HOST }}
+        server: ${{ secrets.FTP_HOST }}
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
-        source: ./output/
-        target: /recipes.codestash.ng
+        local-dir: ./output/
+        server-dir: ${{ secrets.FTP_PATH }}
