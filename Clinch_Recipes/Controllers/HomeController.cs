@@ -1,4 +1,4 @@
-using Clinch_Recipes.Models;
+using Clinch_Recipes.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 

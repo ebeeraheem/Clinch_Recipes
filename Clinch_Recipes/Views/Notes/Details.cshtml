@@ -1,4 +1,6 @@
-﻿@model Note
+﻿@using CodeStash.Application.Utilities
+@using CodeStash.Domain.Entities
+@model Note
 @inject UserHelper UserHelper
 
 @{
@@ -25,8 +27,8 @@
         </div>
         <div class="row">
             <h2 class="my-3">@Model?.Title</h2>
-            <h6 class="note-date" style="display:none;" data-utc-date="@Model?.LastUpdatedDate.ToString("o")"></h6>
-            <span class ="note-date created-date" data-utc-date="@Model?.CreatedDate.ToString("o")"></span>
+            <h6 class="note-date" style="display:none;" data-utc-date="@Model?.ModifiedAt.Value.ToString("o")"></h6>
+            <span class ="note-date created-date" data-utc-date="@Model?.CreatedAt.ToString("o")"></span>
             <div class="noteContent">@Html.Raw(Model?.Content)</div>
         </div>
     </div>

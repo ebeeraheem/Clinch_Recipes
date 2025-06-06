@@ -1,11 +1,12 @@
-﻿@model Note
+﻿@using CodeStash.Domain.Entities
+@model Note
 
-<h1>@(Model.Id == Guid.Empty ? "Write a" : "Update your") secret recipe...</h1>
+<h1>@(string.IsNullOrEmpty(Model.Id) ? "Write a" : "Update your") secret recipe...</h1>
 
 <form asp-action="Upsert" method="post" id="editorForm">
     <input asp-for="@Model.Id" hidden />
     <input type="hidden" id="noteContent" value="@Model.Content" />
-    <input asp-for="@Model.CreatedDate" hidden />
+    <input asp-for="@Model.CreatedAt" hidden />
 
     @* The CKEditor 5 *@
     <div>
@@ -25,7 +26,7 @@
 
     <div class="form-group d-flex col-md-6 mt-2 gap-3">
         <button type="submit" class="btn btn-primary w-50">
-            @(Model.Id == Guid.Empty ? "Create" : "Update") Note
+            @(string.IsNullOrEmpty(Model.Id) ? "Create" : "Update") Note
         </button>
 
         <a class="btn btn-outline-primary w-50" asp-controller="Notes" asp-action="Index">Back To All Notes</a>
