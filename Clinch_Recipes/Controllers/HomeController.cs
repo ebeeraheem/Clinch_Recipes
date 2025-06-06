@@ -1,8 +1,8 @@
-using Clinch_Recipes.ViewModels;
+using CodeStash.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
-namespace Clinch_Recipes.Controllers;
+namespace CodeStash.Controllers;
 public class HomeController(ILogger<HomeController> logger) : Controller
 {
     private readonly ILogger<HomeController> _logger = logger;

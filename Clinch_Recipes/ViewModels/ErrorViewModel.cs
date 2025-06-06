@@ -1,4 +1,4 @@
-namespace Clinch_Recipes.ViewModels;
+namespace CodeStash.ViewModels;
 
 public class ErrorViewModel
 {

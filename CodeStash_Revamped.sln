@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.10.35013.160
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Clinch_Recipes", "Clinch_Recipes\Clinch_Recipes.csproj", "{EEB27A73-29EC-4CE5-8FA0-7FF31BA0B1C2}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeStash", "Clinch_Recipes\CodeStash.csproj", "{EEB27A73-29EC-4CE5-8FA0-7FF31BA0B1C2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CodeStash.Domain", "CodeStash.Domain\CodeStash.Domain.csproj", "{D8798F50-E103-4700-8716-33D1C871C3BF}"
 EndProject

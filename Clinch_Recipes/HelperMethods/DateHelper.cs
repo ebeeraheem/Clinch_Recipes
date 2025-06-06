@@ -1,18 +1,18 @@
-﻿namespace Clinch_Recipes.HelperMethods;
+﻿namespace CodeStash.HelperMethods;
 
 public static class DateHelper
 {
     public static string ToCustomDateString(this DateTime date)
     {
-        string daySuffix = GetDaySuffix(date.Day);
-        string formattedDate = $"{date:dd}{daySuffix} {date:MMM}";
+        var daySuffix = GetDaySuffix(date.Day);
+        var formattedDate = $"{date:dd}{daySuffix} {date:MMM}";
 
         if (date.Year != DateTime.UtcNow.Year)
         {
             formattedDate += date.ToString(", yyyy");
         }
 
-        string formattedTime = date.ToString("hh:mm tt");
+        var formattedTime = date.ToString("hh:mm tt");
         return $"{formattedDate} at {formattedTime}";
     }
 

@@ -1,11 +1,11 @@
-﻿using Clinch_Recipes.ViewModels;
-using CodeStash.Application.Utilities;
+﻿using CodeStash.Application.Utilities;
 using CodeStash.Domain.Entities;
+using CodeStash.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Clinch_Recipes.Controllers;
+namespace CodeStash.Controllers;
 public class AccountController(
     SignInManager<ApplicationUser> signInManager,
     UserHelper userHelper) : Controller
