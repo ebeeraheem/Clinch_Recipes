@@ -1,4 +1,393 @@
 ﻿@using CodeStash.ViewModels
+@model LoginViewModel
+@{
+    ViewData["Title"] = "Login - CodeStash";
+}
+
+<div class="auth-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="auth-card">
+                    <div class="auth-header">
+                        <h1><i class="fas fa-sign-in-alt me-3"></i>Welcome Back</h1>
+                        <p>Sign in to access your CodeStash account and continue coding</p>
+                    </div>
+
+                    <div class="auth-body">
+                        <form asp-action="Login" asp-controller="Account" method="post" id="loginForm" novalidate>
+                            <input asp-for="ReturnUrl" type="hidden" />
+
+                            <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+
+                            <div class="form-group">
+                                <label asp-for="EmailOrUsername" class="form-label"></label>
+                                <input asp-for="EmailOrUsername" for="EmailOrUsername"
+                                       class="form-control"
+                                       placeholder="Enter your email or username"
+                                       autocomplete="on" />
+                                <span asp-validation-for="EmailOrUsername" class="field-validation-error"></span>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Password" class="form-label"></label>
+                                <input asp-for="Password" for="Password"
+                                       class="form-control"
+                                       type="password"
+                                       placeholder="Enter your password"
+                                       autocomplete="current-password" />
+                                <span asp-validation-for="Password" class="field-validation-error"></span>
+                            </div>
+
+                            <div class="form-check">
+                                <input asp-for="RememberMe" for="RememberMe" class="form-check-input" type="checkbox" />
+                                <label asp-for="RememberMe" for="RememberMe" class="form-check-label"></label>
+                            </div>
+
+                            <button type="submit" class="btn-auth">
+                                <span class="loading-spinner"></span>
+                                <span class="btn-text">Sign In</span>
+                            </button>
+                        </form>
+
+                        <div class="auth-links">
+                            <p class="text-muted mb-3">
+                                Don't have an account?
+                                <a asp-action="Register" asp-controller="Account" asp-route-returnUrl="@ViewData["ReturnUrl"]">
+                                    Create one here
+                                </a>
+                            </p>
+                            <p class="text-muted">
+                                <a href="#" id="forgotPasswordLink">Forgot your password?</a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const loginForm = document.getElementById('loginForm');
+        const submitButton = loginForm.querySelector('button[type="submit"]');
+        const loadingSpinner = submitButton.querySelector('.loading-spinner');
+        const buttonText = submitButton.querySelector('.btn-text');
+
+        // Form submission handling
+        loginForm.addEventListener('submit', (e) => {
+            // Show loading state
+            submitButton.disabled = true;
+            loadingSpinner.style.display = 'inline-block';
+            buttonText.textContent = 'Signing In...';
+
+            // Basic client-side validation
+            const emailOrUsername = document.getElementById('EmailOrUsername');
+            const password = document.getElementById('Password');
+
+            let isValid = true;
+
+            // Clear previous errors
+            clearFieldError(emailOrUsername);
+            clearFieldError(password);
+
+            // Validate email/username
+            if (!emailOrUsername.value.trim()) {
+                showFieldError(emailOrUsername, 'Email or Username is required');
+                isValid = false;
+            }
+
+            // Validate password
+            if (!password.value.trim()) {
+                showFieldError(password, 'Password is required');
+                isValid = false;
+            }
+
+            if (!isValid) {
+                e.preventDefault();
+                resetSubmitButton();
+                return false;
+            }
+        });
+
+        // Real-time validation
+        const inputs = loginForm.querySelectorAll('input[type="text"], input[type="email"], input[type="password"]');
+        inputs.forEach(input => {
+            input.addEventListener('blur', () => validateField(input));
+            input.addEventListener('input', () => {
+                if (input.classList.contains('error')) {
+                    clearFieldError(input);
+                }
+            });
+        });
+
+        // Forgot password link
+        document.getElementById('forgotPasswordLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            alert('Password reset functionality will be implemented soon!');
+        });
+
+        function validateField(field) {
+            const value = field.value.trim();
+
+            switch (field.id) {
+                case 'EmailOrUsername':
+                    if (!value) {
+                        showFieldError(field, 'Email or Username is required');
+                        return false;
+                    }
+                    break;
+
+                case 'Password':
+                    if (!value) {
+                        showFieldError(field, 'Password is required');
+                        return false;
+                    }
+                    break;
+            }
+
+            clearFieldError(field);
+            return true;
+        }
+
+        function showFieldError(field, message) {
+            field.classList.add('error');
+            field.style.borderColor = '#dc3545';
+
+            let errorSpan = field.parentNode.querySelector('.field-validation-error');
+            if (errorSpan) {
+                errorSpan.textContent = message;
+                errorSpan.style.display = 'block';
+            }
+        }
+
+        function clearFieldError(field) {
+            field.classList.remove('error');
+            field.style.borderColor = '';
+
+            let errorSpan = field.parentNode.querySelector('.field-validation-error');
+            if (errorSpan) {
+                errorSpan.textContent = '';
+                errorSpan.style.display = 'none';
+            }
+        }
+
+        function resetSubmitButton() {
+            submitButton.disabled = false;
+            loadingSpinner.style.display = 'none';
+            buttonText.textContent = 'Sign In';
+        }
+    });
+</script>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+}
+
+<style>
+    .auth-container {
+        min-height: calc(100vh - 76px);
+        background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+        display: flex;
+        align-items: center;
+        padding: 2rem 0;
+    }
+
+    .auth-card {
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-primary);
+        border-radius: 12px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+        overflow: hidden;
+        max-width: 900px;
+        width: 100%;
+    }
+
+    .auth-header {
+        background: linear-gradient(135deg, var(--accent-secondary) 0%, var(--accent-primary) 100%);
+        color: white;
+        text-align: center;
+        padding: 3rem 2rem;
+    }
+
+        .auth-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+    .auth-body {
+        padding: 3rem;
+    }
+
+    .form-group {
+        margin-bottom: 2rem;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+        display: block;
+        font-size: 1rem;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 1rem 1.25rem;
+        background: var(--bg-primary);
+        border: 2px solid var(--border-primary);
+        border-radius: 8px;
+        color: var(--text-primary);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+        .form-control:focus {
+            color: var(--text-primary);
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+            background: var(--bg-secondary);
+        }
+
+        .form-control::placeholder {
+            color: var(--text-secondary);
+        }
+
+    .form-check {
+        display: flex;
+        align-items: center;
+        margin-bottom: 2rem;
+    }
+
+    .form-check-input {
+        width: 1.25rem;
+        height: 1.25rem;
+        margin-right: 0.75rem;
+        accent-color: var(--accent-primary);
+    }
+
+    .form-check-label {
+        color: var(--text-primary);
+        font-size: 1rem;
+        cursor: pointer;
+    }
+
+    .btn-auth {
+        width: 100%;
+        padding: 1rem 2rem;
+        background: linear-gradient(135deg, var(--accent-secondary) 0%, var(--accent-primary) 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        margin-bottom: 1.5rem;
+    }
+
+        .btn-auth:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(88, 166, 255, 0.3);
+        }
+
+        .btn-auth:active {
+            transform: translateY(0);
+        }
+
+        .btn-auth:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+    .auth-links {
+        text-align: center;
+        padding-top: 2rem;
+        border-top: 1px solid var(--border-primary);
+    }
+
+        .auth-links a {
+            color: var(--accent-primary);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.2s ease;
+        }
+
+            .auth-links a:hover {
+                color: var(--accent-secondary);
+                text-decoration: underline;
+            }
+
+    .field-validation-error {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        display: block;
+    }
+
+    .validation-summary-errors {
+        background: rgba(220, 53, 69, 0.1);
+        border: 1px solid rgba(220, 53, 69, 0.3);
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 2rem;
+    }
+
+        .validation-summary-errors ul {
+            margin: 0;
+            padding-left: 1.5rem;
+            color: #dc3545;
+        }
+
+    .loading-spinner {
+        display: none;
+        width: 20px;
+        height: 20px;
+        border: 2px solid transparent;
+        border-top: 2px solid currentColor;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin-right: 0.5rem;
+    }
+
+    @@keyframes spin {
+        0% {
+            transform: rotate(0deg);
+        }
+
+        100% {
+            transform: rotate(360deg);
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .auth-body {
+            padding: 2rem;
+        }
+
+        .auth-header {
+            padding: 2rem 1.5rem;
+        }
+
+            .auth-header h1 {
+                font-size: 2rem;
+            }
+    }
+</style>
+
+
+@* @using CodeStash.ViewModels
 @model LoginModel
 
  @{
@@ -197,3 +586,4 @@
             width: auto;
         }
 </style>
+ *@

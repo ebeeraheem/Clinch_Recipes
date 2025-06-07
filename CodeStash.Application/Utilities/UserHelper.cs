@@ -19,6 +19,13 @@ public class UserHelper(IHttpContextAccessor httpContextAccessor)
             ?? throw new InvalidOperationException("User email not found in claims.");
     }
 
+    public string GetUserName()
+    {
+        return httpContextAccessor.HttpContext?.User
+            .FindFirst(ClaimTypes.Name)?.Value
+            ?? throw new InvalidOperationException("User name not found in claims.");
+    }
+
     public string GetUserRole()
     {
         return httpContextAccessor.HttpContext?.User

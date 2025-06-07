@@ -77,22 +77,29 @@
                         {
                             <div class="dropdown">
                                 <button class="btn btn-dark dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
-                                    <i class="fas fa-user-circle me-1"></i> Username
+                                    <i class="fas fa-user-circle me-1"></i> @UserHelper.GetUserName()
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark">
                                     <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i> Profile</a></li>
                                     <li><a class="dropdown-item" href="/my-notes"><i class="fas fa-sticky-note me-2"></i> My Notes</a></li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="/logout"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                                    <li>
+                                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
+                                            <button type="submit" class="dropdown-item" style="background:none; border:none; padding:0.25rem 1rem; width:100%; text-align:left;">
+                                                <i class="fas fa-sign-out-alt me-2"></i> Logout
+                                            </button>
+                                        </form>
+                                    </li>
+
                                 </ul>
                             </div>
                         }
                         else
                         {
-                            <a href="/login" class="btn btn-outline-primary me-2">
+                            <a asp-controller="Account" asp-action="Login" class="btn btn-outline-primary me-2">
                                 <i class="fas fa-sign-in-alt me-1"></i> Login
                             </a>
-                            <a href="/register" class="btn btn-primary">
+                            <a asp-controller="Account" asp-action="Register" class="btn btn-primary">
                                 <i class="fas fa-user-plus me-1"></i> Sign Up
                             </a>
                         }
@@ -103,10 +110,37 @@
     </header>
 
     <main role="main" class="main-content">
+        @if (TempData["SuccessMessage"] != null)
+        {
+            <div class="alert alert-success alert-dismissible fade show m-3" role="alert" style="background: rgba(40, 167, 69, 0.1); border: 1px solid rgba(40, 167, 69, 0.3); color: #28a745;">
+                <i class="fas fa-check-circle me-2"></i>
+                @TempData["SuccessMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @if (TempData["ErrorMessage"] != null)
+        {
+            <div class="alert alert-danger alert-dismissible fade show m-3" role="alert">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                @TempData["ErrorMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
+        @if (TempData["InfoMessage"] != null)
+        {
+            <div class="alert alert-info alert-dismissible fade show m-3" role="alert" style="background: rgba(88, 166, 255, 0.1); border: 1px solid rgba(88, 166, 255, 0.3); color: var(--accent-primary);">
+                <i class="fas fa-info-circle me-2"></i>
+                @TempData["InfoMessage"]
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        }
+
         @RenderBody()
     </main>
 
-    <footer class="footer bg-dark-custom border-top border-secondary mt-5">
+    <footer class="footer bg-dark-custom border-top border-secondary">
         <div class="container py-4">
             <div class="row">
                 <div class="col-md-6">
