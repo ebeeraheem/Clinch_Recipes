@@ -11,5 +11,5 @@ public class CreateNoteRequest
 
     public bool IsPrivate { get; set; } = false;
 
-    public List<string> TagIds { get; set; } = [];
+    public List<string> Tags { get; set; } = [];
 }

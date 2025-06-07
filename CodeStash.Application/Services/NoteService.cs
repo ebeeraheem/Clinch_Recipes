@@ -15,15 +15,27 @@ public class NoteService(
 
         var userId = userHelper.GetUserId();
 
-        // Validate tags
-        var tags = await context.Tags
-            .Where(t => request.TagIds.Contains(t.Id))
-            .ToListAsync();
+        // Get or create tags
+        var resolvedTags = new List<Tag>();
 
-        if (tags.Count != request.TagIds.Count)
+        foreach (var tagInput in request.Tags)
         {
-            logger.LogWarning("Some tags in the request do not exist.");
-            return Result<Note>.Failure(NoteErrors.InvalidTags);
+            // Try to find existing tag
+            var existingTag = await context.Tags
+                .FirstOrDefaultAsync(t => string.Equals(tagInput, t.Name, StringComparison.OrdinalIgnoreCase));
+
+            if (existingTag != null)
+            {
+                resolvedTags.Add(existingTag);
+            }
+            else
+            {
+                // Create new tag if it doesn't exist
+                var newTag = new Tag { Name = tagInput.Trim() };
+
+                await context.Tags.AddAsync(newTag);
+                resolvedTags.Add(newTag);
+            }
         }
 
         // Generate unique slug
@@ -48,7 +60,7 @@ public class NoteService(
             Content = contentHtml,
             Slug = slug,
             IsPrivate = request.IsPrivate,
-            Tags = tags,
+            Tags = resolvedTags,
             AuthorId = userId,
         };
 
@@ -219,7 +231,10 @@ public class NoteService(
     {
         logger.LogInformation("Retrieving notes with parameters: {@Parameters}", parameters);
 
+        var userId = userHelper.GetUserId();
+
         var query = context.Notes
+            .Where(n => !n.IsPrivate || n.AuthorId == userId) // Include private notes only if the user is the author
             .Include(n => n.Tags)
             .AsQueryable();
 

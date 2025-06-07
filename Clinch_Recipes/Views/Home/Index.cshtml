@@ -1,8 +1,470 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@using CodeStash.ViewModels
+@model HomeViewModel
+
+@{
+    ViewData["Title"] = "Home";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="hero-section">
+    <div class="container">
+        <div class="row align-items-center min-vh-50">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold text-white mb-4">
+                    Welcome to <span class="text-primary">CodeStash</span>
+                </h1>
+                <p class="lead text-light mb-4">
+                    Discover, share, and organize code snippets from developers around the world.
+                    Your personal code library, now open to everyone.
+                </p>
+                <div class="d-flex gap-3">
+                    <a href="/browse" class="btn btn-primary btn-lg">
+                        <i class="fas fa-search me-2"></i> Browse Snippets
+                    </a>
+                    <a href="/create" class="btn btn-outline-light btn-lg">
+                        <i class="fas fa-plus me-2"></i> Share Code
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6">
+                <div class="code-preview">
+                    <div class="card bg-darker border-secondary">
+                        <div class="card-header bg-dark border-secondary d-flex align-items-center">
+                            <div class="window-controls me-3">
+                                <span class="dot dot-red"></span>
+                                <span class="dot dot-yellow"></span>
+                                <span class="dot dot-green"></span>
+                            </div>
+                            <small class="text-muted">welcome.js</small>
+                        </div>
+                        <div class="card-body">
+                            <pre><code class="language-javascript">function welcome() {
+  const message = "Hello, CodeStash!";
+  console.log(message);
+
+  return {
+    community: "awesome",
+    snippets: "infinite",
+    learning: "continuous"
+  };
+}</code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<!-- Search and Filter Section -->
+<div class="search-section py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="card bg-darker border-secondary">
+                    <div class="card-body p-4">
+                        <form id="searchForm">
+                            <div class="row g-3 align-items-end">
+                                <div class="col-md-4">
+                                    <label class="form-label text-light">
+                                        <i class="fas fa-search me-1"></i> Search
+                                    </label>
+                                    <input type="text" class="form-control form-control-dark"
+                                           id="searchQuery" placeholder="Search code snippets..."
+                                           value="@Model.SearchFilter.Query">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label text-light">
+                                        <i class="fas fa-code me-1"></i> Language
+                                    </label>
+                                    <select class="form-select form-select-dark" id="languageFilter">
+                                        <option value="">All Languages</option>
+                                        @foreach (var lang in Model.SearchFilter.AvailableLanguages)
+                                        {
+                                            <option value="@lang">@lang</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label text-light">
+                                        <i class="fas fa-tags me-1"></i> Tag
+                                    </label>
+                                    <select class="form-select form-select-dark" id="tagFilter">
+                                        <option value="">All Tags</option>
+                                        @foreach (var tag in Model.SearchFilter.AvailableTags)
+                                        {
+                                            <option value="@tag.Name">@tag.Name</option>
+                                        }
+                                    </select>
+                                </div>
+                                <div class="col-md-2">
+                                    <button type="button" class="btn btn-primary w-100" id="searchBtn">
+                                        <i class="fas fa-search"></i> Search
+                                    </button>
+                                </div>
+                            </div>
+                            @* <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="sortBy"
+                                               id="sortNewest" value="newest" checked>
+                                        <label class="form-check-label text-light" for="sortNewest">
+                                            <i class="fas fa-clock me-1"></i> Newest
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="sortBy"
+                                               id="sortPopular" value="popular">
+                                        <label class="form-check-label text-light" for="sortPopular">
+                                            <i class="fas fa-fire me-1"></i> Popular
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-check-inline">
+                                        <input class="form-check-input" type="radio" name="sortBy"
+                                               id="sortViews" value="views">
+                                        <label class="form-check-label text-light" for="sortViews">
+                                            <i class="fas fa-eye me-1"></i> Most Viewed
+                                        </label>
+                                    </div>
+                                </div>
+                            </div> *@
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Featured Sections -->
+<div class="featured-sections py-5">
+    <div class="container">
+        <!-- New Snippets -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2 class="section-title text-white mb-4">
+                    <i class="fas fa-clock text-primary me-2"></i> Latest Snippets
+                </h2>
+                <div class="snippet-list">
+                    @foreach (var note in Model.NewNotes)
+                    {
+                        <div class="snippet-item mb-4">
+                            <div class="card bg-darker border-secondary snippet-card">
+                                <div class="card-body p-4">
+                                    <div class="row align-items-center">
+                                        <div class="col-lg-8">
+                                            <h3 class="snippet-title mb-2">
+                                                <a href="/notes/@note.Slug" class="text-decoration-none text-white">
+                                                    @note.Title
+                                                </a>
+                                            </h3>
+                                            <div class="snippet-tags mb-2">
+                                                @foreach (var tag in note.Tags.Take(4))
+                                                {
+                                                    <span class="badge bg-primary me-2">@tag.Name</span>
+                                                }
+                                                @if (note.Tags.Count > 4)
+                                                {
+                                                    <span class="badge bg-secondary">+@(note.Tags.Count - 4) more</span>
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-4 text-lg-end">
+                                            <div class="snippet-meta text-muted">
+                                                <div class="mb-1">
+                                                    <i class="fas fa-user me-1"></i>
+                                                    <span class="author-name">@note.Author.UserName</span>
+                                                </div>
+                                                <div class="mb-1">
+                                                    <i class="fas fa-eye me-1"></i>
+                                                    <span class="view-count">@note.ViewCount views</span>
+                                                </div>
+                                                <div class="snippet-date">
+                                                    <i class="fas fa-clock me-1"></i>
+                                                    @note.CreatedAt.ToString("MMM dd, yyyy")
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Popular Snippets -->
+        <div class="row mb-5">
+            <div class="col-12">
+                <h2 class="section-title text-white mb-4">
+                    <i class="fas fa-fire text-primary me-2"></i> Popular This Week
+                </h2>
+                <div class="snippet-list">
+                    @foreach (var note in Model.PopularNotes)
+                    {
+                        <div class="snippet-item mb-4">
+                            <div class="card bg-darker border-secondary snippet-card popular-snippet">
+                                <div class="card-body p-4">
+                                    <div class="row align-items-center">
+                                        <div class="col-lg-8">
+                                            <div class="d-flex align-items-center mb-2">
+                                                <div class="popularity-flame me-3">
+                                                    <i class="fas fa-fire text-warning"></i>
+                                                </div>
+                                                <h3 class="snippet-title mb-0">
+                                                    <a href="/notes/@note.Slug" class="text-decoration-none text-white">
+                                                        @note.Title
+                                                    </a>
+                                                </h3>
+                                            </div>
+                                            <div class="snippet-tags mb-2">
+                                                @foreach (var tag in note.Tags.Take(4))
+                                                {
+                                                    <span class="badge bg-primary me-2">@tag.Name</span>
+                                                }
+                                                @if (note.Tags.Count > 4)
+                                                {
+                                                    <span class="badge bg-secondary">+@(note.Tags.Count - 4) more</span>
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-4 text-lg-end">
+                                            <div class="snippet-meta text-muted">
+                                                <div class="mb-1">
+                                                    <i class="fas fa-user me-1"></i>
+                                                    <span class="author-name">@note.Author.UserName</span>
+                                                </div>
+                                                <div class="mb-1 popular-views">
+                                                    <i class="fas fa-eye me-1"></i>
+                                                    <span class="view-count text-warning fw-bold">@note.ViewCount views</span>
+                                                </div>
+                                                <div class="snippet-date">
+                                                    <i class="fas fa-clock me-1"></i>
+                                                    @note.CreatedAt.ToString("MMM dd, yyyy")
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- All Snippets with Infinite Scroll -->
+        <div class="row">
+            <div class="col-12">
+                <h2 class="section-title text-white mb-4">
+                    <i class="fas fa-list text-primary me-2"></i> All Snippets
+                </h2>
+                <div class="snippet-list" id="notesContainer">
+                    <!-- Notes will be loaded here via JavaScript -->
+                </div>
+                <div class="text-center mt-4">
+                    <div class="spinner-border text-primary d-none" id="loadingSpinner" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <div id="loadMoreContainer">
+                        <button class="btn btn-outline-primary btn-lg" id="loadMoreBtn">
+                            <i class="fas fa-chevron-down me-2"></i> Load More Snippets
+                        </button>
+                    </div>
+                    <div id="resultsInfo" class="text-muted mt-3">
+                        <!-- Results count will be displayed here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Infinite scroll and search functionality
+        let currentPage = 1;
+        let isLoading = false;
+        let hasMore = true;
+        let totalResults = 0;
+        let currentResults = 0;
+
+        function loadNotes(page = 1, append = false) {
+            if (isLoading) return;
+
+            isLoading = true;
+            $('#loadingSpinner').removeClass('d-none');
+            $('#loadMoreBtn').prop('disabled', true);
+
+            const query = $('#searchQuery').val();
+            const language = $('#languageFilter').val();
+            const tag = $('#tagFilter').val();
+            const sortBy = $('input[name="sortBy"]:checked').val();
+
+            $.ajax({
+                url: '/Home/GetNotes',
+                method: 'GET',
+                data: {
+                    query: query,
+                    language: language,
+                    tag: tag,
+                    sortBy: sortBy,
+                    page: page,
+                    pageSize: 20 // Reduced since each item takes more space
+                },
+                success: function(response) {
+                    const notesHtml = response.notes.map(note => createSnippetItem(note)).join('');
+
+                    if (append) {
+                        $('#notesContainer').append(notesHtml);
+                        currentResults += response.notes.length;
+                    } else {
+                        $('#notesContainer').html(notesHtml);
+                        currentPage = 1;
+                        currentResults = response.notes.length;
+                        totalResults = currentResults;
+                    }
+
+                    hasMore = response.hasMore;
+                    currentPage = response.page;
+
+                    updateResultsInfo();
+
+                    if (!hasMore) {
+                        $('#loadMoreContainer').html('<p class="text-muted">No more snippets to load.</p>');
+                    } else {
+                        $('#loadMoreContainer').html('<button class="btn btn-outline-primary btn-lg" id="loadMoreBtn"><i class="fas fa-chevron-down me-2"></i> Load More Snippets</button>');
+                    }
+                },
+                error: function() {
+                    console.error('Failed to load notes');
+                    $('#notesContainer').html('<div class="alert alert-danger">Failed to load snippets. Please try again.</div>');
+                },
+                complete: function() {
+                    isLoading = false;
+                    $('#loadingSpinner').addClass('d-none');
+                    $('#loadMoreBtn').prop('disabled', false);
+                }
+            });
+        }
+
+        function createSnippetItem(note) {
+            const tagsHtml = note.tags.slice(0, 4).map(tag =>
+                `<span class="badge bg-primary me-2">${tag.name}</span>`
+            ).join('');
+
+            const extraTagsHtml = note.tags.length > 4
+                ? `<span class="badge bg-secondary">+${note.tags.length - 4} more</span>`
+                : '';
+
+            const createdDate = new Date(note.createdAt).toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            });
+
+            return `
+                <div class="snippet-item mb-4">
+                    <div class="card bg-darker border-secondary snippet-card">
+                        <div class="card-body p-4">
+                            <div class="row align-items-center">
+                                <div class="col-lg-8">
+                                    <h3 class="snippet-title mb-2">
+                                        <a href="/notes/${note.slug}" class="text-decoration-none text-white">
+                                            ${note.title}
+                                        </a>
+                                    </h3>
+                                    <div class="snippet-tags mb-2">
+                                        ${tagsHtml}
+                                        ${extraTagsHtml}
+                                    </div>
+                                </div>
+                                <div class="col-lg-4 text-lg-end">
+                                    <div class="snippet-meta text-muted">
+                                        <div class="mb-1">
+                                            <i class="fas fa-user me-1"></i>
+                                            <span class="author-name">${note.author.userName}</span>
+                                        </div>
+                                        <div class="mb-1">
+                                            <i class="fas fa-eye me-1"></i>
+                                            <span class="view-count">${note.viewCount} views</span>
+                                        </div>
+                                        <div class="snippet-date">
+                                            <i class="fas fa-clock me-1"></i>
+                                            ${createdDate}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateResultsInfo() {
+            const searchQuery = $('#searchQuery').val();
+            const language = $('#languageFilter').val();
+            const tag = $('#tagFilter').val();
+
+            let infoText = `Showing ${currentResults} snippets`;
+
+            if (searchQuery || language || tag) {
+                infoText += ' matching your filters';
+            }
+
+            $('#resultsInfo').text(infoText);
+        }
+
+        // Event handlers
+        $('#searchBtn').click(function() {
+            loadNotes(1, false);
+        });
+
+        $(document).on('click', '#loadMoreBtn', function() {
+            if (hasMore) {
+                loadNotes(currentPage + 1, true);
+            }
+        });
+
+        $('input[name="sortBy"]').change(function() {
+            loadNotes(1, false);
+        });
+
+        $('#languageFilter, #tagFilter').change(function() {
+            loadNotes(1, false);
+        });
+
+        // Load initial notes
+        $(document).ready(function() {
+            loadNotes(1, false);
+        });
+
+        // Auto-search on Enter key
+        $('#searchQuery').keypress(function(e) {
+            if (e.which == 13) {
+                loadNotes(1, false);
+            }
+        });
+
+        // Debounced search as user types
+        let searchTimeout;
+        $('#searchQuery').on('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(function() {
+                if ($('#searchQuery').val().length >= 3 || $('#searchQuery').val().length === 0) {
+                    loadNotes(1, false);
+                }
+            }, 500);
+        });
+
+        // Smooth scroll to top of results when searching
+        $('#searchBtn').click(function() {
+            setTimeout(function() {
+                $('html, body').animate({
+                    scrollTop: $('#notesContainer').offset().top - 100
+                }, 500);
+            }, 100);
+        });
+    </script>
+}

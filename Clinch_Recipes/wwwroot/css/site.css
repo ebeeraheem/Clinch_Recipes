@@ -1,4 +1,780 @@
-@media (min-width: 768px) {
+/* Dark Theme Variables */
+:root {
+    --bg-primary: #0d1117;
+    --bg-secondary: #161b22;
+    --bg-tertiary: #21262d;
+    --text-primary: #f0f6fc;
+    --text-secondary: #8b949e;
+    --border-primary: #30363d;
+    --accent-primary: #58a6ff;
+    --accent-secondary: #1f6feb;
+}
+
+/* Base Styles */
+body {
+    background-color: var(--bg-primary);
+    color: var(--text-primary);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Custom Background Classes */
+.bg-dark-custom {
+    background-color: var(--bg-secondary) !important;
+}
+
+.bg-darker {
+    background-color: var(--bg-tertiary) !important;
+}
+
+/* Main Content */
+.main-content {
+    padding-top: 76px; /* Account for fixed navbar */
+    min-height: calc(100vh - 76px);
+}
+
+/* Hero Section */
+.hero-section {
+    background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+    padding: 4rem 0;
+}
+
+.min-vh-50 {
+    min-height: 50vh;
+}
+
+/* Code Preview */
+.code-preview {
+    animation: float 6s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0px);
+    }
+
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.window-controls {
+    display: flex;
+    gap: 5px;
+}
+
+.dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    display: inline-block;
+}
+
+.dot-red {
+    background-color: #ff5f57;
+}
+
+.dot-yellow {
+    background-color: #ffbd2e;
+}
+
+.dot-green {
+    background-color: #28ca42;
+}
+
+/* Form Controls */
+.form-control-dark,
+.form-select-dark {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-primary);
+    color: var(--text-primary);
+}
+
+    .form-control-dark:focus,
+    .form-select-dark:focus {
+        background-color: var(--bg-tertiary);
+        border-color: var(--accent-primary);
+        color: var(--text-primary);
+        box-shadow: 0 0 0 0.2rem rgba(88, 166, 255, 0.25);
+    }
+
+    .form-control-dark::placeholder {
+        color: var(--text-secondary);
+    }
+
+/* Cards */
+.note-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid var(--border-primary);
+}
+
+    .note-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+        border-color: var(--accent-secondary);
+    }
+
+/* Code Snippets */
+.code-snippet {
+    background-color: var(--bg-primary);
+    border-radius: 6px;
+    padding: 1rem;
+    border: 1px solid var(--border-primary);
+}
+
+    .code-snippet pre {
+        margin: 0;
+        font-size: 0.875rem;
+        line-height: 1.4;
+    }
+
+    .code-snippet code {
+        color: var(--text-primary);
+        background: transparent;
+    }
+
+/* Badges and Tags */
+.badge.bg-primary {
+    background-color: var(--accent-secondary) !important;
+}
+
+/* Buttons */
+.btn-primary {
+    background-color: var(--accent-secondary);
+    border-color: var(--accent-secondary);
+}
+
+    .btn-primary:hover {
+        background-color: var(--accent-primary);
+        border-color: var(--accent-primary);
+    }
+
+.btn-outline-primary {
+    color: var(--accent-primary);
+    border-color: var(--accent-primary);
+}
+
+    .btn-outline-primary:hover {
+        background-color: var(--accent-primary);
+        border-color: var(--accent-primary);
+    }
+
+.btn-outline-light {
+    color: var(--text-primary);
+    border-color: var(--text-primary);
+}
+
+    .btn-outline-light:hover {
+        background-color: var(--text-primary);
+        color: var(--bg-primary);
+    }
+
+/* Section Titles */
+.section-title {
+    font-weight: 600;
+    margin-bottom: 2rem;
+}
+
+/* Search Section */
+.search-section {
+    background-color: var(--bg-secondary);
+}
+
+/* Form Checks */
+.form-check-input:checked {
+    background-color: var(--accent-secondary);
+    border-color: var(--accent-secondary);
+}
+
+.form-check-input:focus {
+    box-shadow: 0 0 0 0.2rem rgba(88, 166, 255, 0.25);
+}
+
+/* Footer */
+.footer {
+    background-color: var(--bg-secondary);
+    border-top: 1px solid var(--border-primary);
+}
+
+.social-links a {
+    font-size: 1.2rem;
+    transition: color 0.2s ease;
+}
+
+    .social-links a:hover {
+        color: var(--accent-primary) !important;
+    }
+
+/* Navbar */
+.navbar-dark .navbar-nav .nav-link {
+    color: var(--text-primary);
+}
+
+    .navbar-dark .navbar-nav .nav-link:hover {
+        color: var(--accent-primary);
+    }
+
+.navbar-brand {
+    color: var(--text-primary) !important;
+}
+
+/* Dropdown */
+.dropdown-menu-dark {
+    background-color: var(--bg-tertiary);
+    border-color: var(--border-primary);
+}
+
+    .dropdown-menu-dark .dropdown-item {
+        color: var(--text-primary);
+    }
+
+        .dropdown-menu-dark .dropdown-item:hover {
+            background-color: var(--bg-primary);
+            color: var(--accent-primary);
+        }
+
+.dropdown-divider {
+    border-color: var(--border-primary);
+}
+
+/* Loading States */
+.spinner-border.text-primary {
+    color: var(--accent-primary) !important;
+}
+
+/* Note Meta */
+.note-meta {
+    font-size: 0.875rem;
+}
+
+.popularity-badge {
+    display: flex;
+    align-items: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .hero-section {
+        padding: 2rem 0;
+    }
+
+        .hero-section h1 {
+            font-size: 2rem;
+        }
+
+    .code-preview {
+        margin-top: 2rem;
+    }
+
+    .search-section .row.g-3 > div {
+        margin-bottom: 1rem;
+    }
+}
+
+/* Prism.js Overrides for Dark Theme */
+pre[class*="language-"] {
+    background: var(--bg-primary) !important;
+    border: 1px solid var(--border-primary);
+}
+
+code[class*="language-"] {
+    color: var(--text-primary) !important;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--border-primary);
+    border-radius: 4px;
+}
+
+    ::-webkit-scrollbar-thumb:hover {
+        background: var(--text-secondary);
+    }
+
+/* ... (previous CSS remains the same) ... */
+
+/* Compact Note Cards */
+.note-card {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    border: 1px solid var(--border-primary);
+    min-height: 200px;
+}
+
+    .note-card:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        border-color: var(--accent-secondary);
+    }
+
+    .note-card .card-title a:hover {
+        color: var(--accent-primary) !important;
+        transition: color 0.2s ease;
+    }
+
+/* Line clamp for titles */
+.line-clamp-2 {
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    line-height: 1.4;
+    max-height: 2.8em;
+}
+
+/* Popular note styling */
+.popular-note {
+    position: relative;
+    background: linear-gradient(135deg, var(--bg-tertiary) 0%, rgba(255, 193, 7, 0.05) 100%);
+}
+
+.popularity-indicator {
+    font-size: 1.2rem;
+    animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* Badge improvements */
+.badge.bg-secondary {
+    background-color: var(--text-secondary) !important;
+    color: var(--bg-primary) !important;
+}
+
+.badge.bg-warning {
+    background-color: #ffc107 !important;
+    color: #000 !important;
+    font-weight: 600;
+}
+
+/* Results info */
+#resultsInfo {
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+/* Improved responsive grid */
+@media (max-width: 1200px) {
+    .col-lg-3 {
+        flex: 0 0 25%;
+        max-width: 25%;
+    }
+}
+
+@media (max-width: 992px) {
+    .col-md-4 {
+        flex: 0 0 33.333333%;
+        max-width: 33.333333%;
+    }
+}
+
+@media (max-width: 768px) {
+    .col-sm-6 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+
+    .note-card {
+        min-height: 180px;
+    }
+}
+
+@media (max-width: 576px) {
+    .col-sm-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+
+/* Enhanced loading states */
+.spinner-border.text-primary {
+    width: 2rem;
+    height: 2rem;
+}
+
+/* Alert styling for errors */
+.alert-danger {
+    background-color: rgba(220, 53, 69, 0.1);
+    border-color: rgba(220, 53, 69, 0.3);
+    color: #f8d7da;
+}
+
+/* Hover effects for interactive elements */
+.form-select-dark:hover,
+.form-control-dark:hover {
+    border-color: var(--accent-primary);
+    transition: border-color 0.2s ease;
+}
+
+/* Search section enhancements */
+.search-section .card {
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+}
+
+/* Typography improvements */
+.section-title {
+    font-weight: 600;
+    margin-bottom: 2rem;
+    position: relative;
+}
+
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -8px;
+        left: 0;
+        width: 50px;
+        height: 3px;
+        background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+        border-radius: 2px;
+    }
+
+/* Note meta improvements */
+.note-meta {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+}
+
+.note-date {
+    font-size: 0.85rem;
+    color: var(--text-secondary);
+    font-weight: 500;
+}
+
+/* Tag display improvements */
+.tags {
+    min-height: 32px;
+    display: flex;
+    align-items: flex-start;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+    .tags .badge {
+        font-size: 0.75rem;
+        padding: 0.35em 0.65em;
+    }
+
+/* ... (previous CSS remains the same) ... */
+
+/* Large Title Snippet Cards */
+.snippet-list {
+    max-width: 100%;
+}
+
+.snippet-item {
+    transition: transform 0.2s ease;
+}
+
+.snippet-card {
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-primary);
+    background: var(--bg-tertiary);
+}
+
+    .snippet-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+        border-color: var(--accent-secondary);
+        background: linear-gradient(135deg, var(--bg-tertiary) 0%, rgba(88, 166, 255, 0.03) 100%);
+    }
+
+/* Large, Readable Titles */
+.snippet-title {
+    font-size: 1.75rem;
+    font-weight: 600;
+    line-height: 1.3;
+    margin-bottom: 0.75rem;
+    color: var(--text-primary);
+}
+
+    .snippet-title a {
+        color: inherit;
+        transition: color 0.2s ease;
+    }
+
+        .snippet-title a:hover {
+            color: var(--accent-primary);
+            text-shadow: 0 0 8px rgba(88, 166, 255, 0.3);
+        }
+
+/* Popular snippet special styling */
+.popular-snippet {
+    border-left: 4px solid var(--accent-primary);
+    background: linear-gradient(135deg, var(--bg-tertiary) 0%, rgba(255, 193, 7, 0.05) 100%);
+}
+
+    .popular-snippet:hover {
+        border-left-color: #ffc107;
+    }
+
+.popularity-flame {
+    font-size: 1.5rem;
+    animation: flicker 2s infinite alternate;
+}
+
+@keyframes flicker {
+    0%, 100% {
+        opacity: 1;
+        transform: scale(1);
+    }
+
+    50% {
+        opacity: 0.8;
+        transform: scale(1.1);
+    }
+}
+
+/* Enhanced Tags Display */
+.snippet-tags {
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+    .snippet-tags .badge {
+        font-size: 0.875rem;
+        padding: 0.5em 0.875em;
+        font-weight: 500;
+        border-radius: 20px;
+    }
+
+        .snippet-tags .badge.bg-primary {
+            background: linear-gradient(45deg, var(--accent-secondary), var(--accent-primary)) !important;
+            border: none;
+        }
+
+        .snippet-tags .badge.bg-secondary {
+            background-color: var(--text-secondary) !important;
+            color: var(--bg-primary) !important;
+            font-weight: 600;
+        }
+
+/* Meta Information Styling */
+.snippet-meta {
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+    .snippet-meta .author-name {
+        font-weight: 600;
+        color: var(--accent-primary);
+    }
+
+    .snippet-meta .view-count {
+        font-weight: 500;
+    }
+
+    .snippet-meta .snippet-date {
+        font-style: italic;
+    }
+
+.popular-views .view-count {
+    color: #ffc107 !important;
+    font-weight: 700 !important;
+    font-size: 1.1rem;
+}
+
+/* Section Title Enhancements */
+.section-title {
+    font-size: 2.25rem;
+    font-weight: 700;
+    margin-bottom: 2.5rem;
+    position: relative;
+    color: var(--text-primary);
+}
+
+    .section-title::after {
+        content: '';
+        position: absolute;
+        bottom: -12px;
+        left: 0;
+        width: 80px;
+        height: 4px;
+        background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+        border-radius: 2px;
+    }
+
+    .section-title i {
+        margin-right: 0.75rem;
+    }
+
+/* Enhanced Button Styling */
+#loadMoreBtn {
+    padding: 0.875rem 2rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-width: 2px;
+    transition: all 0.3s ease;
+}
+
+    #loadMoreBtn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(88, 166, 255, 0.3);
+    }
+
+/* Results Info Enhancement */
+#resultsInfo {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+}
+
+/* Responsive Design for Large Titles */
+@media (max-width: 992px) {
+    .snippet-title {
+        font-size: 1.5rem;
+    }
+
+    .section-title {
+        font-size: 2rem;
+    }
+
+    .snippet-meta {
+        margin-top: 1rem;
+        text-align: left !important;
+    }
+
+    .col-lg-4.text-lg-end {
+        text-align: left !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .snippet-title {
+        font-size: 1.35rem;
+        margin-bottom: 1rem;
+    }
+
+    .section-title {
+        font-size: 1.75rem;
+        margin-bottom: 2rem;
+    }
+
+    .snippet-card .card-body {
+        padding: 2rem !important;
+    }
+
+    .snippet-meta {
+        font-size: 0.95rem;
+    }
+
+    .popularity-flame {
+        font-size: 1.25rem;
+        margin-right: 0.75rem !important;
+    }
+}
+
+@media (max-width: 576px) {
+    .snippet-title {
+        font-size: 1.25rem;
+    }
+
+    .section-title {
+        font-size: 1.5rem;
+    }
+
+    .snippet-card .card-body {
+        padding: 1.5rem !important;
+    }
+
+    .snippet-tags .badge {
+        font-size: 0.8rem;
+        margin-bottom: 0.25rem;
+    }
+}
+
+/* Enhanced Loading State */
+.spinner-border.text-primary {
+    width: 3rem;
+    height: 3rem;
+    border-width: 0.3em;
+}
+
+/* Alert Styling */
+.alert-danger {
+    background-color: rgba(220, 53, 69, 0.1);
+    border: 1px solid rgba(220, 53, 69, 0.3);
+    color: #f8d7da;
+    font-size: 1.1rem;
+    padding: 1.5rem;
+    border-radius: 8px;
+}
+
+/* Search Section Enhancement */
+.search-section .card {
+    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.4);
+    border: 1px solid var(--border-primary);
+}
+
+/* Accessibility Improvements */
+.snippet-title a:focus {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+}
+
+.snippet-card:focus-within {
+    transform: translateY(-2px);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+    border-color: var(--accent-primary);
+}
+
+/* Smooth Scrolling */
+html {
+    scroll-behavior: smooth;
+}
+
+/* Enhanced Hover Effects */
+.snippet-item:hover .author-name {
+    color: var(--accent-primary);
+    transition: color 0.2s ease;
+}
+
+.snippet-item:hover .badge.bg-primary {
+    transition: transform 0.2s ease;
+}
+
+/* Custom Scrollbar for Better UX */
+.snippet-list {
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-primary) var(--bg-secondary);
+}
+
+    .snippet-list::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .snippet-list::-webkit-scrollbar-track {
+        background: var(--bg-secondary);
+    }
+
+    .snippet-list::-webkit-scrollbar-thumb {
+        background: var(--border-primary);
+        border-radius: 3px;
+    }
+
+        .snippet-list::-webkit-scrollbar-thumb:hover {
+            background: var(--text-secondary);
+        }
+
+
+/*@media (min-width: 768px) {
   html {
     font-size: 16px;
   }
@@ -12,25 +788,25 @@ html {
     font-size: 14px;
     position: relative;
     min-height: 100%;
-}
+}*/
 
 /* Style for the title of the create view form */
-.h1-sized-input {
+/*.h1-sized-input {
     font-size: 2em;
     padding: 0.25em;
     line-height: 1.2em;
-}
+}*/
 
 /* General styles for the site */
-body {
+/*body {
     background-color: #02182b;
     color: #edf7f6;
     padding: clamp(15px, 2vw, 20px);
     margin: 0 0 60px 0;
     min-height: 100vh;
-}
+}*/
 /* Custom styles for the details view */
-.noteContent {
+/*.noteContent {
     line-height: 1.67;
     margin-top: 1rem;
     background-color: #b5f8fe14;
@@ -70,9 +846,9 @@ body {
 
 code{
     font-size: 0.85em;
-}
+}*/
 
 /* Editor container styles*/
-.editor-container__editor{
+/*.editor-container__editor{
     color: initial;
-}
+}*/
