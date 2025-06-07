@@ -26,15 +26,18 @@ public class NoteService(
             return Result<Note>.Failure(NoteErrors.InvalidTags);
         }
 
-        // Generate slug
-        var slug = slugHelper.GenerateSlug(request.Title);
-
-        // Check for existing slug
-        if (await context.Notes.AnyAsync(n => n.Slug == slug))
+        // Generate unique slug
+        string slug;
+        try
         {
-            logger.LogWarning("A note with the slug {Slug} already exists.", slug);
+            slug = await GenerateUniqueSlugAsync(request.Title);
+        }
+        catch (InvalidOperationException ex)
+        {
+            logger.LogError(ex, "A unique slug could not be generated for title: {Title}", request.Title);
             return Result<Note>.Failure(NoteErrors.SlugAlreadyExists);
         }
+
 
         // Convert content to Html
         var contentHtml = Markdown.ToHtml(request.Content);
@@ -96,22 +99,12 @@ public class NoteService(
             return Result.Failure(NoteErrors.InvalidTags);
         }
 
-        // Generate slug if title is provided
-        var slug = string.IsNullOrWhiteSpace(request.Title) ? note.Slug : slugHelper.GenerateSlug(request.Title);
-
-        // Check for existing slug
-        if (await context.Notes.AnyAsync(n => n.Slug == slug && n.Id != noteId))
-        {
-            logger.LogWarning("A note with the slug {Slug} already exists.", slug);
-            return Result.Failure(NoteErrors.SlugAlreadyExists);
-        }
-
         // Update properties
         note.Title = string.IsNullOrWhiteSpace(request.Title) ? note.Title : request.Title;
         note.Content = string.IsNullOrWhiteSpace(request.Content) ? note.Content : Markdown.ToHtml(request.Content);
         note.IsPrivate = request.IsPrivate;
         note.Tags = tags;
-        note.Slug = slug;
+        //note.Slug = slug; // Do not update slugs to avoid breaking existing links
 
         context.Notes.Update(note);
         var result = await context.SaveChangesAsync();
@@ -239,4 +232,33 @@ public class NoteService(
         // Paginate
         return await pagedResultService.GetPagedResultAsync(query, parameters.PageNumber, parameters.PageSize);
     }
+
+    // Add this private method to NoteService
+    private async Task<string> GenerateUniqueSlugAsync(string title)
+    {
+        var baseSlug = slugHelper.GenerateSlug(title);
+        var slug = baseSlug;
+        var random = new Random();
+        const string chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+        const int suffixLength = 4;
+        const int maxAttempts = 10;
+        int attempt = 0;
+
+        while (await context.Notes.AnyAsync(n => n.Slug == slug))
+        {
+            if (++attempt > maxAttempts)
+            {
+                throw new InvalidOperationException($"Failed to generate a unique slug for '{title}' after {maxAttempts} attempts.");
+            }
+
+            // Generate a random suffix
+            var suffix = new string(Enumerable.Repeat(chars, suffixLength)
+                .Select(s => s[random.Next(s.Length)]).ToArray());
+
+            slug = $"{baseSlug}-{suffix}";
+        }
+
+        return slug;
+    }
+
 }
