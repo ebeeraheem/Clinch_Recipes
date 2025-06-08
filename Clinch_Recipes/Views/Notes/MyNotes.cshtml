@@ -1,0 +1,672 @@
+﻿@using CodeStash.ViewModels
+@model MyNotesViewModel
+@{
+    ViewData["Title"] = "My Notes - CodeStash";
+}
+
+<div class="notes-header">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-8">
+                <h1 class="text-white mb-2">
+                    <i class="fas fa-sticky-note text-primary me-3"></i>
+                    My Code Snippets
+                </h1>
+                <p class="text-light mb-0">Manage and organize your personal code library</p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <a asp-action="Create" class="btn btn-primary btn-lg">
+                    <i class="fas fa-plus me-2"></i>Create New Note
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <!-- Statistics -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <span class="stat-number">@Model.Stats.TotalNotes</span>
+            <div class="stat-label">Total Notes</div>
+        </div>
+        <div class="stat-card">
+            <span class="stat-number">@Model.Stats.PublicNotes</span>
+            <div class="stat-label">Public Notes</div>
+        </div>
+        <div class="stat-card">
+            <span class="stat-number">@Model.Stats.PrivateNotes</span>
+            <div class="stat-label">Private Notes</div>
+        </div>
+        <div class="stat-card">
+            <span class="stat-number">@Model.Stats.TotalViews.ToString("N0")</span>
+            <div class="stat-label">Total Views</div>
+        </div>
+        <div class="stat-card">
+            <span class="stat-number">@Model.Stats.NotesThisMonth</span>
+            <div class="stat-label">This Month</div>
+        </div>
+    </div>
+
+    <!-- Search and Filters -->
+    <div class="notes-controls">
+        <form method="get" id="filterForm">
+            <div class="search-bar">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text"
+                       name="search"
+                       value="@Model.Filter.SearchQuery"
+                       class="search-input"
+                       placeholder="Search your notes..."
+                       id="searchInput">
+            </div>
+
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label for="languageFilter">Language</label>
+                    <select name="language" id="languageFilter" class="filter-select">
+                        <option value="">All Languages</option>
+                        @foreach (var lang in Model.Filter.AvailableLanguages)
+                        {
+                            <option value="@lang" selected="@(Model.Filter.Language == lang)">@lang</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="tagFilter">Tag</label>
+                    <select name="tag" id="tagFilter" class="filter-select">
+                        <option value="">All Tags</option>
+                        @foreach (var tag in Model.Filter.AvailableTags)
+                        {
+                            <option value="@tag.Name" selected="@(Model.Filter.Tag == tag.Name)">@tag.Name</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="sortFilter">Sort By</label>
+                    <select name="sort" id="sortFilter" class="filter-select">
+                        <option value="newest" selected="@(Model.Filter.SortBy == "newest")">Newest First</option>
+                        <option value="oldest" selected="@(Model.Filter.SortBy == "oldest")">Oldest First</option>
+                        <option value="title" selected="@(Model.Filter.SortBy == "title")">Title A-Z</option>
+                        <option value="views" selected="@(Model.Filter.SortBy == "views")">Most Viewed</option>
+                        <option value="modified" selected="@(Model.Filter.SortBy == "modified")">Recently Modified</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label>&nbsp;</label>
+                    <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0;">
+                        <input type="checkbox"
+                               name="privateOnly"
+                               value="true"
+                               id="privateFilter"
+                               checked="@Model.Filter.IsPrivateFilter"
+                               style="accent-color: var(--accent-primary);">
+                        <label for="privateFilter" style="margin: 0; font-size: 0.9rem;">Private only</label>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Notes Grid -->
+    @if (Model.Notes.Any())
+    {
+        <div class="notes-grid">
+            @foreach (var note in Model.Notes)
+            {
+                <div class="note-card @(note.IsPrivate ? "private" : "")">
+                    <div class="note-header">
+                        <h3 class="note-title">
+                            <a asp-action="Edit" asp-route-id="@note.Id">@note.Title</a>
+                        </h3>
+
+                        <div class="note-meta">
+                            <span>
+                                <i class="fas fa-calendar me-1"></i>
+                                @note.CreatedAt.ToString("MMM dd, yyyy")
+                            </span>
+                            <span>
+                                <i class="fas fa-eye me-1"></i>
+                                @note.ViewCount views
+                            </span>
+                            @if (note.IsPrivate)
+                            {
+                                <span class="privacy-badge private">
+                                    <i class="fas fa-lock me-1"></i>Private
+                                </span>
+                            }
+                            else
+                            {
+                                <span class="privacy-badge public">
+                                    <i class="fas fa-globe me-1"></i>Public
+                                </span>
+                            }
+                        </div>
+                    </div>
+
+                    <div class="note-footer">
+                        <div class="note-tags">
+                            @foreach (var tag in note.Tags.Take(3))
+                            {
+                                <span class="tag-badge">@tag.Name</span>
+                            }
+                            @if (note.Tags.Count > 3)
+                            {
+                                <span class="tag-badge">+@(note.Tags.Count - 3)</span>
+                            }
+                        </div>
+
+                        <div class="action-buttons">
+                            <a asp-action="Edit" asp-route-id="@note.Id" class="btn-sm btn-primary-sm">
+                                <i class="fas fa-edit"></i> Edit
+                            </a>
+
+                            <button class="btn-sm btn-secondary-sm" onclick="togglePrivacy('@note.Id', @note.IsPrivate.ToString().ToLower())">
+                                <i class="fas @(note.IsPrivate ? "fa-eye" : "fa-eye-slash")"></i>
+                                @(note.IsPrivate ? "Make Public" : "Make Private")
+                            </button>
+
+                            <button class="btn-sm btn-danger-sm" onclick="deleteNote('@note.Id', '@note.Title')">
+                                <i class="fas fa-trash"></i> Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Pagination -->
+        @if (Model.Pagination.TotalPages > 1)
+        {
+            <div class="pagination">
+                @if (Model.Pagination.HasPrevious)
+                {
+                    <a href="?page=@(Model.Pagination.CurrentPage - 1)&search=@Model.Filter.SearchQuery&language=@Model.Filter.Language&tag=@Model.Filter.Tag&sort=@Model.Filter.SortBy&privateOnly=@Model.Filter.IsPrivateFilter"
+                       class="page-btn">
+                        <i class="fas fa-chevron-left"></i> Previous
+                    </a>
+                }
+
+                @for (int i = Math.Max(1, Model.Pagination.CurrentPage - 2); i <= Math.Min(Model.Pagination.TotalPages, Model.Pagination.CurrentPage + 2); i++)
+                {
+                    <a href="?page=@i&search=@Model.Filter.SearchQuery&language=@Model.Filter.Language&tag=@Model.Filter.Tag&sort=@Model.Filter.SortBy&privateOnly=@Model.Filter.IsPrivateFilter"
+                       class="page-btn @(i == Model.Pagination.CurrentPage ? "active" : "")">
+                        @i
+                    </a>
+                }
+
+                @if (Model.Pagination.HasNext)
+                {
+                    <a href="?page=@(Model.Pagination.CurrentPage + 1)&search=@Model.Filter.SearchQuery&language=@Model.Filter.Language&tag=@Model.Filter.Tag&sort=@Model.Filter.SortBy&privateOnly=@Model.Filter.IsPrivateFilter"
+                       class="page-btn">
+                        Next <i class="fas fa-chevron-right"></i>
+                    </a>
+                }
+            </div>
+        }
+    }
+    else
+    {
+        <div class="empty-state">
+            <i class="fas fa-code"></i>
+            <h3>No notes found</h3>
+            <p>You haven't created any notes yet, or none match your current filters.</p>
+            <a asp-action="Create" class="btn btn-primary btn-lg mt-3">
+                <i class="fas fa-plus me-2"></i>Create Your First Note
+            </a>
+        </div>
+    }
+</div>
+
+<!-- Floating Action Button -->
+<button class="create-note-fab" onclick="window.location.href = '@Url.Action("Create")'">
+    <i class="fas fa-plus"></i>
+</button>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const filterForm = document.getElementById('filterForm');
+        const searchInput = document.getElementById('searchInput');
+
+        // Auto-submit form when filters change
+        const filterSelects = filterForm.querySelectorAll('select, input[type="checkbox"]');
+        filterSelects.forEach(element => {
+            element.addEventListener('change', () => {
+                filterForm.submit();
+            });
+        });
+
+        // Debounced search
+        let searchTimeout;
+        searchInput.addEventListener('input', () => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                if (searchInput.value.length >= 3 || searchInput.value.length === 0) {
+                    filterForm.submit();
+                }
+            }, 500);
+        });
+    });
+
+    async function deleteNote(noteId, noteTitle) {
+        if (!confirm(`Are you sure you want to delete "${noteTitle}"? This action cannot be undone.`)) {
+            return;
+        }
+
+        try {
+            const response = await fetch(`/Notes/Delete/${noteId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                }
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                // Remove the note card from the UI
+                const noteCard = document.querySelector(`[onclick*="${noteId}"]`).closest('.note-card');
+                noteCard.style.opacity = '0';
+                noteCard.style.transform = 'scale(0.8)';
+
+                setTimeout(() => {
+                    noteCard.remove();
+
+                    // Show success message
+                    showNotification('Note deleted successfully', 'success');
+
+                    // Reload if no notes left
+                    if (document.querySelectorAll('.note-card').length === 0) {
+                        location.reload();
+                    }
+                }, 300);
+            } else {
+                showNotification(result.message || 'Failed to delete note', 'error');
+            }
+        } catch (error) {
+            console.error('Error deleting note:', error);
+            showNotification('An error occurred while deleting the note', 'error');
+        }
+    }
+
+    async function togglePrivacy(noteId, isCurrentlyPrivate) {
+        try {
+            const response = await fetch(`/Notes/TogglePrivacy/${noteId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                }
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                location.reload(); // Simple reload for demo
+            } else {
+                showNotification(result.message || 'Failed to update privacy', 'error');
+            }
+        } catch (error) {
+            console.error('Error toggling privacy:', error);
+            showNotification('An error occurred while updating privacy', 'error');
+        }
+    }
+
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
+        notification.style.cssText = 'top: 100px; right: 20px; z-index: 9999; min-width: 300px;';
+        notification.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+        `;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+</script>
+
+<!-- Add CSRF token for AJAX requests -->
+@Html.AntiForgeryToken()
+
+
+
+<style>
+    .notes-header {
+        background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+        border-bottom: 1px solid var(--border-primary);
+        padding: 2rem 0;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-card {
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-primary);
+        border-radius: 8px;
+        padding: 1.5rem;
+        text-align: center;
+    }
+
+        .stat-card:hover {
+            border-color: var(--accent-primary);
+        }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--accent-primary);
+        display: block;
+    }
+
+    .stat-label {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin-top: 0.5rem;
+    }
+
+    .notes-controls {
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-primary);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .search-bar {
+        position: relative;
+        margin-bottom: 1.5rem;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 0.75rem 1rem 0.75rem 3rem;
+        background: var(--bg-primary);
+        border: 2px solid var(--border-primary);
+        border-radius: 6px;
+        color: var(--text-primary);
+        font-size: 1rem;
+    }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+        }
+
+    .search-icon {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-secondary);
+    }
+
+    .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+        gap: 1rem;
+        align-items: end;
+    }
+
+    .filter-group label {
+        display: block;
+        color: var(--text-primary);
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        font-size: 0.9rem;
+    }
+
+    .filter-select {
+        width: 100%;
+        padding: 0.5rem;
+        background: var(--bg-primary);
+        border: 1px solid var(--border-primary);
+        border-radius: 4px;
+        color: var(--text-primary);
+    }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+        }
+
+    .notes-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .note-card {
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-primary);
+        border-radius: 8px;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+
+        .note-card:hover {
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            border-color: var(--accent-secondary);
+        }
+
+    .note-header {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-primary);
+        position: relative;
+    }
+
+    .note-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+        line-height: 1.3;
+    }
+
+        .note-title a {
+            color: inherit;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+            .note-title a:hover {
+                color: var(--accent-primary);
+            }
+
+    .note-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+
+    .privacy-badge {
+        padding: 0.2rem 0.5rem;
+        border-radius: 12px;
+        font-weight: 500;
+    }
+
+        .privacy-badge.private{
+            background: #ffc107;
+            color: #000;
+        }
+
+        .privacy-badge.public {
+            background: #28a745;
+            color: #fff;
+        }
+
+    .note-footer {
+        padding: 1rem;
+        border-top: 1px solid var(--border-primary);
+        background: var(--bg-secondary);
+    }
+
+    .note-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .tag-badge {
+        background: var(--accent-secondary);
+        color: white;
+        padding: 0.2rem 0.6rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+    }
+
+    .btn-sm {
+        padding: 0.4rem 0.8rem;
+        font-size: 0.8rem;
+        border-radius: 4px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.3rem;
+    }
+
+    .btn-primary-sm {
+        background: var(--accent-secondary);
+        color: white;
+    }
+
+        .btn-primary-sm:hover {
+            color: white;
+            background: #0a58ca;
+        }
+
+    .btn-secondary-sm {
+        background: var(--text-secondary);
+        color: white;
+    }
+
+        .btn-secondary-sm:hover {
+            background: var(--bs-gray-700);
+        }
+
+    .btn-danger-sm {
+        background: #dc3545;
+        color: white;
+    }
+
+        .btn-danger-sm:hover {
+            background: #c82333;
+        }
+
+    .create-note-fab {
+        position: fixed;
+        bottom: 2rem;
+        right: 2rem;
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+        color: white;
+        border: none;
+        border-radius: 50%;
+        font-size: 1.5rem;
+        cursor: pointer;
+        box-shadow: 0 4px 20px rgba(88, 166, 255, 0.4);
+        transition: all 0.3s ease;
+        z-index: 1000;
+    }
+
+        .create-note-fab:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 25px rgba(88, 166, 255, 0.6);
+        }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 2rem;
+    }
+
+    .page-btn {
+        padding: 0.5rem 1rem;
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-primary);
+        color: var(--text-primary);
+        text-decoration: none;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+
+        .page-btn:hover {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        .page-btn.active {
+            background: var(--accent-secondary);
+            color: white;
+            border-color: var(--accent-secondary);
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-secondary);
+    }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+    @@media (max-width: 768px) {
+        .stats-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+        .filters-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .notes-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .create-note-fab {
+            bottom: 1rem;
+            right: 1rem;
+        }
+    }
+</style>

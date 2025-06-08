@@ -271,9 +271,6 @@
                             <i class="fas fa-chevron-down me-2"></i> Load More Snippets
                         </button>
                     </div>
-                    <div id="resultsInfo" class="text-muted mt-3">
-                        <!-- Results count will be displayed here -->
-                    </div>
                 </div>
             </div>
         </div>
@@ -327,8 +324,6 @@
 
                     hasMore = response.hasMore;
                     currentPage = response.page;
-
-                    updateResultsInfo();
 
                     if (!hasMore) {
                         $('#loadMoreContainer').html('<p class="text-muted">No more snippets to load.</p>');
@@ -400,20 +395,6 @@
                     </div>
                 </div>
             `;
-        }
-
-        function updateResultsInfo() {
-            const searchQuery = $('#searchQuery').val();
-            const language = $('#languageFilter').val();
-            const tag = $('#tagFilter').val();
-
-            let infoText = `Showing ${currentResults} snippets`;
-
-            if (searchQuery || language || tag) {
-                infoText += ' matching your filters';
-            }
-
-            $('#resultsInfo').text(infoText);
         }
 
         // Event handlers

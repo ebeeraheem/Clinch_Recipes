@@ -1,38 +1,5 @@
 ﻿@using CodeStash.Application.Utilities
-@* <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="author" content="Ibrahim Suleiman" />
-    <meta name="description" content="This is a personal snippets library designed to help me get back to snippets of code I use very often, or those I rarely use." />
-    <title>@ViewData["Title"] - Clinch_Recipes</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
-    <link rel="stylesheet" href="~/Clinch_Recipes.styles.css" asp-append-version="true" />
-</head>
-<body>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
-
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/js/site.js" asp-append-version="true"></script>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@3.2.12/dist/jquery.validate.unobtrusive.min.js"></script>
-
-    @await RenderSectionAsync("Scripts", required: false)
-</body>
-</html>
- *@
-
  @inject UserHelper UserHelper
-
 
 <!DOCTYPE html>
 <html lang="en">
@@ -44,10 +11,12 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet">
+
+    @await RenderSectionAsync("Styles", required: false)
 </head>
 <body>
     <header>
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark-custom fixed-top">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark-custom fixed-top" aria-label="Main navigation bar">
             <div class="container">
                 <a class="navbar-brand fw-bold" href="/">
                     <i class="fas fa-code me-2 text-primary"></i>
@@ -66,13 +35,19 @@
                         <li class="nav-item">
                             <a class="nav-link" href="/browse"><i class="fas fa-search me-1"></i> Browse</a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link" href="/create"><i class="fas fa-plus me-1"></i> Create</a>
-                        </li>
+                        <!-- Show these only when user is authenticated -->
+                        @if (UserHelper.IsAuthenticated())
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link" href="/Notes/MyNotes"><i class="fas fa-sticky-note me-1"></i> My Notes</a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="/Notes/Create"><i class="fas fa-plus me-1"></i> Create</a>
+                            </li>
+                        }
                     </ul>
 
                     <div class="d-flex align-items-center">
-
                         @if (UserHelper.IsAuthenticated())
                         {
                             <div class="dropdown">
@@ -81,16 +56,16 @@
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark">
                                     <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i> Profile</a></li>
-                                    <li><a class="dropdown-item" href="/my-notes"><i class="fas fa-sticky-note me-2"></i> My Notes</a></li>
+                                    <li><a class="dropdown-item" href="/Notes/MyNotes"><i class="fas fa-sticky-note me-2"></i> My Notes</a></li>
+                                    <li><a class="dropdown-item" href="/settings"><i class="fas fa-cog me-2"></i> Settings</a></li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                                            <button type="submit" class="dropdown-item" style="background:none; border:none; padding:0.25rem 1rem; width:100%; text-align:left;">
+                                            <button type="submit" class="dropdown-item">
                                                 <i class="fas fa-sign-out-alt me-2"></i> Logout
                                             </button>
                                         </form>
                                     </li>
-
                                 </ul>
                             </div>
                         }
@@ -109,7 +84,7 @@
         </nav>
     </header>
 
-    <main role="main" class="main-content">
+    <main role="main" class="main-content" aria-label="Main content">
         @if (TempData["SuccessMessage"] != null)
         {
             <div class="alert alert-success alert-dismissible fade show m-3" role="alert" style="background: rgba(40, 167, 69, 0.1); border: 1px solid rgba(40, 167, 69, 0.3); color: #28a745;">

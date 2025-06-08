@@ -1,6 +1,5 @@
 ﻿import {
 	ClassicEditor,
-	AccessibilityHelp,
 	Alignment,
 	Autoformat,
 	AutoLink,
@@ -12,24 +11,18 @@
 	FindAndReplace,
 	GeneralHtmlSupport,
 	Heading,
+	HorizontalLine,
 	HtmlComment,
-	HtmlEmbed,
 	Italic,
 	Link,
 	List,
 	Markdown,
+	Mention,
 	Paragraph,
-	SelectAll,
-	ShowBlocks,
-	SourceEditing,
-	Table,
-	TableCaption,
-	TableCellProperties,
-	TableColumnResize,
-	TableProperties,
-	TableToolbar,
-	TodoList,
-	Undo
+	PasteFromOffice,
+	Strikethrough,
+	TextTransformation,
+	Underline,
 } from 'ckeditor5';
 
 const editorConfig = {
@@ -38,31 +31,28 @@ const editorConfig = {
 			'undo',
 			'redo',
 			'|',
-			'sourceEditing',
-			'showBlocks',
 			'findAndReplace',
 			'|',
 			'heading',
 			'|',
 			'bold',
 			'italic',
+			'underline',
+			'strikethrough',
 			'code',
 			'|',
+			'horizontalLine',
 			'link',
-			'insertTable',
 			'codeBlock',
-			'htmlEmbed',
 			'|',
 			'alignment',
 			'|',
 			'bulletedList',
-			'numberedList',
-			'todoList'
+			'numberedList'
 		],
 		shouldNotGroupWhenFull: false
 	},
 	plugins: [
-		AccessibilityHelp,
 		Alignment,
 		Autoformat,
 		AutoLink,
@@ -74,24 +64,18 @@ const editorConfig = {
 		FindAndReplace,
 		GeneralHtmlSupport,
 		Heading,
+		HorizontalLine,
 		HtmlComment,
-		HtmlEmbed,
 		Italic,
 		Link,
 		List,
 		Markdown,
+		Mention,
 		Paragraph,
-		SelectAll,
-		ShowBlocks,
-		SourceEditing,
-		Table,
-		TableCaption,
-		TableCellProperties,
-		TableColumnResize,
-		TableProperties,
-		TableToolbar,
-		TodoList,
-		Undo
+		PasteFromOffice,
+		Strikethrough,
+		TextTransformation,
+		Underline
 	],
 	heading: {
 		options: [
@@ -101,41 +85,17 @@ const editorConfig = {
 				class: 'ck-heading_paragraph'
 			},
 			{
-				model: 'heading1',
-				view: 'h1',
-				title: 'Heading 1',
-				class: 'ck-heading_heading1'
-			},
-			{
 				model: 'heading2',
 				view: 'h2',
-				title: 'Heading 2',
+				title: 'Heading',
 				class: 'ck-heading_heading2'
 			},
 			{
 				model: 'heading3',
 				view: 'h3',
-				title: 'Heading 3',
+				title: 'SubHeading',
 				class: 'ck-heading_heading3'
 			},
-			{
-				model: 'heading4',
-				view: 'h4',
-				title: 'Heading 4',
-				class: 'ck-heading_heading4'
-			},
-			{
-				model: 'heading5',
-				view: 'h5',
-				title: 'Heading 5',
-				class: 'ck-heading_heading5'
-			},
-			{
-				model: 'heading6',
-				view: 'h6',
-				title: 'Heading 6',
-				class: 'ck-heading_heading6'
-			}
 		]
 	},
 	htmlSupport: {
@@ -148,23 +108,6 @@ const editorConfig = {
 			}
 		]
 	},
-	image: {
-		toolbar: [
-			'toggleImageCaption',
-			'imageTextAlternative',
-			'|',
-			'imageStyle:alignBlockLeft',
-			'imageStyle:block',
-			'imageStyle:alignBlockRight',
-			'|',
-			'resizeImage'
-		],
-		styles: {
-			options: ['alignBlockLeft', 'block', 'alignBlockRight']
-		}
-	},
-	initialData:
-		'',
 	link: {
 		addTargetToExternalLinks: true,
 		defaultProtocol: 'https://',
@@ -178,60 +121,189 @@ const editorConfig = {
 			}
 		}
 	},
-	placeholder: 'Type or paste your content here!',
-	table: {
-		contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']
-	}
+	mention: {
+		feeds: [
+			{
+				marker: '@',
+				feed: [
+					/* See: https://ckeditor.com/docs/ckeditor5/latest/features/mentions.html */
+				],
+                minimumCharacters: 3
+			}
+		]
+	},
+	placeholder: 'Type or paste your content here!'
 };
-
-// The original unmodified editor
-// ClassicEditor.create(document.querySelector('#editor'), editorConfig);
 
 // Add client-side validation to editor content
 let editorInstance;
-const initialContent = document.querySelector("#noteContent").value;
 
 ClassicEditor
-	.create(document.querySelector('#editor'), editorConfig)
+	.create(document.querySelector('#ckeditor'), editorConfig)
 	.then(editor => {
-		editorInstance = editor;
+		window.CKEDITOR = editor; // Make CKEditor globally accessible
 
-		// Set initial data if noteContent is not null
-		if (noteContent !== '') {
+		// Sync content with hidden input
+		const contentHidden = document.getElementById('contentHidden');
+
+		// Set initial content if editing
+		const initialContent = contentHidden.value;
+		if (initialContent) {
 			editor.setData(initialContent);
 		}
 
-		// Add event listener for content changes in CKEditor
+		// Update hidden field and character count on change
 		editor.model.document.on('change:data', () => {
-			// Remove any previous error message when content changes
-			const existingErrorMessage = document.querySelector('.editor-container__editor .text-danger');
-			if (existingErrorMessage) {
-				existingErrorMessage.remove();
-			}
+			const data = editor.getData();
+			contentHidden.value = data;
+			updateContentCharacterCount(data);
 		});
+
+		// Initial character count
+		updateContentCharacterCount(editor.getData());
+
+		// Add keyboard shortcuts for common actions
+		editor.keystrokes.set('Ctrl+Shift+C', (keyEvtData, cancel) => {
+			editor.execute('codeBlock');
+			cancel();
+		});
+
+		// Focus the editor
+		editor.editing.view.focus();
+
+		// Add helpful keyboard shortcuts tooltip
+		const toolbar = editor.ui.view.toolbar.element;
+		const codeBlockButton = toolbar.querySelector('[data-cke-tooltip-text*="Code block"]');
+		if (codeBlockButton) {
+			codeBlockButton.setAttribute('title', 'Code block (Ctrl+Shift+C)');
+		}
 	})
 	.catch(error => {
 		console.error('Error initializing CKEditor:', error);
+		// Fallback to textarea if CKEditor fails
+		showTextareaFallback();
 	});
 
-const formContent = document.querySelector("#editorForm");
-formContent.addEventListener("submit", function (event) {
-	const editorContent = editorInstance.getData().trim();
+function updateContentCharacterCount(content) {
+	// Strip HTML tags for character counting but preserve basic structure
+	const textContent = content
+		.replace(/<pre[^>]*><code[^>]*>/g, '') // Remove opening code tags
+		.replace(/<\/code><\/pre>/g, '\n') // Replace closing code tags with newlines
+		.replace(/<[^>]*>/g, '') // Remove other HTML tags
+		.replace(/&nbsp;/g, ' ') // Replace non-breaking spaces
+		.replace(/&lt;/g, '<') // Decode HTML entities
+		.replace(/&gt;/g, '>')
+		.replace(/&amp;/g, '&');
 
-	// Remove any previous error message
-	const existingErrorMessage = document.querySelector('.editor-container__editor .text-danger');
-	if (existingErrorMessage) {
-		existingErrorMessage.remove();
+	const length = textContent.length;
+	const maxLength = 8000;
+
+	const counter = document.getElementById('contentCount');
+	counter.textContent = `${length}/${maxLength}`;
+
+	if (length > maxLength * 0.9) {
+		counter.className = 'character-count danger';
+	} else if (length > maxLength * 0.75) {
+		counter.className = 'character-count warning';
+	} else {
+		counter.className = 'character-count';
+	}
+}
+
+function showTextareaFallback() {
+	const container = document.getElementById('editor-container');
+	const currentContent = document.getElementById('contentHidden').value || '';
+
+	container.innerHTML = `
+                    <textarea name="Content"
+                              class="form-control code-editor"
+                              placeholder="Paste your code here..."
+                              id="contentTextarea"
+                              style="min-height: 400px; font-family: 'Courier New', monospace;">${currentContent}</textarea>
+                `;
+
+	const textarea = document.getElementById('contentTextarea');
+	const contentHidden = document.getElementById('contentHidden');
+
+	// Sync textarea with hidden input
+	textarea.addEventListener('input', () => {
+		contentHidden.value = textarea.value;
+		updateContentCharacterCount(textarea.value);
+	});
+
+	// Initial character count for fallback
+	updateContentCharacterCount(currentContent);
+}
+
+// Update form submission to ensure content is synced
+const form = document.getElementById('createNoteForm');
+if (form) {
+	const originalSubmitHandler = form.onsubmit;
+	form.onsubmit = function (e) {
+		// Ensure content is synced before validation
+		if (editorInstance) {
+			const data = editorInstance.getData();
+			document.getElementById('contentHidden').value = data;
+		}
+
+		// Validate content
+		if (!validateContent()) {
+			e.preventDefault();
+			return false;
+		}
+
+		// Call original submit handler if it exists
+		if (originalSubmitHandler) {
+			return originalSubmitHandler.call(this, e);
+		}
+
+		return true;
+	};
+}
+
+function validateContent() {
+	const contentHidden = document.getElementById('contentHidden');
+	const content = contentHidden.value;
+
+	// Strip HTML for validation
+	const textContent = content
+		.replace(/<pre[^>]*><code[^>]*>/g, '')
+		.replace(/<\/code><\/pre>/g, '\n')
+		.replace(/<[^>]*>/g, '')
+		.replace(/&nbsp;/g, ' ')
+		.replace(/&lt;/g, '<')
+		.replace(/&gt;/g, '>')
+		.replace(/&amp;/g, '&')
+		.trim();
+
+	const errorSpan = document.querySelector('[asp-validation-for="Content"]');
+
+	if (!textContent) {
+		showFieldError(errorSpan, 'Content is required');
+		return false;
+	} else if (textContent.length < 10) {
+		showFieldError(errorSpan, 'Content must be at least 10 characters long');
+		return false;
+	} else if (textContent.length > 8000) {
+		showFieldError(errorSpan, 'Content cannot exceed 8000 characters');
+		return false;
 	}
 
-	// Check if editor content is empty
-	if (editorContent === '' || editorContent === '<p class="ck-placeholder" data-placeholder="Type or paste your content here!"><br data-cke-filler="true"></p>') {
-		event.preventDefault(); // Prevent form submission
+	// Clear any existing errors
+	if (errorSpan) {
+		errorSpan.textContent = '';
+		errorSpan.style.display = 'none';
+	}
 
-		// Create and append error message
-		const errorMessage = document.createElement('span');
-		errorMessage.className = 'text-danger';
-		errorMessage.textContent = 'The Content field is required.';
-		document.querySelector('.editor-container__editor').appendChild(errorMessage);
-	}		
-});
+	return true;
+}
+
+function showFieldError(errorElement, message) {
+	if (errorElement) {
+		errorElement.textContent = message;
+		errorElement.style.display = 'block';
+	}
+}
+
+
+

@@ -1,0 +1,589 @@
+﻿@using CodeStash.ViewModels
+
+@model CreateNoteViewModel
+@{
+    ViewData["Title"] = "Create Note - CodeStash";
+}
+
+<div class="create-note-container">
+    <div class="container">
+        <div class="create-note-header">
+            <h1><i class="fas fa-plus-circle text-primary me-3"></i>Create New Code Snippet</h1>
+            <p>Share your knowledge with the CodeStash community</p>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="form-card">
+                    <form asp-action="Create" method="post" id="createNoteForm" novalidate>
+                        <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+
+                        <!-- Title -->
+                        <div class="form-group">
+                            <label asp-for="Title" class="form-label required"></label>
+                            <input asp-for="Title"
+                                   class="form-control"
+                                   placeholder="Enter a descriptive title for your code snippet"
+                                   id="titleInput" />
+                            <span asp-validation-for="Title" class="field-validation-error"></span>
+                            <div class="character-count" id="titleCount">0/200</div>
+                        </div>
+
+                        <!-- Tags -->
+                        <div class="form-group">
+                            <label asp-for="TagsInput" class="form-label"></label>
+                            <input asp-for="TagsInput"
+                                   class="form-control"
+                                   placeholder="Enter tags separated by commas"
+                                   id="tagsInput" />
+                            <span asp-validation-for="TagsInput" class="field-validation-error"></span>
+                            <div class="form-help">e.g., javascript, react, hooks</div>
+
+                            <div class="tags-display" id="tagsDisplay"></div>
+
+                            <div class="suggested-tags">
+                                <div class="suggested-tags-label">Suggested tags:</div>
+                                <div class="suggested-tags-list">
+                                    @foreach (var tag in Model.SuggestedTags)
+                                    {
+                                        <span class="suggested-tag" onclick="addSuggestedTag('@tag.Name')">@tag.Name</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Code Content -->
+                        <div class="form-group">
+                            <label asp-for="Content" class="form-label required"></label>
+                            <div id="editor-container" class="editor-container editor-container_classic-editor">
+                                <div id="ckeditor" class="editor-container__editor" style="min-height: 400px;"></div>
+                            </div>
+                            <input asp-for="Content" type="hidden" id="contentHidden" />
+                            <span asp-validation-for="Content" class="field-validation-error"></span>
+                            <div class="character-count" id="contentCount">0/8000</div>
+                            <div class="form-help">
+                                <i class="fas fa-info-circle me-1"></i>
+                                Use code blocks for syntax highlighting. Supports 20+ languages including JavaScript, Python, C#, SQL, etc.
+                            </div>
+                        </div>
+
+                        <!-- Privacy Setting -->
+                        <div class="form-group">
+                            <div class="privacy-toggle">
+                                <input asp-for="IsPrivate" type="checkbox" id="privacyToggle" />
+                                <div class="privacy-info">
+                                    <h4>Private Note</h4>
+                                    <p>Only you can see this note. You can change this setting later.</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="form-actions">
+                            <a href="/Notes/MyNotes" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="fas fa-save"></i> Create Note
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('createNoteForm');
+        const titleInput = document.getElementById('titleInput');
+        // const contentInput = document.querySelector('.ck-content');
+        const tagsInput = document.getElementById('tagsInput');
+        const tagsDisplay = document.getElementById('tagsDisplay');
+        const submitBtn = document.getElementById('submitBtn');
+
+        let selectedTags = [];
+
+        // Character counters
+        titleInput.addEventListener('input', () => updateCharacterCount('titleInput', 'titleCount', 200));
+        // contentInput.addEventListener('input', () => updateCharacterCount('ck-content', 'contentCount', 8000));
+
+        // Tags handling
+        tagsInput.addEventListener('input', handleTagsInput);
+        tagsInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ',') {
+                e.preventDefault();
+                addCurrentTag();
+            }
+        });
+
+        // Form submission
+        form.addEventListener('submit', (e) => {
+            if (!validateForm()) {
+                e.preventDefault();
+                return false;
+            }
+
+            // Update tags input with current tags
+            tagsInput.value = selectedTags.join(', ');
+
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating...';
+        });
+
+        // Initialize character counters
+        updateCharacterCount('titleInput', 'titleCount', 200);
+        // updateCharacterCount('ck-content', 'contentCount', 8000);
+
+        function updateCharacterCount(inputId, countId, maxLength) {
+            const input = document.getElementById(inputId) || document.querySelector(`.${inputId}`);
+            const counter = document.getElementById(countId);
+            let length = 0;
+            if (input) {
+                if ('value' in input && typeof input.value === 'string') {
+                    length = input.value.length;
+                } else if ('innerText' in input && typeof input.innerText === 'string') {
+                    length = input.innerText.length;
+                }
+            }
+
+            counter.textContent = `${length}/${maxLength}`;
+
+            if (length > maxLength * 0.9) {
+                counter.className = 'character-count danger';
+            } else if (length > maxLength * 0.75) {
+                counter.className = 'character-count warning';
+            } else {
+                counter.className = 'character-count';
+            }
+        }
+
+        function handleTagsInput() {
+            const value = tagsInput.value;
+            const lastChar = value.slice(-1);
+
+            if (lastChar === ',' || lastChar === ';') {
+                addCurrentTag();
+            }
+        }
+
+        function addCurrentTag() {
+            const value = tagsInput.value.replace(/[,;]$/, '').trim();
+            if (value && !selectedTags.includes(value)) {
+                selectedTags.push(value);
+                updateTagsDisplay();
+                tagsInput.value = '';
+            }
+        }
+
+        function updateTagsDisplay() {
+            tagsDisplay.innerHTML = selectedTags.map(tag => `
+                <div class="tag-item">
+                    ${tag}
+                    <button type="button" class="tag-remove" onclick="removeTag('${tag}')">×</button>
+                </div>
+            `).join('');
+        }
+
+        window.removeTag = (tag) => {
+            selectedTags = selectedTags.filter(t => t !== tag);
+            updateTagsDisplay();
+        };
+
+        window.addSuggestedTag = (tag) => {
+            if (!selectedTags.includes(tag)) {
+                selectedTags.push(tag);
+                updateTagsDisplay();
+            }
+        };
+
+        function validateForm() {
+            let isValid = true;
+
+            // Clear previous errors
+            const errorElements = form.querySelectorAll('.field-validation-error');
+            errorElements.forEach(el => el.textContent = '');
+
+            // Validate title
+            if (!titleInput.value.trim()) {
+                showFieldError('Title', 'Title is required');
+                isValid = false;
+            } else if (titleInput.value.length < 3) {
+                showFieldError('Title', 'Title must be at least 3 characters long');
+                isValid = false;
+            }
+
+            // Validate content
+            if (!contentInput.value.trim()) {
+                showFieldError('Content', 'Content is required');
+                isValid = false;
+            } else if (contentInput.value.length < 10) {
+                showFieldError('Content', 'Content must be at least 10 characters long');
+                isValid = false;
+            }
+        }
+
+        function showFieldError(fieldName, message) {
+            const field = form.querySelector(`[name="${fieldName}"]`);
+            if (field) {
+                field.classList.add('error');
+                const errorSpan = field.parentNode.querySelector('.field-validation-error');
+                if (errorSpan) {
+                    errorSpan.textContent = message;
+                }
+            }
+        }
+
+        // Clear error styling on input
+        form.querySelectorAll('input, textarea, select').forEach(input => {
+            input.addEventListener('input', () => {
+                input.classList.remove('error');
+            });
+        });
+    });
+</script>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script type="importmap">
+        {
+            "imports": {
+                "ckeditor5": "/lib/ckeditor-5/ckeditor5.js",
+                "ckeditor5/": "/lib/ckeditor-5/"
+            }
+        }
+    </script>
+    <script type="module" src="~/lib/ckeditor-5/main.js"></script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/lib/ckeditor-5/ckeditor5.css" />
+    <link rel="stylesheet" href="~/lib/ckeditor-5/style.css" />
+}
+
+<style>
+    .create-note-container {
+        min-height: calc(100vh - 76px);
+        background: var(--bg-primary);
+        padding: 2rem 0;
+    }
+
+    .create-note-header {
+        background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+        border: 1px solid var(--border-primary);
+        border-radius: 8px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+        .create-note-header h1 {
+            color: var(--text-primary);
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .create-note-header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+    .form-card {
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-primary);
+        border-radius: 12px;
+        padding: 2.5rem;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .form-group {
+        margin-bottom: 2rem;
+    }
+
+    .form-label {
+        display: block;
+        color: var(--text-primary);
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        font-size: 1rem;
+    }
+
+        .form-label.required::after {
+            content: " *";
+            color: #dc3545;
+        }
+
+    .form-control {
+        width: 100%;
+        padding: 1rem;
+        background: var(--bg-primary);
+        border: 2px solid var(--border-primary);
+        border-radius: 6px;
+        color: var(--text-primary);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        font-family: inherit;
+    }
+
+        .form-control:focus {
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+        }
+
+        .form-control.error {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+        }
+
+    .code-editor {
+        font-family: 'Courier New', 'Monaco', 'Menlo', monospace;
+        font-size: 0.9rem;
+        line-height: 1.5;
+        resize: vertical;
+        min-height: 400px;
+    }
+
+    .slug-input {
+        font-family: 'Courier New', monospace;
+        font-size: 0.9rem;
+    }
+
+    .form-help {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-top: 0.5rem;
+        font-style: italic;
+    }
+
+    .field-validation-error {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        display: block;
+    }
+
+    .validation-summary-errors {
+        background: rgba(220, 53, 69, 0.1);
+        border: 1px solid rgba(220, 53, 69, 0.3);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+        .validation-summary-errors ul {
+            margin: 0;
+            padding-left: 1.5rem;
+            color: #dc3545;
+        }
+
+    .tags-input-container {
+        position: relative;
+    }
+
+    .tags-display {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+        min-height: 2rem;
+    }
+
+    .tag-item {
+        background: var(--accent-secondary);
+        color: white;
+        padding: 0.4rem 0.8rem;
+        border-radius: 16px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .tag-remove {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 0.9rem;
+        padding: 0;
+        margin: 0;
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background-color 0.2s ease;
+    }
+
+        .tag-remove:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+    .suggested-tags {
+        margin-top: 1rem;
+    }
+
+    .suggested-tags-label {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+    }
+
+    .suggested-tags-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .suggested-tag {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-primary);
+        color: var(--text-primary);
+        padding: 0.3rem 0.7rem;
+        border-radius: 14px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+        .suggested-tag:hover {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+    .privacy-toggle {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        background: var(--bg-primary);
+        border: 1px solid var(--border-primary);
+        border-radius: 6px;
+        padding: 1rem;
+    }
+
+        .privacy-toggle input[type="checkbox"] {
+            width: 1.5rem;
+            height: 1.5rem;
+            accent-color: var(--accent-primary);
+        }
+
+    .privacy-info {
+        flex: 1;
+    }
+
+        .privacy-info h4 {
+            color: var(--text-primary);
+            margin: 0 0 0.25rem 0;
+            font-size: 1rem;
+        }
+
+        .privacy-info p {
+            color: var(--text-secondary);
+            margin: 0;
+            font-size: 0.875rem;
+        }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid var(--border-primary);
+    }
+
+    .btn {
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+        color: white;
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(88, 166, 255, 0.3);
+        }
+
+    .btn-secondary {
+        background: var(--text-secondary);
+        color: white;
+    }
+
+        .btn-secondary:hover {
+            background: var(--text-primary);
+            transform: translateY(-2px);
+        }
+
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    .character-count {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        text-align: right;
+        margin-top: 0.5rem;
+    }
+
+        .character-count.warning {
+            color: #ffc107;
+        }
+
+        .character-count.danger {
+            color: #dc3545;
+        }
+
+    @@media (max-width: 768px) {
+        .form-row {
+            grid-template-columns: 1fr;
+            gap: 0;
+        }
+
+        .form-card {
+            padding: 1.5rem;
+        }
+
+        .form-actions {
+            flex-direction: column;
+        }
+
+        .code-editor {
+            min-height: 300px;
+        }
+    }
+</style>
+
+
