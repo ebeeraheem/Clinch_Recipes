@@ -1,0 +1,781 @@
+﻿@using CodeStash.Application.Utilities
+@using CodeStash.ViewModels
+
+@model PublicUserProfileViewModel
+@inject UserHelper UserHelper
+
+@{
+    ViewData["Title"] = $"{Model.DisplayName} (@{Model.Username}) - CodeStash";
+
+    var currentUserId = UserHelper.TryGetUserId();
+}
+
+<div class="public-profile-container">
+    <div class="container">
+        <!-- Profile Header -->
+        <div class="profile-header">
+            <div class="profile-actions">
+                <button class="btn btn-secondary" onclick="shareProfile()">
+                    <i class="fas fa-share"></i> Share
+                </button>
+
+                @* Hide action buttons to better capture the public view *@
+                @* @if (Model.Id == currentUserId) // TODO: verify that the current user can edit their profile
+                {
+                    <a asp-controller="Users" asp-action="EditProfile" class="btn btn-secondary">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </a>
+                    <a asp-controller="Users" asp-action="Settings" class="btn btn-secondary">
+                        <i class="fas fa-cog"></i> Settings
+                    </a>
+                } *@
+            </div>
+
+            <div class="profile-info">
+                @if (!string.IsNullOrWhiteSpace(Model.ProfileImageUrl))
+                {
+                    <img src="@Model.ProfileImageUrl"
+                         alt="@Model.Username"
+                         class="profile-avatar" />
+                }
+                else
+                {
+                    <span class="profile-avatar profile-avatar-emoji" title="@Model.Username" aria-label="User">
+                        <i class="fas fa-user"></i>
+                    </span>
+                }
+
+                <div class="profile-details">
+                    <h1>@Model.DisplayName</h1>
+                    <div class="profile-username">@@@Model.Username</div>
+
+                    @if (!string.IsNullOrEmpty(Model.Bio))
+                    {
+                        <p class="profile-bio">@Model.Bio</p>
+                    }
+
+                    <div class="profile-meta">
+                        <div class="profile-meta-item">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Joined @Model.JoinedAt.ToString("MMMM yyyy")</span>
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(Model.Location))
+                        {
+                            <div class="profile-meta-item">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>@Model.Location</span>
+                            </div>
+                        }
+
+                        @if (Model.IsEmailPublic && !string.IsNullOrEmpty(Model.Email))
+                        {
+                            <div class="profile-meta-item">
+                                <i class="fas fa-envelope"></i>
+                                <span>@Model.Email</span>
+                            </div>
+                        }
+
+                        @* <div class="profile-meta-item">
+                            @{
+                                var daysSinceActive = (DateTime.UtcNow - Model.LastActiveAt).Days;
+                                var isActive = daysSinceActive <= 7;
+                            }
+                            @if (isActive)
+                            {
+                                <div class="activity-indicator">
+                                    <div class="activity-dot"></div>
+                                    <span>Active recently</span>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="activity-indicator">
+                                    <div class="activity-dot inactive"></div>
+                                    <span>Last seen @Model.LastActiveAt.ToString("MMM dd, yyyy")</span>
+                                </div>
+                            }
+                        </div> *@
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Website) || !string.IsNullOrEmpty(Model.GitHubUsername) || !string.IsNullOrEmpty(Model.TwitterHandle) || !string.IsNullOrEmpty(Model.LinkedInProfile))
+                    {
+                        <div class="social-links">
+                            @if (!string.IsNullOrEmpty(Model.Website))
+                            {
+                                <a href="@Model.Website" target="_blank" class="social-link">
+                                    <i class="fas fa-globe"></i>
+                                    <span>Website</span>
+                                </a>
+                            }
+
+                            @if (!string.IsNullOrEmpty(Model.GitHubUsername))
+                            {
+                                <a href="https://github.com/@Model.GitHubUsername" target="_blank" class="social-link">
+                                    <i class="fab fa-github"></i>
+                                    <span>GitHub</span>
+                                </a>
+                            }
+
+                            @if (!string.IsNullOrEmpty(Model.TwitterHandle))
+                            {
+                                <a href="https://twitter.com/@Model.TwitterHandle" target="_blank" class="social-link">
+                                    <i class="fab fa-twitter"></i>
+                                    <span>Twitter</span>
+                                </a>
+                            }
+
+                            @if (!string.IsNullOrEmpty(Model.LinkedInProfile))
+                            {
+                                <a href="@Model.LinkedInProfile" target="_blank" class="social-link">
+                                    <i class="fab fa-linkedin"></i>
+                                    <span>LinkedIn</span>
+                                </a>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+
+        <!-- Content Grid -->
+        <div class="content-grid">
+            <!-- Main Content -->
+            <div class="main-content" style="padding-top:0;">
+                <!-- Public Notes -->
+                <div class="section-card">
+                    <h2 class="section-title">
+                        <i class="fas fa-code"></i>
+                        Public Notes (@Model.Stats.PublicNotes)
+                    </h2>
+
+                    @if (Model.PublicNotes.Any())
+                    {
+                        <div class="notes-grid">
+                            @foreach (var note in Model.PublicNotes)
+                            {
+                                <div class="note-card">
+                                    <h3 class="note-title">
+                                        <a href="/notes/@note.Slug">@note.Title</a>
+                                    </h3>
+                                    <div class="note-meta">
+                                        <span><i class="fas fa-eye me-1"></i> @note.ViewCount views</span>
+                                        <span>@note.CreatedAt.ToString("MMM dd, yyyy")</span>
+                                    </div>
+                                    <div class="note-tags">
+                                        @foreach (var tag in note.Tags.Take(3))
+                                        {
+                                            <span class="note-tag">@tag.Name</span>
+                                        }
+                                        @if (note.Tags.Count > 3)
+                                        {
+                                            <span class="note-tag">+@(note.Tags.Count - 3)</span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+
+                        @if (Model.Stats.PublicNotes > 6)
+                        {
+                            <div class="text-center mt-4">
+                                <a href="/Users/@Model.Username/notes" class="btn btn-secondary">
+                                    <i class="fas fa-list me-2"></i>View All Notes (@Model.Stats.PublicNotes)
+                                </a>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="empty-state">
+                            <i class="fas fa-code"></i>
+                            <h3>No public notes yet</h3>
+                            <p>@Model.DisplayName hasn't shared any public notes.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Sidebar -->
+            <div class="sidebar">
+                <!-- Statistics -->
+                <div class="section-card">
+                    <h3 class="section-title">
+                        <i class="fas fa-chart-line"></i>
+                        Statistics
+                    </h3>
+
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-number">@Model.Stats.TotalNotes</span>
+                            <div class="stat-label">Total Notes</div>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">@Model.Stats.TotalViews.ToString("N0")</span>
+                            <div class="stat-label">Total Views</div>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">@Model.Stats.NotesThisMonth</span>
+                            <div class="stat-label">This Month</div>
+                        </div>
+                        @* <div class="stat-item">
+                            <span class="stat-number">@Model.Stats.Followers</span>
+                            <div class="stat-label">Followers</div>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">@Model.Stats.Following</span>
+                            <div class="stat-label">Following</div>
+                        </div> *@
+                    </div>
+                </div>
+
+                @* <!-- Favorite Languages -->
+                @if (Model.FavoriteLanguages.Any())
+                {
+                    <div class="section-card">
+                        <h3 class="section-title">
+                            <i class="fas fa-heart"></i>
+                            Favorite Languages
+                        </h3>
+
+                        <div class="favorite-languages">
+                            @foreach (var language in Model.FavoriteLanguages)
+                            {
+                                <span class="language-tag">@language</span>
+                            }
+                        </div>
+                    </div>
+                } *@
+
+                @* <!-- Activity Stats -->
+                <div class="section-card">
+                    <h3 class="section-title">
+                        <i class="fas fa-tachometer-alt"></i>
+                        Activity
+                    </h3>
+
+                    <div class="stats-grid">
+                        <div class="stat-item">
+                            <span class="stat-number">@Model.Stats.NotesThisMonth</span>
+                            <div class="stat-label">This Month</div>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-number">@Model.Stats.MostUsedLanguage</span>
+                            <div class="stat-label">Top Language</div>
+                        </div>
+                    </div>
+                </div> *@
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function followUser(userId) {
+        try {
+            const response = await fetch(`/Users/FollowUser/${userId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                }
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                location.reload(); // Simple reload for demo
+            } else {
+                showNotification(result.message || 'Failed to follow user', 'error');
+            }
+        } catch (error) {
+            console.error('Error following user:', error);
+            showNotification('An error occurred while following the user', 'error');
+        }
+    }
+
+    async function unfollowUser(userId) {
+        try {
+            const response = await fetch(`/Users/UnfollowUser/${userId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                }
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                location.reload(); // Simple reload for demo
+            } else {
+                showNotification(result.message || 'Failed to unfollow user', 'error');
+            }
+        } catch (error) {
+            console.error('Error unfollowing user:', error);
+            showNotification('An error occurred while unfollowing the user', 'error');
+        }
+    }
+
+    function shareProfile() {
+        if (navigator.share) {
+            navigator.share({
+                title: '@Model.DisplayName (@Model.Username) - CodeStash',
+                text: 'Check out @Model.DisplayName\'s profile on CodeStash',
+                url: window.location.href
+            }).catch(console.error);
+        } else {
+            // Fallback to clipboard
+            navigator.clipboard.writeText(window.location.href).then(() => {
+                showNotification('Profile link copied to clipboard!', 'success');
+            }).catch(() => {
+                showNotification('Could not copy link to clipboard', 'error');
+            });
+        }
+    }
+
+    function showNotification(message, type) {
+        const notification = document.createElement('div');
+        notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
+        notification.style.cssText = 'top: 100px; right: 20px; z-index: 9999; min-width: 300px;';
+        notification.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+        `;
+
+        document.body.appendChild(notification);
+
+        setTimeout(() => {
+            if (notification.parentElement) {
+                notification.remove();
+            }
+        }, 5000);
+    }
+</script>
+
+<!-- Add CSRF token for AJAX requests -->
+@Html.AntiForgeryToken()
+
+
+
+<style>
+    .public-profile-container {
+        background: var(--bg-primary);
+        min-height: calc(100vh - 76px);
+        padding: 2rem 0;
+    }
+
+    .profile-header {
+        background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+        border: 1px solid var(--border-primary);
+        border-radius: 12px;
+        padding: 2.5rem;
+        margin-bottom: 2rem;
+        position: relative;
+        overflow: hidden;
+    }
+
+        .profile-header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+        }
+
+    .profile-info {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        margin-block: 2rem;
+    }
+
+    .profile-avatar {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 4px solid var(--accent-primary);
+        object-fit: cover;
+        box-shadow: 0 8px 25px rgba(88, 166, 255, 0.3);
+    }
+
+    .profile-avatar-emoji {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 120px;
+        height: 120px;
+        font-size: 3.5rem;
+        border-radius: 50%;
+        border: 4px solid var(--accent-primary);
+        background: var(--bg-primary);
+        box-shadow: 0 8px 25px rgba(88, 166, 255, 0.3);
+        color: var(--text-secondary);
+        user-select: none;
+    }
+
+    .profile-details h1 {
+        color: var(--text-primary);
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 0.5rem;
+    }
+
+    .profile-username {
+        color: var(--accent-primary);
+        font-size: 1.25rem;
+        font-weight: 500;
+        margin-bottom: 1rem;
+    }
+
+    .profile-bio {
+        color: var(--text-secondary);
+        font-size: 1.1rem;
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+        max-width: 600px;
+    }
+
+    .profile-meta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+    }
+
+    .profile-meta-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+        .profile-meta-item i {
+            color: var(--accent-primary);
+            width: 16px;
+        }
+
+    .social-links {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1.5rem;
+        flex-wrap: wrap;
+    }
+
+    .social-link {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        background: var(--bg-primary);
+        border: 1px solid var(--border-primary);
+        border-radius: 6px;
+        color: var(--text-primary);
+        text-decoration: none;
+        transition: all 0.2s ease;
+        font-size: 0.9rem;
+    }
+
+        .social-link:hover {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+        .social-links a:hover{
+            color: white !important;
+        }
+
+    .profile-actions {
+        position: absolute;
+        top: 2rem;
+        right: 2rem;
+        display: flex;
+        gap: 1rem;
+    }
+
+    .btn {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+        color: white;
+    }
+
+        .btn-primary:hover {
+            box-shadow: 0 8px 25px rgba(88, 166, 255, 0.3);
+        }
+
+    .btn-secondary {
+        background: var(--bg-primary);
+        color: var(--text-primary);
+        border: 1px solid var(--border-primary);
+    }
+
+        .btn-secondary:hover {
+            background: var(--text-primary);
+            color: var(--bg-primary);
+        }
+
+    .btn-success {
+        background: #28a745;
+        color: white;
+    }
+
+        .btn-success:hover {
+            background: #218838;
+        }
+
+    .content-grid {
+        display: grid;
+        grid-template-columns: 1fr 350px;
+        gap: 2rem;
+    }
+
+    .main-content {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+    }
+
+    .section-card {
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-primary);
+        border-radius: 8px;
+        padding: 2rem;
+    }
+
+    .section-title {
+        color: var(--text-primary);
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+        .section-title i {
+            color: var(--accent-primary);
+        }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 1.5rem;
+        background: var(--bg-primary);
+        border: 1px solid var(--border-primary);
+        border-radius: 8px;
+        transition: transform 0.2s ease;
+    }
+
+        .stat-item:hover {
+            border-color: var(--accent-primary);
+        }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--accent-primary);
+        display: block;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+
+    .favorite-languages {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .language-tag {
+        background: var(--accent-secondary);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-size: 0.85rem;
+        font-weight: 500;
+    }
+
+    .notes-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .note-card {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-primary);
+        border-radius: 8px;
+        padding: 1.5rem;
+        transition: all 0.2s ease;
+    }
+
+        .note-card:hover {
+            border-color: var(--accent-primary);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+        }
+
+    .note-title {
+        color: var(--text-primary);
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        line-height: 1.3;
+    }
+
+        .note-title a {
+            color: inherit;
+            text-decoration: none;
+            transition: color 0.2s ease;
+        }
+
+            .note-title a:hover {
+                color: var(--accent-primary);
+            }
+
+    .note-meta {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.75rem;
+    }
+
+    .note-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .note-tag {
+        background: var(--bg-secondary);
+        color: var(--text-primary);
+        padding: 0.25rem 0.6rem;
+        border-radius: 12px;
+        font-size: 0.75rem;
+        border: 1px solid var(--border-primary);
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-secondary);
+    }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+    .activity-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        color: var(--text-secondary);
+    }
+
+    .activity-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #28a745;
+    }
+
+        .activity-dot.inactive {
+            background: var(--text-secondary);
+        }
+
+    @@media (max-width: 1024px) {
+        .content-grid
+
+    {
+        grid-template-columns: 1fr;
+    }
+
+    .sidebar {
+        order: -1;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    }
+
+    }
+
+    @@media (max-width: 768px) {
+        .profile-info {
+            flex-direction: column;
+            text-align: center;
+            gap: 1.5rem;
+        }
+
+        .profile-actions {
+            position: static;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+            .profile-actions .btn {
+                width: 100%;
+            }
+
+    .profile-header {
+        padding: 2rem 1.5rem;
+    }
+
+    .profile-details h1 {
+        font-size: 2rem;
+    }
+
+    .stats-grid {
+        grid-template-columns: repeat(1, 1fr);
+    }
+
+    .profile-meta {
+        justify-content: center;
+    }
+
+    .notes-grid {
+        grid-template-columns: 1fr;
+    }
+
+    }
+</style>
+
+
+
+

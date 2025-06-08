@@ -4,6 +4,7 @@ using CodeStash.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 using System.Text.RegularExpressions;
 
 namespace CodeStash.Controllers;
@@ -51,6 +52,14 @@ public partial class AccountController(
             ModelState.AddModelError(string.Empty, "Invalid login attempt.");
             return View(model);
         }
+
+        // Add default claims
+        var claims = new List<Claim>()
+        {
+            new("profile_image_url", user.ProfileImageUrl ?? string.Empty)
+        };
+
+        await signInManager.UserManager.AddClaimsAsync(user, claims);
 
         return !string.IsNullOrEmpty(returnUrl) && Url.IsLocalUrl(returnUrl) ?
             Redirect(returnUrl)
@@ -129,6 +138,13 @@ public partial class AccountController(
         var result = await signInManager.UserManager.CreateAsync(user, model.Password);
         if (result.Succeeded)
         {
+            // Add default claims
+            var claims = new List<Claim>()
+            {
+                new("profile_image_url", user.ProfileImageUrl ?? string.Empty)
+            };
+
+            await signInManager.UserManager.AddClaimsAsync(user, claims);
             await signInManager.SignInAsync(user, isPersistent: false);
             return RedirectToAction("Index", "Home");
         }

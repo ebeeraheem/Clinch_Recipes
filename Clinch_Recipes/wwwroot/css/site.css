@@ -47,6 +47,27 @@ body {
     gap: 5px;
 }
 
+.profile-avatar-navbar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    font-size: 1.3rem;
+    border-radius: 50%;
+    border: 2px solid var(--accent-primary, #1976d2);
+    background: var(--bg-primary, #fff);
+    color: var(--text-secondary, #888);
+    user-select: none;
+    object-fit: cover;
+}
+
+.profile-avatar-emoji-navbar {
+    background: var(--bg-primary, #fff);
+    color: var(--text-secondary, #888);
+    font-size: 1.3rem;
+}
+
 .dot {
     width: 12px;
     height: 12px;

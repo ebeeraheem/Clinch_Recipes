@@ -12,6 +12,18 @@ public class UserHelper(IHttpContextAccessor httpContextAccessor)
             ?? throw new InvalidOperationException("User ID not found in claims.");
     }
 
+    public string? TryGetUserId()
+    {
+        return httpContextAccessor.HttpContext?.User
+            .FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    }
+
+    public string? TryGetProfileImageUrl()
+    {
+        return httpContextAccessor.HttpContext?.User
+            .FindFirst("profile_image_url")?.Value;
+    }
+
     public string GetUserEmail()
     {
         return httpContextAccessor.HttpContext?.User

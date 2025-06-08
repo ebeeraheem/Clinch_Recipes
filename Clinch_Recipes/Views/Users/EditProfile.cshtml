@@ -1,0 +1,709 @@
+﻿@using CodeStash.ViewModels
+@model EditProfileViewModel
+@{
+    ViewData["Title"] = "Edit Profile - CodeStash";
+}
+
+<div class="edit-profile-container">
+    <div class="container">
+        <div class="edit-profile-header">
+            <h1><i class="fas fa-user-edit text-primary me-3"></i>Edit Profile</h1>
+            <p>Update your information and customize how others see you on CodeStash</p>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-10">
+                <div class="form-card">
+                    <form asp-action="EditProfile" method="post" id="editProfileForm" novalidate>
+                        <div asp-validation-summary="All" class="validation-summary-errors"></div>
+
+                        <!-- Basic Information -->
+                        <div class="form-section">
+                            <h2 class="section-title">
+                                <i class="fas fa-user"></i>
+                                Basic Information
+                            </h2>
+
+                            <div class="form-group">
+                                <label asp-for="Username" class="form-label required"></label>
+                                <input asp-for="Username" 
+                                       class="form-control" 
+                                       placeholder="Choose a unique username"
+                                       id="usernameInput" />
+                                <span asp-validation-for="Username" class="field-validation-error"></span>
+                                <div class="form-help">Your username will be displayed in your profile URL: codestash.com/u/<span id="usernamePreview">@Model.Username</span></div>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label asp-for="FirstName" class="form-label"></label>
+                                    <input asp-for="FirstName" 
+                                           class="form-control" 
+                                           placeholder="Your first name"
+                                           id="firstNameInput" />
+                                    <span asp-validation-for="FirstName" class="field-validation-error"></span>
+                                </div>
+
+                                <div class="form-group">
+                                    <label asp-for="LastName" class="form-label"></label>
+                                    <input asp-for="LastName" 
+                                           class="form-control" 
+                                           placeholder="Your last name"
+                                           id="lastNameInput" />
+                                    <span asp-validation-for="LastName" class="field-validation-error"></span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Bio" class="form-label"></label>
+                                <textarea asp-for="Bio" 
+                                          class="form-control" 
+                                          rows="4"
+                                          placeholder="Tell us about yourself, your interests, and what you do..."
+                                          id="bioInput"></textarea>
+                                <span asp-validation-for="Bio" class="field-validation-error"></span>
+                                <div class="character-count" id="bioCount">0/500</div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="Location" class="form-label"></label>
+                                <input asp-for="Location" 
+                                       class="form-control" 
+                                       placeholder="e.g., San Francisco, CA or Remote"
+                                       id="locationInput" />
+                                <span asp-validation-for="Location" class="field-validation-error"></span>
+                            </div>
+                        </div>
+
+                        <!-- Social Links -->
+                        <div class="form-section">
+                            <h2 class="section-title">
+                                <i class="fas fa-link"></i>
+                                Social Links & Online Presence
+                            </h2>
+
+                            <div class="form-group">
+                                <label asp-for="Website" class="form-label"></label>
+                                <input asp-for="Website" 
+                                       class="form-control" 
+                                       type="url"
+                                       placeholder="https://yourwebsite.com"
+                                       id="websiteInput" />
+                                <span asp-validation-for="Website" class="field-validation-error"></span>
+                            </div>
+
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label asp-for="GitHubUsername" class="form-label"></label>
+                                    <input asp-for="GitHubUsername" 
+                                           class="form-control" 
+                                           placeholder="your-github-username"
+                                           id="githubInput" />
+                                    <span asp-validation-for="GitHubUsername" class="field-validation-error"></span>
+                                    <div class="form-help">Just your username, not the full URL</div>
+                                </div>
+
+                                <div class="form-group">
+                                    <label asp-for="TwitterHandle" class="form-label"></label>
+                                    <input asp-for="TwitterHandle" 
+                                           class="form-control" 
+                                           placeholder="your_twitter_handle"
+                                           id="twitterInput" />
+                                    <span asp-validation-for="TwitterHandle" class="field-validation-error"></span>
+                                    <div class="form-help">Without the @@symbol</div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="LinkedInProfile" class="form-label"></label>
+                                <input asp-for="LinkedInProfile" 
+                                       class="form-control" 
+                                       type="url"
+                                       placeholder="https://linkedin.com/in/yourprofile"
+                                       id="linkedinInput" />
+                                <span asp-validation-for="LinkedInProfile" class="field-validation-error"></span>
+                            </div>
+                        </div>
+
+                        <!-- Programming Languages -->
+                        <div class="form-section">
+                            <h2 class="section-title">
+                                <i class="fas fa-code"></i>
+                                Favorite Programming Languages
+                            </h2>
+
+                            <div class="form-group">
+                                <label asp-for="FavoriteLanguagesInput" class="form-label"></label>
+                                <input asp-for="FavoriteLanguagesInput" 
+                                       class="form-control" 
+                                       placeholder="Enter languages separated by commas"
+                                       id="languagesInput" />
+                                <span asp-validation-for="FavoriteLanguagesInput" class="field-validation-error"></span>
+                                <div class="form-help">e.g., JavaScript, Python, C#</div>
+                                
+                                <div class="languages-display" id="languagesDisplay"></div>
+                                
+                                <div class="suggested-languages">
+                                    <div class="suggested-languages-label">Popular languages:</div>
+                                    <div class="suggested-languages-list">
+                                        @foreach (var lang in Model.AvailableLanguages)
+                                        {
+                                            <span class="suggested-language" onclick="addSuggestedLanguage('@lang')">@lang</span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Privacy Settings -->
+                        <div class="form-section">
+                            <h2 class="section-title">
+                                <i class="fas fa-shield-alt"></i>
+                                Privacy Settings
+                            </h2>
+
+                            <div class="privacy-section">
+                                <div class="privacy-option">
+                                    <input asp-for="IsEmailPublic" type="checkbox" id="emailPublicToggle" />
+                                    <div class="privacy-info">
+                                        <h4>Public Email Address</h4>
+                                        <p>Allow others to see your email address on your public profile</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="form-actions">
+                            <a href="/User/Profile" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="fas fa-save"></i> Update Profile
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('editProfileForm');
+        const usernameInput = document.getElementById('usernameInput');
+        const bioInput = document.getElementById('bioInput');
+        const languagesInput = document.getElementById('languagesInput');
+        const languagesDisplay = document.getElementById('languagesDisplay');
+        const usernamePreview = document.getElementById('usernamePreview');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        // Initialize languages from the input
+        let selectedLanguages = languagesInput.value.split(',').map(l => l.trim()).filter(l => l);
+        updateLanguagesDisplay();
+
+        // Username preview update
+        usernameInput.addEventListener('input', () => {
+            usernamePreview.textContent = usernameInput.value || 'your-username';
+        });
+
+        // Character counter for bio
+        bioInput.addEventListener('input', () => updateCharacterCount('bioInput', 'bioCount', 500));
+
+        // Languages handling
+        languagesInput.addEventListener('input', handleLanguagesInput);
+        languagesInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' || e.key === ',') {
+                e.preventDefault();
+                addCurrentLanguage();
+            }
+        });
+
+        // Form submission
+        form.addEventListener('submit', (e) => {
+            if (!validateForm()) {
+                e.preventDefault();
+                return false;
+            }
+            
+            // Update languages input with current languages
+            languagesInput.value = selectedLanguages.join(', ');
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Updating...';
+        });
+
+        // Initialize character counter
+        updateCharacterCount('bioInput', 'bioCount', 500);
+
+        function updateCharacterCount(inputId, countId, maxLength) {
+            const input = document.getElementById(inputId);
+            const counter = document.getElementById(countId);
+            const length = input.value.length;
+            
+            counter.textContent = `${length}/${maxLength}`;
+            
+            if (length > maxLength * 0.9) {
+                counter.className = 'character-count danger';
+            } else if (length > maxLength * 0.75) {
+                counter.className = 'character-count warning';
+            } else {
+                counter.className = 'character-count';
+            }
+        }
+
+        function handleLanguagesInput() {
+            const value = languagesInput.value;
+            const lastChar = value.slice(-1);
+            
+            if (lastChar === ',' || lastChar === ';') {
+                addCurrentLanguage();
+            }
+        }
+
+        function addCurrentLanguage() {
+            const value = languagesInput.value.replace(/[,;]$/, '').trim();
+            if (value && !selectedLanguages.includes(value)) {
+                selectedLanguages.push(value);
+                updateLanguagesDisplay();
+                languagesInput.value = '';
+            }
+        }
+
+        function updateLanguagesDisplay() {
+            languagesDisplay.innerHTML = selectedLanguages.map(lang => `
+                <div class="language-item">
+                    ${lang}
+                    <button type="button" class="language-remove" onclick="removeLanguage('${lang}')">×</button>
+                </div>
+            `).join('');
+        }
+
+        window.removeLanguage = (lang) => {
+            selectedLanguages = selectedLanguages.filter(l => l !== lang);
+            updateLanguagesDisplay();
+        };
+
+        window.addSuggestedLanguage = (lang) => {
+            if (!selectedLanguages.includes(lang)) {
+                selectedLanguages.push(lang);
+                updateLanguagesDisplay();
+            }
+        };
+
+        function validateForm() {
+            let isValid = true;
+            
+            // Clear previous errors
+            const errorElements = form.querySelectorAll('.field-validation-error');
+            errorElements.forEach(el => el.textContent = '');
+            
+            // Validate username
+            if (!usernameInput.value.trim()) {
+                showFieldError('Username', 'Username is required');
+                isValid = false;
+            } else if (usernameInput.value.length < 3) {
+                showFieldError('Username', 'Username must be at least 3 characters long');
+                isValid = false;
+            } else if (!/^[a-zA-Z0-9_-]+$/.test(usernameInput.value)) {
+                showFieldError('Username', 'Username can only contain letters, numbers, hyphens, and underscores');
+                isValid = false;
+            }
+            
+            // Validate URLs
+            const urlFields = ['websiteInput', 'linkedinInput'];
+            urlFields.forEach(fieldId => {
+                const field = document.getElementById(fieldId);
+                if (field && field.value && !isValidUrl(field.value)) {
+                    const fieldName = fieldId.replace('Input', '').charAt(0).toUpperCase() + fieldId.replace('Input', '').slice(1);
+                    showFieldError(fieldName, `Please enter a valid ${fieldName} URL`);
+                    isValid = false;
+                }
+            });
+            
+            return isValid;
+        }
+
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+                return true;
+            } catch (_) {
+                return false;
+            }
+        }
+
+        function showFieldError(fieldName, message) {
+            const field = form.querySelector(`[name="${fieldName}"]`);
+            if (field) {
+                field.classList.add('error');
+                const errorSpan = field.parentNode.querySelector('.field-validation-error');
+                if (errorSpan) {
+                    errorSpan.textContent = message;
+                }
+            }
+        }
+
+        // Clear error styling on input
+        form.querySelectorAll('input, textarea').forEach(input => {
+            input.addEventListener('input', () => {
+                input.classList.remove('error');
+            });
+        });
+    });
+</script>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
+
+
+
+<style>
+    .edit-profile-container {
+        background: var(--bg-primary);
+        min-height: calc(100vh - 76px);
+        padding: 2rem 0;
+    }
+
+    .edit-profile-header {
+        background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
+        border: 1px solid var(--border-primary);
+        border-radius: 8px;
+        padding: 2rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+
+        .edit-profile-header h1 {
+            color: var(--text-primary);
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .edit-profile-header p {
+            color: var(--text-secondary);
+            font-size: 1.1rem;
+        }
+
+    .form-card {
+        background: var(--bg-tertiary);
+        border: 1px solid var(--border-primary);
+        border-radius: 12px;
+        padding: 2.5rem;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .form-section {
+        margin-bottom: 3rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid var(--border-primary);
+    }
+
+        .form-section:last-child {
+            margin-bottom: 0;
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+
+    .section-title {
+        color: var(--text-primary);
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+        .section-title i {
+            color: var(--accent-primary);
+        }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 2rem;
+        margin-bottom: 2rem;
+    }
+
+    .form-group {
+        margin-bottom: 2rem;
+    }
+
+    .form-label {
+        display: block;
+        color: var(--text-primary);
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        font-size: 1rem;
+    }
+
+        .form-label.required::after {
+            content: " *";
+            color: #dc3545;
+        }
+
+    .form-control {
+        width: 100%;
+        padding: 1rem;
+        background: var(--bg-primary);
+        border: 2px solid var(--border-primary);
+        border-radius: 6px;
+        color: var(--text-primary);
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        font-family: inherit;
+    }
+
+        .form-control:focus {
+            color: var(--text-primary);
+            outline: none;
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.1);
+            background: var(--bg-secondary);
+        }
+
+        .form-control.error {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+        }
+
+    .form-help {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-top: 0.5rem;
+        font-style: italic;
+    }
+
+    .field-validation-error {
+        color: #dc3545;
+        font-size: 0.875rem;
+        margin-top: 0.5rem;
+        display: block;
+    }
+
+    .validation-summary-errors {
+        background: rgba(220, 53, 69, 0.1);
+        border: 1px solid rgba(220, 53, 69, 0.3);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 2rem;
+    }
+
+        .validation-summary-errors ul {
+            margin: 0;
+            padding-left: 1.5rem;
+            color: #dc3545;
+        }
+
+    .languages-input-container {
+        position: relative;
+    }
+
+    .languages-display {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+        min-height: 2rem;
+    }
+
+    .language-item {
+        background: var(--accent-secondary);
+        color: white;
+        padding: 0.4rem 0.8rem;
+        border-radius: 16px;
+        font-size: 0.85rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .language-remove {
+        background: none;
+        border: none;
+        color: white;
+        cursor: pointer;
+        font-size: 0.9rem;
+        padding: 0;
+        margin: 0;
+        width: 16px;
+        height: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        transition: background-color 0.2s ease;
+    }
+
+        .language-remove:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+    .suggested-languages {
+        margin-top: 1rem;
+    }
+
+    .suggested-languages-label {
+        font-size: 0.875rem;
+        color: var(--text-secondary);
+        margin-bottom: 0.5rem;
+    }
+
+    .suggested-languages-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+
+    .suggested-language {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-primary);
+        color: var(--text-primary);
+        padding: 0.3rem 0.7rem;
+        border-radius: 14px;
+        font-size: 0.8rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+        .suggested-language:hover {
+            background: var(--accent-primary);
+            color: white;
+            border-color: var(--accent-primary);
+        }
+
+    .privacy-section {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-primary);
+        border-radius: 6px;
+        padding: 1.5rem;
+    }
+
+    .privacy-option {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
+    }
+
+        .privacy-option:last-child {
+            margin-bottom: 0;
+        }
+
+        .privacy-option input[type="checkbox"] {
+            width: 1.5rem;
+            height: 1.5rem;
+            accent-color: var(--accent-primary);
+        }
+
+    .privacy-info h4 {
+        color: var(--text-primary);
+        margin: 0 0 0.25rem 0;
+        font-size: 1rem;
+    }
+
+    .privacy-info p {
+        color: var(--text-secondary);
+        margin: 0;
+        font-size: 0.875rem;
+    }
+
+    .character-count {
+        font-size: 0.8rem;
+        color: var(--text-secondary);
+        text-align: right;
+        margin-top: 0.5rem;
+    }
+
+        .character-count.warning {
+            color: #ffc107;
+        }
+
+        .character-count.danger {
+            color: #dc3545;
+        }
+
+    .form-actions {
+        display: flex;
+        gap: 1rem;
+        justify-content: flex-end;
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid var(--border-primary);
+    }
+
+    .btn {
+        padding: 1rem 2rem;
+        border: none;
+        border-radius: 6px;
+        font-size: 1rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .btn-primary {
+        background: linear-gradient(135deg, var(--accent-secondary), var(--accent-primary));
+        color: white;
+    }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(88, 166, 255, 0.3);
+        }
+
+    .btn-secondary {
+        background: var(--text-secondary);
+        color: white;
+    }
+
+        .btn-secondary:hover {
+            background: var(--text-primary);
+            transform: translateY(-2px);
+        }
+
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+    }
+
+    @@media (max-width: 768px) {
+        .form-row
+
+    {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .form-card {
+        padding: 1.5rem;
+    }
+
+    .form-actions {
+        flex-direction: column;
+    }
+
+    .edit-profile-header {
+        padding: 1.5rem;
+    }
+
+        .edit-profile-header h1 {
+            font-size: 2rem;
+        }
+
+    }
+</style>
+
+
+
