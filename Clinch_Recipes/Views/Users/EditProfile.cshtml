@@ -15,7 +15,7 @@
             <div class="col-lg-10">
                 <div class="form-card">
                     <form asp-action="EditProfile" method="post" id="editProfileForm" novalidate>
-                        <div asp-validation-summary="All" class="validation-summary-errors"></div>
+                        <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
 
                         <!-- Basic Information -->
                         <div class="form-section">
@@ -125,7 +125,7 @@
                             </div>
                         </div>
 
-                        <!-- Programming Languages -->
+                        @* <!-- Programming Languages -->
                         <div class="form-section">
                             <h2 class="section-title">
                                 <i class="fas fa-code"></i>
@@ -153,7 +153,7 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
+                        </div> *@
 
                         <!-- Privacy Settings -->
                         <div class="form-section">

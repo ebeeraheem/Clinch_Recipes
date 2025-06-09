@@ -20,7 +20,7 @@ public class UsersController : Controller
         return View(viewModel);
     }
 
-    [HttpGet]
+    [HttpGet] // TODO: Change url to [HttpGet("{username}")]; i.e /users/{username}
     public async Task<IActionResult> PublicProfile(string username)
     {
         if (string.IsNullOrEmpty(username))

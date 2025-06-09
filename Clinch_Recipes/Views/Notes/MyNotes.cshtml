@@ -179,7 +179,7 @@
         </div>
 
         <!-- Pagination -->
-        @if (Model.Pagination.TotalPages > 1)
+        @if (Model.Pagination.TotalPages > 1) // Implement infinite scroll
         {
             <div class="pagination">
                 @if (Model.Pagination.HasPrevious)

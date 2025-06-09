@@ -16,7 +16,7 @@ public class ApplicationUser : IdentityUser, IAuditableEntity
     public bool IsEmailPublic { get; set; } = false;
 
     [MaxLength(100)]
-    public string? Location { get; set; } // City, Country
+    public string? Country { get; set; }
     public string? ProfileImageUrl { get; set; }
 
     // Social links

@@ -176,7 +176,7 @@
                             }
                         </div>
 
-                        @if (Model.Stats.PublicNotes > 6)
+                        @if (Model.Stats.PublicNotes > 6) // Implement infinite scroll
                         {
                             <div class="text-center mt-4">
                                 <a href="/Users/@Model.Username/notes" class="btn btn-secondary">
@@ -355,8 +355,6 @@
 
 <!-- Add CSRF token for AJAX requests -->
 @Html.AntiForgeryToken()
-
-
 
 <style>
     .public-profile-container {
