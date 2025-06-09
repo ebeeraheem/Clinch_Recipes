@@ -6,17 +6,14 @@
 
 <div class="edit-note-container">
     <div class="container">
-        <div class="edit-note-header">
-            <div class="header-content">
-                <div class="header-info">
-                    <h1><i class="fas fa-edit text-primary me-3"></i>Edit Code Snippet</h1>
-                </div>
-                <div class="note-stats">
-                    <div><strong>@Model.ViewCount</strong> views</div>
-                    <div>Created: @Model.CreatedAt.ToString("MMM dd, yyyy")</div>
-                    <div>Last Updated: @(Model.ModifiedAt?.ToString("MMM dd, yyyy") ?? "Never")</div>
-                    <div>Status: @(Model.IsPrivate ? "Private" : "Public")</div>
-                </div>
+        <div class="edit-note-header" style="text-align: center;">
+            <h1><i class="fas fa-edit text-primary me-3"></i>Edit Code Snippet</h1>
+            <p>Edit your code snippet and share updates with the CodeStash community</p>
+            <div class="note-stats">
+                <div><strong>@Model.ViewCount</strong> views</div>
+                <div>Created: @Model.CreatedAt.ToString("MMM dd, yyyy")</div>
+                <div>Last Updated: @(Model.ModifiedAt?.ToString("MMM dd, yyyy") ?? "Never")</div>
+                <div>Status: @(Model.IsPrivate ? "Private" : "Public")</div>
             </div>
         </div>
 
@@ -362,6 +359,11 @@
         text-align: right;
         color: var(--text-secondary);
         font-size: 0.9rem;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 1rem;
+        margin-top: 1rem;
     }
 
         .note-stats div {
