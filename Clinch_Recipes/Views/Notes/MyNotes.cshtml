@@ -77,9 +77,9 @@
                     <label for="tagFilter">Tag</label>
                     <select name="tag" id="tagFilter" class="filter-select">
                         <option value="">All Tags</option>
-                        @foreach (var tag in Model.Filter.AvailableTags)
+                        @foreach (var tagName in Model.Filter.AvailableTags.Select(tag => tag.Name))
                         {
-                            <option value="@tag.Name" selected="@(Model.Filter.Tag == tag.Name)">@tag.Name</option>
+                            <option value="@tagName" selected="@(Model.Filter.Tag == tagName)">@tagName</option>
                         }
                     </select>
                 </div>
@@ -120,7 +120,7 @@
                 <div class="note-card @(note.IsPrivate ? "private" : "")">
                     <div class="note-header">
                         <h3 class="note-title">
-                            <a asp-action="Edit" asp-route-id="@note.Id">@note.Title</a>
+                            <a href="/Note/@note.Slug">@note.Title</a>
                         </h3>
 
                         <div class="note-meta">

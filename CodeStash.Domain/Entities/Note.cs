@@ -20,6 +20,9 @@ public class Note : IAuditableEntity
     [MaxLength(8000)]
     public string Content { get; set; } = string.Empty;
 
+    public string Language { get; set; }
+    public string Description { get; set; }
+
     public bool IsPrivate { get; set; } = false;
     public int ViewCount { get; set; }
 

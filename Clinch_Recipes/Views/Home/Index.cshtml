@@ -90,9 +90,9 @@
                                     </label>
                                     <select class="form-select form-select-dark" id="tagFilter">
                                         <option value="">All Tags</option>
-                                        @foreach (var tag in Model.SearchFilter.AvailableTags)
+                                        @foreach (var tagName in Model.SearchFilter.AvailableTags.Select(tag => tag.Name))
                                         {
-                                            <option value="@tag.Name">@tag.Name</option>
+                                            <option value="@tagName">@tagName</option>
                                         }
                                     </select>
                                 </div>
@@ -153,7 +153,7 @@
                                     <div class="row align-items-center">
                                         <div class="col-lg-8">
                                             <h3 class="snippet-title mb-2">
-                                                <a href="/notes/@note.Slug" class="text-decoration-none text-white">
+                                                <a href="Note/@note.Slug" class="text-decoration-none text-white">
                                                     @note.Title
                                                 </a>
                                             </h3>
@@ -212,7 +212,7 @@
                                                     <i class="fas fa-fire text-warning"></i>
                                                 </div>
                                                 <h3 class="snippet-title mb-0">
-                                                    <a href="/notes/@note.Slug" class="text-decoration-none text-white">
+                                                    <a href="/Note/@note.Slug" class="text-decoration-none text-white">
                                                         @note.Title
                                                     </a>
                                                 </h3>
@@ -365,7 +365,7 @@
                             <div class="row align-items-center">
                                 <div class="col-lg-8">
                                     <h3 class="snippet-title mb-2">
-                                        <a href="/notes/${note.slug}" class="text-decoration-none text-white">
+                                        <a href="/Note/${note.slug}" class="text-decoration-none text-white">
                                             ${note.title}
                                         </a>
                                     </h3>

@@ -8,7 +8,9 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Memory;
 
 namespace CodeStash.Controllers;
+#pragma warning disable S6934 // A Route attribute should be added to the controller when a route template is specified at the action level
 public class NotesController : Controller
+#pragma warning restore S6934 // A Route attribute should be added to the controller when a route template is specified at the action level
 {
     //private const int PageSize = 40;
 
@@ -163,6 +165,109 @@ public class NotesController : Controller
 
     //    return RedirectToAction(nameof(Details), new { id = note.Id });
     //}
+
+    [Route("Note/{slug}")]
+    public async Task<IActionResult> Details(string slug)
+    {
+        if (string.IsNullOrEmpty(slug))
+        {
+            return NotFound();
+        }
+
+        var currentUserId = "ebeeraheem"; // Get from User.Identity in real implementation
+        var viewModel = GetDummyNoteDetails(slug, currentUserId);
+
+        if (viewModel == null)
+        {
+            return NotFound();
+        }
+
+        // Increment view count (in real implementation)
+        // await _noteService.IncrementViewCountAsync(viewModel.Note.Id, currentUserId);
+
+        return View(viewModel);
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> LikeNote(string noteId)
+    {
+        if (string.IsNullOrEmpty(noteId))
+        {
+            return Json(new { success = false, message = "Invalid note ID" });
+        }
+
+        // TODO: Implement actual like logic
+        return Json(new { success = true, isLiked = true, likeCount = 42 });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> BookmarkNote(string noteId)
+    {
+        if (string.IsNullOrEmpty(noteId))
+        {
+            return Json(new { success = false, message = "Invalid note ID" });
+        }
+
+        // TODO: Implement actual bookmark logic
+        return Json(new { success = true, isBookmarked = true });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> AddComment(AddCommentViewModel model)
+    {
+        if (!ModelState.IsValid)
+        {
+            return Json(new { success = false, message = "Invalid comment data" });
+        }
+
+        // TODO: Implement actual comment creation logic
+        var newComment = new NoteComment
+        {
+            Id = Guid.NewGuid().ToString(),
+            Content = model.Content,
+            AuthorId = "ebeeraheem",
+            Author = new ApplicationUser { UserName = "ebeeraheem", Id = "ebeeraheem" },
+            NoteId = model.NoteId,
+            ParentCommentId = model.ParentCommentId,
+            CreatedAt = DateTime.UtcNow,
+            LikesCount = 0,
+            IsLikedByCurrentUser = false,
+            Replies = new List<NoteComment>()
+        };
+
+        return Json(new
+        {
+            success = true,
+            comment = new
+            {
+                id = newComment.Id,
+                content = newComment.Content,
+                authorUsername = newComment.Author.UserName,
+                authorId = newComment.AuthorId,
+                createdAt = newComment.CreatedAt.ToString("yyyy-MM-ddTHH:mm:ssZ"),
+                isEdited = false,
+                likesCount = 0,
+                isLikedByCurrentUser = false,
+                parentCommentId = newComment.ParentCommentId
+            }
+        });
+    }
+
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> LikeComment(string commentId)
+    {
+        if (string.IsNullOrEmpty(commentId))
+        {
+            return Json(new { success = false, message = "Invalid comment ID" });
+        }
+
+        // TODO: Implement actual comment like logic
+        return Json(new { success = true, isLiked = true, likeCount = 5 });
+    }
 
     [HttpGet]
     public async Task<IActionResult> Create()
@@ -477,5 +582,288 @@ const allPositive = numbers.every(n => n > 0);",
             .Replace(",", "")
             .Replace("!", "")
             .Replace("?", "");
+    }
+
+    private NoteDetailsViewModel? GetDummyNoteDetails(string slug, string currentUserId)
+    {
+        // Simulate different notes based on slug
+        if (slug != "javascript-array-methods-cheat-sheet")
+        {
+            return new NoteDetailsViewModel
+            {
+                Note = new Note
+                {
+                    Id = "note_1",
+                    Title = "JavaScript Array Methods Cheat Sheet",
+                    Slug = "javascript-array-methods-cheat-sheet",
+                    Content = @"<h2>Essential JavaScript Array Methods</h2>
+
+<p>Here's a comprehensive guide to the most useful JavaScript array methods that every developer should know.</p>
+
+<h3>Transformation Methods</h3>
+
+<pre><code class=""language-javascript"">// Map - Transform each element
+const numbers = [1, 2, 3, 4, 5];
+const doubled = numbers.map(n => n * 2);
+console.log(doubled); // [2, 4, 6, 8, 10]
+
+// Filter - Select elements based on condition
+const evens = numbers.filter(n => n % 2 === 0);
+console.log(evens); // [2, 4]
+
+// Reduce - Accumulate values
+const sum = numbers.reduce((acc, n) => acc + n, 0);
+console.log(sum); // 15</code></pre>
+
+<h3>Search Methods</h3>
+
+<pre><code class=""language-javascript"">// Find - Get first matching element
+const users = [
+  { id: 1, name: 'John', active: true },
+  { id: 2, name: 'Jane', active: false },
+  { id: 3, name: 'Bob', active: true }
+];
+
+const activeUser = users.find(user => user.active);
+console.log(activeUser); // { id: 1, name: 'John', active: true }
+
+// FindIndex - Get index of first matching element
+const activeIndex = users.findIndex(user => user.active);
+console.log(activeIndex); // 0
+
+// Includes - Check if element exists
+const fruits = ['apple', 'banana', 'orange'];
+console.log(fruits.includes('banana')); // true</code></pre>
+
+<h3>Validation Methods</h3>
+
+<pre><code class=""language-javascript"">// Some - Check if at least one element passes test
+const hasEven = numbers.some(n => n % 2 === 0);
+console.log(hasEven); // true
+
+// Every - Check if all elements pass test
+const allPositive = numbers.every(n => n > 0);
+console.log(allPositive); // true</code></pre>
+
+<h3>Modification Methods</h3>
+
+<pre><code class=""language-javascript"">// Sort - Sort elements (mutates original array)
+const unsorted = [3, 1, 4, 1, 5, 9];
+const sorted = [...unsorted].sort((a, b) => a - b);
+console.log(sorted); // [1, 1, 3, 4, 5, 9]
+
+// Reverse - Reverse array order (mutates original)
+const reversed = [...numbers].reverse();
+console.log(reversed); // [5, 4, 3, 2, 1]</code></pre>
+
+<h3>Utility Methods</h3>
+
+<pre><code class=""language-javascript"">// Join - Convert array to string
+const words = ['Hello', 'World', 'from', 'JavaScript'];
+const sentence = words.join(' ');
+console.log(sentence); // ""Hello World from JavaScript""
+
+// Slice - Extract portion of array (non-mutating)
+const middle = numbers.slice(1, 4);
+console.log(middle); // [2, 3, 4]
+
+// Concat - Combine arrays (non-mutating)
+const moreNumbers = [6, 7, 8];
+const combined = numbers.concat(moreNumbers);
+console.log(combined); // [1, 2, 3, 4, 5, 6, 7, 8]</code></pre>
+
+<blockquote>
+<p><strong>Pro Tip:</strong> Always consider whether you need to mutate the original array or create a new one. Methods like <code>map</code>, <code>filter</code>, and <code>slice</code> return new arrays, while <code>push</code>, <code>pop</code>, and <code>sort</code> modify the original.</p>
+</blockquote>",
+                    IsPrivate = false,
+                    ViewCount = 1847,
+                    CreatedAt = DateTime.Parse("2025-05-15 14:30:00"),
+                    ModifiedAt = DateTime.Parse("2025-06-05 10:20:00"),
+                    AuthorId = "ebeeraheem",
+                    Language = "JavaScript",
+                    Description = "A comprehensive reference guide for the most commonly used JavaScript array methods with practical examples.",
+                    Tags = new List<Tag>
+                {
+                    new Tag { Name = "JavaScript" },
+                    new Tag { Name = "Arrays" },
+                    new Tag { Name = "Reference" },
+                    new Tag { Name = "Beginner" }
+                }
+                },
+                Author = new ApplicationUser
+                {
+                    Id = "ebeeraheem",
+                    UserName = "ebeeraheem",
+                    Email = "ebeeraheem@example.com"
+                },
+                IsOwner = currentUserId == "ebeeraheem",
+                IsLiked = false,
+                IsBookmarked = true,
+                IsFollowingAuthor = false,
+                Comments = GetDummyComments(),
+                RelatedNotes = GetDummyRelatedNotes(),
+                AuthorOtherNotes = GetDummyAuthorNotes(),
+                NewComment = new AddCommentViewModel { NoteId = "note_1" },
+                Stats = new NoteStatsViewModel
+                {
+                    Views = 1847,
+                    Likes = 234,
+                    Comments = 18,
+                    Bookmarks = 89,
+                    Shares = 45,
+                    CreatedAt = DateTime.Parse("2025-05-15 14:30:00"),
+                    ModifiedAt = DateTime.Parse("2025-06-05 10:20:00"),
+                    ViewerCountries = new List<string> { "US", "UK", "Canada", "Germany", "India" },
+                    ViewsPerDay = new Dictionary<string, int>
+                {
+                    { "2025-06-03", 45 },
+                    { "2025-06-04", 67 },
+                    { "2025-06-05", 89 },
+                    { "2025-06-06", 123 },
+                    { "2025-06-07", 156 },
+                    { "2025-06-08", 134 },
+                    { "2025-06-09", 23 }
+                }
+                }
+            };
+        }
+
+        return null; // Note not found
+    }
+
+    private List<NoteComment> GetDummyComments()
+    {
+        return new List<NoteComment>
+    {
+        new NoteComment
+        {
+            Id = "comment_1",
+            Content = "This is exactly what I was looking for! The examples are clear and concise. Thanks for sharing!",
+            AuthorId = "johndoe",
+            Author = new ApplicationUser { UserName = "johndoe", Id = "johndoe" },
+            NoteId = "note_1",
+            CreatedAt = DateTime.Parse("2025-06-07 15:45:00"),
+            LikesCount = 12,
+            IsLikedByCurrentUser = false,
+            Replies = new List<NoteComment>
+            {
+                new NoteComment
+                {
+                    Id = "comment_2",
+                    Content = "Glad it helped! I plan to add more advanced array methods in a follow-up post.",
+                    AuthorId = "ebeeraheem",
+                    Author = new ApplicationUser { UserName = "ebeeraheem", Id = "ebeeraheem" },
+                    NoteId = "note_1",
+                    ParentCommentId = "comment_1",
+                    CreatedAt = DateTime.Parse("2025-06-07 16:20:00"),
+                    LikesCount = 5,
+                    IsLikedByCurrentUser = true,
+                    Replies = new List<NoteComment>()
+                }
+            }
+        },
+        new NoteComment
+        {
+            Id = "comment_3",
+            Content = "Could you add examples for flatMap() and reduceRight()? Those are often overlooked but very useful.",
+            AuthorId = "sarahdev",
+            Author = new ApplicationUser { UserName = "sarahdev", Id = "sarahdev" },
+            NoteId = "note_1",
+            CreatedAt = DateTime.Parse("2025-06-08 09:30:00"),
+            LikesCount = 8,
+            IsLikedByCurrentUser = false,
+            Replies = new List<NoteComment>()
+        },
+        new NoteComment
+        {
+            Id = "comment_4",
+            Content = "Great reference! I bookmarked this for my junior developers. The pro tip about mutating vs non-mutating methods is gold 🏆",
+            AuthorId = "techleader",
+            Author = new ApplicationUser { UserName = "techleader", Id = "techleader" },
+            NoteId = "note_1",
+            CreatedAt = DateTime.Parse("2025-06-08 14:15:00"),
+            ModifiedAt = DateTime.Parse("2025-06-08 14:17:00"),
+            LikesCount = 15,
+            IsLikedByCurrentUser = true,
+            Replies = new List<NoteComment>()
+        }
+    };
+    }
+
+    private List<Note> GetDummyRelatedNotes()
+    {
+        return new List<Note>
+    {
+        new Note
+        {
+            Id = "related_1",
+            Title = "JavaScript Object Methods You Should Know",
+            Slug = "javascript-object-methods-guide",
+            ViewCount = 892,
+            CreatedAt = DateTime.Parse("2025-05-20 11:00:00"),
+            AuthorId = "johndoe",
+            Author = new ApplicationUser { UserName = "johndoe" },
+            Tags = new List<Tag> { new Tag { Name = "JavaScript" }, new Tag { Name = "Objects" } }
+        },
+        new Note
+        {
+            Id = "related_2",
+            Title = "Modern JavaScript ES6+ Features",
+            Slug = "modern-javascript-es6-features",
+            ViewCount = 1234,
+            CreatedAt = DateTime.Parse("2025-05-25 16:30:00"),
+            AuthorId = "sarahdev",
+            Author = new ApplicationUser { UserName = "sarahdev" },
+            Tags = new List<Tag> { new Tag { Name = "JavaScript" }, new Tag { Name = "ES6" } }
+        },
+        new Note
+        {
+            Id = "related_3",
+            Title = "Functional Programming in JavaScript",
+            Slug = "functional-programming-javascript",
+            ViewCount = 756,
+            CreatedAt = DateTime.Parse("2025-06-01 13:20:00"),
+            AuthorId = "funcpro",
+            Author = new ApplicationUser { UserName = "funcpro" },
+            Tags = new List<Tag> { new Tag { Name = "JavaScript" }, new Tag { Name = "Functional Programming" } }
+        }
+    };
+    }
+
+    private List<Note> GetDummyAuthorNotes()
+    {
+        return new List<Note>
+    {
+        new Note
+        {
+            Id = "author_1",
+            Title = "React Custom Hooks Best Practices",
+            Slug = "react-custom-hooks-best-practices",
+            ViewCount = 2156,
+            CreatedAt = DateTime.Parse("2025-04-10 09:15:00"),
+            AuthorId = "ebeeraheem",
+            Tags = new List<Tag> { new Tag { Name = "React" }, new Tag { Name = "Hooks" } }
+        },
+        new Note
+        {
+            Id = "author_2",
+            Title = "CSS Grid Layout Mastery",
+            Slug = "css-grid-layout-mastery",
+            ViewCount = 1689,
+            CreatedAt = DateTime.Parse("2025-03-28 14:45:00"),
+            AuthorId = "ebeeraheem",
+            Tags = new List<Tag> { new Tag { Name = "CSS" }, new Tag { Name = "Grid" } }
+        },
+        new Note
+        {
+            Id = "author_3",
+            Title = "TypeScript Type Guards Explained",
+            Slug = "typescript-type-guards-explained",
+            ViewCount = 943,
+            CreatedAt = DateTime.Parse("2025-05-02 11:30:00"),
+            AuthorId = "ebeeraheem",
+            Tags = new List<Tag> { new Tag { Name = "TypeScript" }, new Tag { Name = "Types" } }
+        }
+    };
     }
 }
