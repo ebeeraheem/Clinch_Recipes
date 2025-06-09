@@ -4,7 +4,9 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CodeStash.Controllers;
+#pragma warning disable S6934 // A Route attribute should be added to the controller when a route template is specified at the action level
 public class UsersController : Controller
+#pragma warning restore S6934 // A Route attribute should be added to the controller when a route template is specified at the action level
 {
     public IActionResult Index()
     {
@@ -20,7 +22,7 @@ public class UsersController : Controller
         return View(viewModel);
     }
 
-    [HttpGet] // TODO: Change url to [HttpGet("{username}")]; i.e /users/{username}
+    [Route("Users/PublicProfile/{username}")] // TODO: Change url to [HttpGet("{username}")]; i.e /users/{username}
     public async Task<IActionResult> PublicProfile(string username)
     {
         if (string.IsNullOrEmpty(username))

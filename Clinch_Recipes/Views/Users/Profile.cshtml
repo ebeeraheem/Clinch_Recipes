@@ -9,8 +9,8 @@
         <!-- Profile Header -->
         <div class="profile-header">
             <div class="profile-actions">
-                <button class="btn btn-secondary" onclick="shareProfile()">
-                    <i class="fas fa-share"></i> Share
+                <button class="btn btn-secondary" onclick="shareProfile('@Model.Username')">
+                    <i class="fas fa-share"></i> Share Profile
                 </button>
                 <a asp-action="EditProfile" class="btn btn-secondary">
                     <i class="fas fa-edit"></i> Edit Profile
@@ -302,7 +302,47 @@
     </div>
 </div>
 
+@section Scripts{
+    <script>
+            function shareProfile(username) {
+                const url = '/Users/PublicProfile/' + encodeURIComponent(username);
 
+                // Check if the browser supports the Web Share API
+                if (navigator.share) {
+                    navigator.share({
+                        title: '@Model.DisplayName (@Model.Username) - CodeStash',
+                        text: 'Check out @Model.DisplayName\'s profile on CodeStash',
+                        url: url
+                    }).catch(console.error);
+                } else {
+                    // Fallback to clipboard
+                    navigator.clipboard.writeText(window.location.origin + url).then(() => {
+                        showNotification('Profile link copied to clipboard!', 'success');
+                    }).catch(() => {
+                        showNotification('Could not copy link to clipboard', 'error');
+                    });
+                }
+            }
+
+            function showNotification(message, type) {
+                const notification = document.createElement('div');
+                notification.className = `alert alert-${type === 'success' ? 'success' : 'danger'} alert-dismissible fade show position-fixed`;
+                notification.style.cssText = 'top: 100px; right: 20px; z-index: 9999; min-width: 300px;';
+                notification.innerHTML = `
+                    ${message}
+                    <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+                `;
+
+                document.body.appendChild(notification);
+
+                setTimeout(() => {
+                    if (notification.parentElement) {
+                        notification.remove();
+                    }
+                }, 5000);
+            }
+    </script>
+}
 
 <style>
     .profile-container {
