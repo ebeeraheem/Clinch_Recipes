@@ -98,6 +98,75 @@ const editorConfig = {
 			},
 		]
 	},
+	codeBlock: {
+		languages: [
+			{ language: 'plaintext', label: 'Plain text' },
+
+			// Web Frontend
+			{ language: 'javascript', label: 'JavaScript' },
+			{ language: 'typescript', label: 'TypeScript' },
+			{ language: 'jsx', label: 'JSX' },
+			{ language: 'tsx', label: 'TSX' },
+			{ language: 'html', label: 'HTML' },
+			{ language: 'css', label: 'CSS' },
+			{ language: 'scss', label: 'SCSS' },
+
+			// Backend/Systems
+			{ language: 'python', label: 'Python' },
+			{ language: 'java', label: 'Java' },
+			{ language: 'csharp', label: 'C#' },
+			{ language: 'php', label: 'PHP' },
+			{ language: 'go', label: 'Go' },
+			{ language: 'rust', label: 'Rust' },
+			{ language: 'cpp', label: 'C++' },
+			{ language: 'c', label: 'C' },
+
+			// Mobile/Modern
+			{ language: 'swift', label: 'Swift' },
+			{ language: 'kotlin', label: 'Kotlin' },
+			{ language: 'dart', label: 'Dart' },
+
+			// Scripting/Other
+			{ language: 'ruby', label: 'Ruby' },
+			{ language: 'bash', label: 'Bash' },
+			{ language: 'powershell', label: 'PowerShell' },
+
+			// Data/Config
+			{ language: 'sql', label: 'SQL' },
+			{ language: 'json', label: 'JSON' },
+			{ language: 'yaml', label: 'YAML' },
+			{ language: 'xml', label: 'XML' },
+
+			// Functional/Academic
+			{ language: 'scala', label: 'Scala' },
+			{ language: 'clojure', label: 'Clojure' },
+			{ language: 'haskell', label: 'Haskell' },
+			{ language: 'elixir', label: 'Elixir' },
+			{ language: 'erlang', label: 'Erlang' },
+			{ language: 'fsharp', label: 'F#' },
+			{ language: 'lua', label: 'Lua' },
+
+			// Data Science/Analytics
+			{ language: 'r', label: 'R' },
+			{ language: 'matlab', label: 'MATLAB' },
+			{ language: 'julia', label: 'Julia' },
+
+			// DevOps/Infrastructure
+			{ language: 'dockerfile', label: 'Dockerfile' },
+			{ language: 'makefile', label: 'Makefile' },
+			{ language: 'nginx', label: 'Nginx' },
+
+			//// Assembly/Systems
+			//{ language: 'nasm', label: 'Assembly (NASM)' },
+			//{ language: 'glsl', label: 'GLSL' },
+
+			// Other Popular
+			{ language: 'graphql', label: 'GraphQL' },
+			{ language: 'toml', label: 'TOML' },
+			{ language: 'ini', label: 'INI' },
+			{ language: 'markdown', label: 'Markdown' }
+		]
+	},
 	htmlSupport: {
 		allow: [
 			{

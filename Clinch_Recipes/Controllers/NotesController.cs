@@ -680,7 +680,7 @@ console.log(combined); // [1, 2, 3, 4, 5, 6, 7, 8]</code></pre>
                     CreatedAt = DateTime.Parse("2025-05-15 14:30:00"),
                     ModifiedAt = DateTime.Parse("2025-06-05 10:20:00"),
                     AuthorId = "ebeeraheem",
-                    Language = "JavaScript",
+                    //Language = "JavaScript",
                     Description = "A comprehensive reference guide for the most commonly used JavaScript array methods with practical examples.",
                     Tags = new List<Tag>
                 {

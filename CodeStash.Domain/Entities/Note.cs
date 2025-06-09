@@ -17,12 +17,11 @@ public class Note : IAuditableEntity
     [MaxLength(200)]
     public string Slug { get; set; } = string.Empty;
 
-    [MaxLength(8000)]
+    [MaxLength(24000)]
     public string Content { get; set; } = string.Empty;
 
-    // TODO: Delete language and description properties if not needed
-    public string Language { get; set; }
-    public string Description { get; set; }
+    [MaxLength(500)]
+    public string Description { get; set; } = string.Empty;
 
     public bool IsPrivate { get; set; } = false;
     public int ViewCount { get; set; }

@@ -49,10 +49,6 @@
 
             <div class="note-meta">
                 <div class="author-info">
-                    @* <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=48&h=48&fit=crop&crop=face" 
-                         alt="@Model.Author.UserName" 
-                         class="author-avatar"
-                         onerror="this.src='https://via.placeholder.com/48x48/333/fff?text=@Model.Author.UserName.Substring(0, 1).ToUpper()'"> *@
                     @if (!string.IsNullOrWhiteSpace(Model.Author.ProfileImageUrl))
                     {
                         <img src="@Model.Author.ProfileImageUrl"
