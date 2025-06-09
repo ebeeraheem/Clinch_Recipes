@@ -31,7 +31,7 @@
                                        placeholder="Choose a unique username"
                                        id="usernameInput" />
                                 <span asp-validation-for="Username" class="field-validation-error"></span>
-                                <div class="form-help">Your username will be displayed in your profile URL: codestash.com/u/<span id="usernamePreview">@Model.Username</span></div>
+                                @* <div class="form-help">Your username will be displayed in your profile URL: codestash.com/u/<span id="usernamePreview">@Model.Username</span></div> *@
                             </div>
 
                             <div class="form-row">
@@ -122,6 +122,7 @@
                                        placeholder="https://linkedin.com/in/yourprofile"
                                        id="linkedinInput" />
                                 <span asp-validation-for="LinkedInProfile" class="field-validation-error"></span>
+                                <div class="form-help">Enter the full URL to your profile</div>
                             </div>
                         </div>
 

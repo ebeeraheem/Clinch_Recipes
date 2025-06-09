@@ -14,6 +14,8 @@ public class ApplicationUser : IdentityUser, IAuditableEntity
     [MaxLength(500)]
     public string? Bio { get; set; }
     public bool IsEmailPublic { get; set; } = false;
+    public bool IsLocationPublic { get; set; } = false;
+    public bool IsSocialLinksPublic { get; set; } = true;
 
     [MaxLength(100)]
     public string? Country { get; set; }

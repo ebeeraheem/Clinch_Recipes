@@ -19,16 +19,16 @@
                         <i class="fas fa-shield-alt me-2"></i>Privacy
                     </a>
                 </li>
-                <li class="settings-nav-item">
+                @* <li class="settings-nav-item">
                     <a href="#notifications" class="settings-nav-link" data-section="notifications">
                         <i class="fas fa-bell me-2"></i>Notifications
                     </a>
-                </li>
-                <li class="settings-nav-item">
+                </li> *@
+                @* <li class="settings-nav-item">
                     <a href="#display" class="settings-nav-link" data-section="display">
                         <i class="fas fa-palette me-2"></i>Display
                     </a>
-                </li>
+                </li> *@
                 <li class="settings-nav-item">
                     <a href="#account" class="settings-nav-link" data-section="account">
                         <i class="fas fa-user-cog me-2"></i>Account
@@ -47,7 +47,7 @@
                     </h2>
 
                     <div class="setting-group">
-                        <div class="setting-item">
+                        @* <div class="setting-item">
                             <div class="setting-info">
                                 <h4>Public Profile</h4>
                                 <p>Allow others to view your profile and public notes</p>
@@ -58,7 +58,7 @@
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
-                        </div>
+                        </div> *@
 
                         <div class="setting-item">
                             <div class="setting-info">
@@ -99,7 +99,7 @@
                             </div>
                         </div>
 
-                        <div class="setting-item">
+                        @* <div class="setting-item">
                             <div class="setting-info">
                                 <h4>Show Statistics</h4>
                                 <p>Display your coding statistics and activity on your profile</p>
@@ -110,11 +110,11 @@
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
-                        </div>
+                        </div> *@
                     </div>
                 </div>
 
-                <!-- Notification Settings -->
+                @* <!-- Notification Settings -->
                 <div class="settings-section" id="notifications-section">
                     <h2 class="section-title">
                         <i class="fas fa-bell"></i>
@@ -187,9 +187,9 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> *@
 
-                <!-- Display Settings -->
+                @* <!-- Display Settings -->
                 <div class="settings-section" id="display-section">
                     <h2 class="section-title">
                         <i class="fas fa-palette"></i>
@@ -270,7 +270,7 @@
                             </div>
                         </div>
                     </div>
-                </div>
+                </div> *@
 
                 <!-- Account Settings -->
                 <div class="settings-section" id="account-section">
@@ -282,7 +282,7 @@
                     <div class="setting-group">
                         <div class="setting-item">
                             <div class="setting-info">
-                                <h4>Change Password</h4>
+                                <h4>Change Password</h4> @* TODO: Check if a user has unsaved changes before navigating *@
                                 <p>Update your account password for security</p>
                             </div>
                             <div class="setting-control">
@@ -304,7 +304,7 @@
                             </div>
                         </div>
 
-                        <div class="setting-item">
+                        @* <div class="setting-item">
                             <div class="setting-info">
                                 <h4>Two-Factor Authentication</h4>
                                 <p>Add an extra layer of security to your account</p>
@@ -314,7 +314,7 @@
                                     <i class="fas fa-shield-alt"></i> Enable 2FA
                                 </button>
                             </div>
-                        </div>
+                        </div> *@
                     </div>
 
                     <div class="danger-zone">
@@ -328,9 +328,9 @@
 
                 <!-- Save Actions -->
                 <div class="save-actions">
-                    <div class="save-status" id="saveStatus">
+                    @* <div class="save-status" id="saveStatus">
                         Last saved: <span id="lastSavedTime">2025-06-08 at 3:20 PM</span>
-                    </div>
+                    </div> *@
                     <button type="submit" class="btn btn-primary" id="saveBtn">
                         <i class="fas fa-save"></i> Save Changes
                     </button>
@@ -752,7 +752,7 @@
         border-top: 1px solid var(--border-primary);
         padding: 1.5rem 2.5rem;
         display: flex;
-        justify-content: space-between;
+        justify-content: end;
         align-items: center;
     }
 

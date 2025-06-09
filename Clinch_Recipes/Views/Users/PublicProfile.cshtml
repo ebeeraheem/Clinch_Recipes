@@ -60,7 +60,7 @@
                             <span>Joined @Model.JoinedAt.ToString("MMMM yyyy")</span>
                         </div>
 
-                        @if (!string.IsNullOrEmpty(Model.Location))
+                        @if (!string.IsNullOrEmpty(Model.Location)) // TODO: Check if location is public
                         {
                             <div class="profile-meta-item">
                                 <i class="fas fa-map-marker-alt"></i>
@@ -98,6 +98,7 @@
                         </div> *@
                     </div>
 
+                    @* TODO: Check if social links is public *@
                     @if (!string.IsNullOrEmpty(Model.Website) || !string.IsNullOrEmpty(Model.GitHubUsername) || !string.IsNullOrEmpty(Model.TwitterHandle) || !string.IsNullOrEmpty(Model.LinkedInProfile))
                     {
                         <div class="social-links">
