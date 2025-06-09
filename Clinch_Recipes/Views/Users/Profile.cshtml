@@ -305,7 +305,7 @@
 @section Scripts{
     <script>
             function shareProfile(username) {
-                const url = '/Users/PublicProfile/' + encodeURIComponent(username);
+                const url = '/User/' + encodeURIComponent(username);
 
                 // Check if the browser supports the Web Share API
                 if (navigator.share) {

@@ -22,7 +22,7 @@ public class UsersController : Controller
         return View(viewModel);
     }
 
-    [Route("Users/PublicProfile/{username}")] // TODO: Change url to [HttpGet("{username}")]; i.e /users/{username}
+    [Route("User/{username}")] // TODO: Change url to [HttpGet("{username}")]; i.e /users/{username}
     public async Task<IActionResult> PublicProfile(string username)
     {
         if (string.IsNullOrEmpty(username))

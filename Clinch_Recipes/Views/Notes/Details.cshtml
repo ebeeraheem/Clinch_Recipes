@@ -1,8 +1,14 @@
-﻿@using CodeStash.ViewModels
+﻿@using CodeStash.Application.Utilities
+@using CodeStash.ViewModels
+
 @model NoteDetailsViewModel
+@inject UserHelper UserHelper
+
 @{
     ViewData["Title"] = $"{Model.Note.Title} - CodeStash"; // TODO: Remove redundant - CodeStash from all views
     ViewData["Description"] = !string.IsNullOrEmpty(Model.Note.Description) ? Model.Note.Description : Model.Note.Title; // TODO: Add description and meta tags to all views
+
+    var currentUserId = UserHelper.TryGetUserId();
 }
 
 <div class="note-details-container">
@@ -10,7 +16,7 @@
         <!-- Note Header -->
         <div class="note-header">
             <div class="note-actions">
-                <button class="action-btn @(Model.IsLiked ? "active" : "")" onclick="toggleLike('@Model.Note.Id')" id="likeBtn">
+                @* <button class="action-btn @(Model.IsLiked ? "active" : "")" onclick="toggleLike('@Model.Note.Id')" id="likeBtn">
                     <i class="fas fa-heart"></i>
                     <span id="likeCount">@Model.Stats.Likes</span>
                 </button>
@@ -18,20 +24,20 @@
                 <button class="action-btn @(Model.IsBookmarked ? "bookmarked" : "")" onclick="toggleBookmark('@Model.Note.Id')" id="bookmarkBtn">
                     <i class="fas fa-bookmark"></i>
                     <span>@(Model.IsBookmarked ? "Saved" : "Save")</span>
-                </button>
+                </button> *@
                 
                 <button class="action-btn" onclick="shareNote()">
                     <i class="fas fa-share"></i>
                     <span>Share Note</span>
                 </button>
                 
-                @if (Model.IsOwner)
+                @* @if (Model.AuthorId == currentUserId) // TODO: Verify that an author can edit their note
                 {
                     <a asp-action="Edit" asp-route-id="@Model.Note.Id" class="action-btn">
                         <i class="fas fa-edit"></i>
                         <span>Edit</span>
                     </a>
-                }
+                } *@
             </div>
 
             <h1 class="note-title">@Model.Note.Title</h1>
@@ -43,13 +49,26 @@
 
             <div class="note-meta">
                 <div class="author-info">
-                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=48&h=48&fit=crop&crop=face" 
+                    @* <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=48&h=48&fit=crop&crop=face" 
                          alt="@Model.Author.UserName" 
                          class="author-avatar"
-                         onerror="this.src='https://via.placeholder.com/48x48/333/fff?text=@Model.Author.UserName.Substring(0, 1).ToUpper()'">
+                         onerror="this.src='https://via.placeholder.com/48x48/333/fff?text=@Model.Author.UserName.Substring(0, 1).ToUpper()'"> *@
+                    @if (!string.IsNullOrWhiteSpace(Model.Author.ProfileImageUrl))
+                    {
+                        <img src="@Model.Author.ProfileImageUrl"
+                             alt="@Model.Author.UserName"
+                             class="rounded-circle me-2 profile-avatar-navbar"
+                             style="width: 48px; height: 48px; object-fit: cover;">
+                    }
+                    else
+                    {
+                        <span class="profile-avatar-navbar profile-avatar-emoji-navbar me-2" title="@Model.Author.UserName" aria-label="User" style="width:48px;height:48px;">
+                            <i class="fas fa-user" style="font-size:1.7rem;"></i>
+                        </span>
+                    }
                     <div class="author-details">
                         <h4>@Model.Author.UserName</h4>
-                        <a href="/User/PublicProfile/@Model.Author.UserName">View Profile</a>
+                        <a href="/User/@Model.Author.UserName">View Profile</a>
                     </div>
                 </div>
 
@@ -83,7 +102,7 @@
         <!-- Content Grid -->
         <div class="content-grid">
             <!-- Main Content -->
-            <div class="main-content">
+            <div class="main-content" style="padding-top:0;">
                 <!-- Note Content -->
                 <div class="note-content-card">
                     <div class="note-content" id="noteContent">
@@ -91,7 +110,7 @@
                     </div>
                 </div>
 
-                <!-- Comments Section -->
+                @* <!-- Comments Section -->
                 <div class="comments-section">
                     <div class="comments-header">
                         <h2 class="comments-title">
@@ -110,7 +129,20 @@
                                         <img src="https://via.placeholder.com/40x40/333/fff?text=@comment.Author.UserName.Substring(0, 1).ToUpper()" 
                                              alt="@comment.Author.UserName" 
                                              class="comment-avatar">
-                                        <a href="/User/PublicProfile/@comment.Author.UserName" class="comment-author">@comment.Author.UserName</a>
+                                        @if (!string.IsNullOrWhiteSpace(Model.Author.ProfileImageUrl))
+                                        {
+                                            <img src="@Model.Author.ProfileImageUrl"
+                                                 alt="@Model.Author.UserName"
+                                                 class="rounded-circle me-2 profile-avatar-navbar"
+                                                 style="width: 48px; height: 48px; object-fit: cover;">
+                                        }
+                                        else
+                                        {
+                                            <span class="profile-avatar-navbar profile-avatar-emoji-navbar me-2" title="@Model.Author.UserName" aria-label="User">
+                                                <i class="fas fa-user"></i>
+                                            </span>
+                                        }
+                                        <a href="/User/@comment.Author.UserName" class="comment-author">@comment.Author.UserName</a>
                                         <span class="comment-date" title="@comment.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss UTC")">@comment.CreatedAt.ToString("MMM dd, yyyy 'at' h:mm tt")</span>
                                         @if (comment.IsEdited)
                                         {
@@ -144,7 +176,20 @@
                                                         <img src="https://via.placeholder.com/40x40/333/fff?text=@reply.Author.UserName.Substring(0, 1).ToUpper()" 
                                                              alt="@reply.Author.UserName" 
                                                              class="comment-avatar">
-                                                        <a href="/User/PublicProfile/@reply.Author.UserName" class="comment-author">@reply.Author.UserName</a>
+                                                        @if (!string.IsNullOrWhiteSpace(Model.Author.ProfileImageUrl))
+                                                        {
+                                                            <img src="@Model.Author.ProfileImageUrl"
+                                                                 alt="@Model.Author.UserName"
+                                                                 class="rounded-circle me-2 profile-avatar-navbar"
+                                                                 style="width: 48px; height: 48px; object-fit: cover;">
+                                                        }
+                                                        else
+                                                        {
+                                                            <span class="profile-avatar-navbar profile-avatar-emoji-navbar me-2" title="@Model.Author.UserName" aria-label="User">
+                                                                <i class="fas fa-user"></i>
+                                                            </span>
+                                                        }
+                                                        <a href="/User/@reply.Author.UserName" class="comment-author">@reply.Author.UserName</a>
                                                         <span class="comment-date" title="@reply.CreatedAt.ToString("yyyy-MM-dd HH:mm:ss UTC")">@reply.CreatedAt.ToString("MMM dd, yyyy 'at' h:mm tt")</span>
                                                     </div>
                                                     
@@ -194,7 +239,7 @@
                             </div>
                         </form>
                     </div>
-                </div>
+                </div> *@
             </div>
 
             <!-- Sidebar -->
@@ -255,7 +300,7 @@
                     </div>
                 }
 
-                <!-- Note Statistics -->
+                @* <!-- Note Statistics -->
                 <div class="sidebar-card">
                     <h3 class="sidebar-title">
                         <i class="fas fa-chart-bar"></i>
@@ -280,7 +325,7 @@
                             <div style="font-size: 0.85rem; color: var(--text-secondary);">Bookmarks</div>
                         </div>
                     </div>
-                </div>
+                </div> *@
             </div>
         </div>
     </div>
@@ -598,6 +643,7 @@
 
         .note-stats {
             display: flex;
+            flex-wrap: wrap;
             gap: 1.5rem;
             color: var(--text-secondary);
             font-size: 0.95rem;
@@ -662,7 +708,6 @@
                 background: var(--accent-primary);
                 color: white;
                 border-color: var(--accent-primary);
-                transform: translateY(-2px);
             }
 
             .action-btn.active {
@@ -757,7 +802,7 @@
                 .note-content pre[class*="language-"] code {
                     background: transparent !important;
                     color: var(--text-primary) !important;
-                    padding: 1.5rem !important;
+                    padding: 2.5rem 1.5rem 1.5rem !important;
                     display: block !important;
                     overflow-x: auto !important;
                 }
@@ -821,21 +866,20 @@
         }
 
             .code-toolbar .toolbar {
-                position: absolute;
-                top: 0.5rem;
                 left: 1rem;
-                z-index: 10;
+                opacity: 1 !important;
             }
 
                 .code-toolbar .toolbar .toolbar-item button {
                     background: var(--bg-secondary);
                     border: 1px solid var(--border-primary);
                     color: var(--text-primary);
-                    padding: 0.25rem 0.5rem;
+                    padding: 0.25rem 0.75rem !important;
                     border-radius: 4px;
                     font-size: 0.75rem;
                     cursor: pointer;
                     transition: all 0.2s ease;
+                    margin-top: 0.5rem;
                 }
 
                     .code-toolbar .toolbar .toolbar-item button:hover {
@@ -883,7 +927,6 @@
 
             .related-note:hover {
                 border-color: var(--accent-primary);
-                transform: translateY(-2px);
             }
 
             .related-note:last-child {
@@ -953,7 +996,7 @@
             padding: 2rem;
         }
 
-        .comment {
+        /* .comment {
             margin-bottom: 2rem;
             padding-bottom: 2rem;
             border-bottom: 1px solid var(--border-primary);
@@ -963,7 +1006,7 @@
                 margin-bottom: 0;
                 padding-bottom: 0;
                 border-bottom: none;
-            }
+            } */
 
         .comment-header {
             display: flex;
@@ -1107,7 +1150,6 @@
         }
 
             .btn-primary:hover {
-                transform: translateY(-2px);
                 box-shadow: 0 8px 25px rgba(88, 166, 255, 0.3);
             }
 
@@ -1150,6 +1192,7 @@
 
             .note-content {
                 padding: 1.5rem;
+                max-width: 90vw;
             }
 
             .comment-content,
