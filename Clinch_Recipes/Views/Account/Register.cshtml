@@ -1,8 +1,7 @@
 ﻿@using CodeStash.ViewModels
 @model RegisterViewModel
 @{
-    ViewData["Title"] = "Sign Up - CodeStash";
-    // REMOVE ALL THE JS VALIDATION AND REPLACE WITH ASP.NET CORE VALIDATION
+    ViewData["Title"] = "Sign Up";
 }
 
 <div class="auth-container">
@@ -41,29 +40,68 @@
                                     <span asp-validation-for="Email"></span>
                                 </div>
                             </div>
-                            
+
                             <div class="form-group">
-                                <label asp-for="Password" for="Password" class="form-label"></label>
-                                <input asp-for="Password"
-                                       class="form-control" 
-                                       type="password"
-                                       placeholder="Create a strong password"
-                                       autocomplete="new-password" />
-                                <span asp-validation-for="Password"></span>
+                                <label asp-for="Password" class="form-label required"></label>
+                                <div class="password-input-container">
+                                    <input asp-for="Password"
+                                           class="form-control"
+                                           type="password"
+                                           placeholder="Create a strong password"
+                                           id="passwordInput" />
+                                    <button type="button" class="password-toggle" onclick="togglePassword('passwordInput', this)">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <span asp-validation-for="Password" class="field-validation-error"></span>
+
+                                <div class="password-strength">
+                                    <div class="strength-text" id="strengthText"></div>
+                                    <div class="strength-bar">
+                                        <div class="strength-fill" id="strengthFill"></div>
+                                    </div>
+                                </div>
+
+                                <div class="password-requirements">
+                                    <div class="requirement" id="req-length">
+                                        <i class="fas fa-times"></i>
+                                        <span>At least 8 characters</span>
+                                    </div>
+                                    <div class="requirement" id="req-lowercase">
+                                        <i class="fas fa-times"></i>
+                                        <span>At least one lowercase letter</span>
+                                    </div>
+                                    <div class="requirement" id="req-uppercase">
+                                        <i class="fas fa-times"></i>
+                                        <span>At least one uppercase letter</span>
+                                    </div>
+                                    <div class="requirement" id="req-number">
+                                        <i class="fas fa-times"></i>
+                                        <span>At least one number</span>
+                                    </div>
+                                    <div class="requirement" id="req-special">
+                                        <i class="fas fa-times"></i>
+                                        <span>At least one special character</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label asp-for="ConfirmPassword" class="form-label required"></label>
+                                <div class="password-input-container">
+                                    <input asp-for="ConfirmPassword"
+                                           class="form-control"
+                                           type="password"
+                                           placeholder="Confirm your password"
+                                           id="confirmPasswordInput" />
+                                    <button type="button" class="password-toggle" onclick="togglePassword('confirmPasswordInput', this)">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                                <span asp-validation-for="ConfirmPassword" class="field-validation-error"></span>
                             </div>
                             
-                            <div class="form-group">
-                                <label asp-for="ConfirmPassword" for="ConfirmPassword" class="form-label"></label>
-                                <input asp-for="ConfirmPassword" 
-                                       class="form-control" 
-                                       type="password"
-                                       placeholder="Confirm your password"
-                                       autocomplete="new-password" />
-                                <span asp-validation-for="ConfirmPassword"></span>
-                            </div>
-                            
-                            <button type="submit" class="btn-auth">
-                                <span class="loading-spinner"></span>
+                            <button type="submit" class="btn-auth" id="submitBtn">
                                 <span class="btn-text">Create Account</span>
                             </button>
                         </form>
@@ -71,7 +109,7 @@
                         <div class="auth-links">
                             <p class="text-muted">Already have an account? 
                                 <a asp-action="Login" asp-controller="Account">
-                                    Sign in here
+                                    Sign in
                                 </a>
                             </p>
                         </div>
@@ -85,6 +123,168 @@
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
 }
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const form = document.getElementById('registerForm');
+        const passwordInput = document.getElementById('passwordInput');
+        const confirmPasswordInput = document.getElementById('confirmPasswordInput');
+        const submitBtn = document.getElementById('submitBtn');
+        const strengthText = document.getElementById('strengthText');
+        const strengthFill = document.getElementById('strengthFill');
+
+        // Password strength checking
+        passwordInput.addEventListener('input', () => {
+            updatePasswordStrength();
+            validateConfirmPassword();
+        });
+
+        confirmPasswordInput.addEventListener('input', validateConfirmPassword);
+
+        // Form submission
+        form.addEventListener('submit', (e) => {
+            if (!validateForm()) {
+                e.preventDefault();
+                return false;
+            }
+
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Creating Account...';
+        });
+
+        function updatePasswordStrength() {
+            const password = passwordInput.value;
+            let score = 0;
+            let feedback = '';
+
+            // Check requirements
+            const requirements = [
+                { id: 'req-length', test: password.length >= 8 },
+                { id: 'req-lowercase', test: /[a-z]/.test(password) },
+                { id: 'req-uppercase', test: /[A-Z]/.test(password) },
+                { id: 'req-number', test: /[0-9]/.test(password) },
+                { id: 'req-special', test: /[^A-Za-z0-9]/.test(password) }
+            ];
+
+            requirements.forEach(req => {
+                const element = document.getElementById(req.id);
+                const icon = element.querySelector('i');
+
+                if (req.test) {
+                    element.classList.add('met');
+                    icon.className = 'fas fa-check';
+                    score++;
+                } else {
+                    element.classList.remove('met');
+                    icon.className = 'fas fa-times';
+                }
+            });
+
+            // Set strength level
+            if (password.length === 0) {
+                feedback = '';
+                strengthFill.className = 'strength-fill';
+            } else if (score < 3) {
+                feedback = 'Weak password';
+                strengthFill.className = 'strength-fill strength-weak';
+            } else if (score < 4) {
+                feedback = 'Fair password';
+                strengthFill.className = 'strength-fill strength-fair';
+            } else if (score < 5) {
+                feedback = 'Good password';
+                strengthFill.className = 'strength-fill strength-good';
+            } else {
+                feedback = 'Strong password';
+                strengthFill.className = 'strength-fill strength-strong';
+            }
+
+            strengthText.textContent = feedback;
+        }
+
+        function validateConfirmPassword() {
+            const password = passwordInput.value;
+            const confirmPassword = confirmPasswordInput.value;
+            const errorSpan = confirmPasswordInput.parentNode.nextElementSibling;
+
+            if (confirmPassword && password !== confirmPassword) {
+                confirmPasswordInput.classList.add('error');
+                confirmPasswordInput.classList.remove('valid');
+                if (errorSpan) {
+                    errorSpan.textContent = 'The password and confirmation password do not match';
+                    errorSpan.style.display = 'block';
+                }
+            } else if (confirmPassword) {
+                confirmPasswordInput.classList.remove('error');
+                confirmPasswordInput.classList.add('valid');
+                if (errorSpan) {
+                    errorSpan.textContent = '';
+                    errorSpan.style.display = 'none';
+                }
+            }
+        }
+
+        function validateForm() {
+            let isValid = true;
+
+            // Clear previous errors
+            const errorElements = form.querySelectorAll('.field-validation-error');
+            errorElements.forEach(el => {
+                el.textContent = '';
+                el.style.display = 'none';
+            });
+
+            // Validate password
+            if (!passwordInput.value.trim()) {
+                showFieldError(passwordInput, 'Password is required');
+                isValid = false;
+            } else if (passwordInput.value.length < 8) {
+                showFieldError(passwordInput, 'Password must be at least 8 characters long');
+                isValid = false;
+            }
+
+            // Validate confirm password
+            if (!confirmPasswordInput.value.trim()) {
+                showFieldError(confirmPasswordInput, 'Please confirm your password');
+                isValid = false;
+            } else if (passwordInput.value !== confirmPasswordInput.value) {
+                showFieldError(confirmPasswordInput, 'The password and confirmation password do not match');
+                isValid = false;
+            }
+
+            return isValid;
+        }
+
+        function showFieldError(field, message) {
+            field.classList.add('error');
+            const errorSpan = field.parentNode.nextElementSibling;
+            if (errorSpan && errorSpan.classList.contains('field-validation-error')) {
+                errorSpan.textContent = message;
+                errorSpan.style.display = 'block';
+            }
+        }
+
+        // Clear error styling on input
+        [passwordInput, confirmPasswordInput].forEach(input => {
+            input.addEventListener('input', () => {
+                input.classList.remove('error');
+            });
+        });
+    });
+
+    function togglePassword(inputId, button) {
+        const input = document.getElementById(inputId);
+        const icon = button.querySelector('i');
+
+        if (input.type === 'password') {
+            input.type = 'text';
+            icon.className = 'fas fa-eye-slash';
+        } else {
+            input.type = 'password';
+            icon.className = 'fas fa-eye';
+        }
+    }
+</script>
 
 <style>
     .auth-container {
@@ -101,12 +301,13 @@
         border-radius: 12px;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
         overflow: hidden;
-        max-width: 900px;
+        max-width: 600px;
         width: 100%;
+        margin-inline: auto;
     }
 
     .auth-header {
-        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        background: linear-gradient(135deg, var(--accent-secondary) 0%, var(--accent-primary) 100%);
         color: white;
         text-align: center;
         padding: 3rem 2rem;
@@ -131,7 +332,6 @@
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 2rem;
-        margin-bottom: 2rem;
     }
 
     .form-group {
@@ -180,7 +380,7 @@
     .btn-auth {
         width: 100%;
         padding: 1rem 2rem;
-        background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+        background: linear-gradient(135deg, var(--accent-secondary) 0%, var(--accent-primary) 100%);
         color: white;
         border: none;
         border-radius: 8px;
@@ -192,7 +392,6 @@
     }
 
         .btn-auth:hover {
-            transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(40, 167, 69, 0.3);
         }
 
@@ -224,6 +423,28 @@
                 text-decoration: underline;
             }
 
+    .password-toggle {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        font-size: 1.1rem;
+        padding: 0.25rem;
+        transition: color 0.2s ease;
+    }
+
+        .password-toggle:hover {
+            color: var(--accent-primary);
+        }
+
+    .password-input-container {
+        position: relative;
+    }
+
     .field-validation-error {
         color: #dc3545;
         font-size: 0.875rem;
@@ -242,7 +463,7 @@
         background: rgba(220, 53, 69, 0.1);
         border: 1px solid rgba(220, 53, 69, 0.3);
         border-radius: 8px;
-        padding: 1rem;
+        padding: 1.5rem;
         margin-bottom: 2rem;
     }
 
@@ -253,22 +474,26 @@
         }
 
     .password-strength {
-        margin-top: 0.5rem;
+        margin-top: 0.75rem;
+    }
+
+    .strength-text {
         font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
     }
 
     .strength-bar {
-        height: 4px;
+        height: 6px;
         background: var(--border-primary);
-        border-radius: 2px;
-        margin-top: 0.5rem;
+        border-radius: 3px;
         overflow: hidden;
     }
 
     .strength-fill {
         height: 100%;
         transition: all 0.3s ease;
-        border-radius: 2px;
+        border-radius: 3px;
     }
 
     .strength-weak {
@@ -291,26 +516,35 @@
         width: 100%;
     }
 
-    .loading-spinner {
-        display: none;
-        width: 20px;
-        height: 20px;
-        border: 2px solid transparent;
-        border-top: 2px solid currentColor;
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin-right: 0.5rem;
+    .password-requirements {
+        background: var(--bg-primary);
+        border: 1px solid var(--border-primary);
+        border-radius: 6px;
+        padding: 1rem;
+        margin-top: 0.75rem;
     }
 
-    @@keyframes spin {
-        0% {
-            transform: rotate(0deg);
+    .requirement {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.875rem;
+        margin-bottom: 0.5rem;
+        color: var(--text-secondary);
+    }
+
+        .requirement:last-child {
+            margin-bottom: 0;
         }
 
-        100% {
-            transform: rotate(360deg);
+        .requirement.met {
+            color: #28a745;
         }
-    }
+
+        .requirement i {
+            width: 16px;
+            font-size: 0.8rem;
+        }
 
     @@media (max-width: 768px) {
         .form-row {
