@@ -112,6 +112,22 @@ public partial class AccountController(
             return View(model);
         }
 
+        // Check if the username starts with a reserved prefix
+        if (ReservedUsernames.StartsWithReservedPrefix(model.Username))
+        {
+            ModelState.AddModelError(nameof(model.Username), "Username cannot start with a reserved prefix.");
+            return View(model);
+        }
+
+        // Check if username is reserved (you can implement your own logic here)
+        var (IsValid, ErrorMessage) = ReservedUsernames.ValidateUsername(model.Username);
+
+        if (!IsValid)
+        {
+            ModelState.AddModelError(nameof(model.Username), ErrorMessage);
+            return View(model);
+        }
+
         // Check if username exists
         var existingUser = await signInManager.UserManager.FindByNameAsync(model.Username);
         if (existingUser is not null)
