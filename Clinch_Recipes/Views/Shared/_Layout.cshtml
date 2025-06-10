@@ -1,16 +1,45 @@
 ﻿@using CodeStash.Application.Utilities
 @inject UserHelper UserHelper
 
-@{
-    var profileImageUrl = UserHelper.TryGetProfileImageUrl();
-}
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - CodeStash</title>
+
+    <title>@ViewData["Title"]</title>
+    <meta name="description" content="@ViewData["Description"]" />
+    <meta name="keywords" content="@ViewData["Keywords"]" />
+    <meta name="author" content="CodeStash Team" />
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="@Context.Request.Scheme://@Context.Request.Host@Context.Request.Path" />
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content="@ViewData["Title"]" />
+    <meta property="og:description" content="@ViewData["Description"]" />
+    <meta property="og:url" content="@Context.Request.Scheme://@Context.Request.Host@Context.Request.Path" />
+    <meta property="og:site_name" content="CodeStash" />
+    <!-- Optionally add an image for sharing -->
+    @if (ViewData["OgImage"] is not null)
+    {
+        <meta property="og:image" content="@ViewData["OgImage"]" />
+    }
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="@ViewData["Title"]" />
+    <meta name="twitter:description" content="@ViewData["Description"]" />
+    @if (ViewData["OgImage"] is not null)
+    {
+        <meta name="twitter:image" content="@ViewData["OgImage"]" />
+    }
+
+    <!-- Favicon and theme color -->
+    <link rel="icon" type="image/png" href="~/favicon.png" />
+    <meta name="theme-color" content="#58a6ff" />
+
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -54,29 +83,15 @@
                     <div class="d-flex align-items-center">
                         @if (UserHelper.IsAuthenticated())
                         {
-                            @* <div class="dropdown">
-                                <button class="btn btn-dark dropdown-toggle" type="button" id="userDropdown" data-bs-toggle="dropdown">
-                                    <i class="fas fa-user-circle me-1"></i> @UserHelper.GetUserName()
-                                </button>
-                                <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark">
-                                    <li><a class="dropdown-item" href="/profile"><i class="fas fa-user me-2"></i> Profile</a></li>
-                                    <li><a class="dropdown-item" href="/Notes/MyNotes"><i class="fas fa-sticky-note me-2"></i> My Notes</a></li>
-                                    <li><a class="dropdown-item" href="/settings"><i class="fas fa-cog me-2"></i> Settings</a></li>
-                                    <li><hr class="dropdown-divider"></li>
-                                    <li>
-                                        <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                                            <button type="submit" class="dropdown-item">
-                                                <i class="fas fa-sign-out-alt me-2"></i> Logout
-                                            </button>
-                                        </form>
-                                    </li>
-                                </ul>
-                            </div> *@
-
                             var userName = UserHelper.GetUserName();
+                            var profileImageUrl = UserHelper.TryGetProfileImageUrl();
 
                             <div class="dropdown">
-                                <button class="btn btn-dark dropdown-toggle d-flex align-items-center" type="button" id="userDropdown" data-bs-toggle="dropdown">
+                                <button class="btn btn-dark dropdown-toggle d-flex align-items-center"
+                                    type="button"
+                                    id="userDropdown"
+                                    data-bs-toggle="dropdown">
+
                                     @if (!string.IsNullOrWhiteSpace(profileImageUrl))
                                     {
                                         <img src="@profileImageUrl"
@@ -86,7 +101,10 @@
                                     }
                                     else
                                     {
-                                        <span class="profile-avatar-navbar profile-avatar-emoji-navbar me-2" title="@userName" aria-label="User">
+                                        <span class="profile-avatar-navbar profile-avatar-emoji-navbar me-2"
+                                            title="@userName"
+                                            aria-label="User">
+
                                             <i class="fas fa-user"></i>
                                         </span>
                                     }
@@ -95,11 +113,27 @@
                                 <ul class="dropdown-menu dropdown-menu-end dropdown-menu-dark w-100">
                                     <li><h6 class="dropdown-header">@@@userName</h6></li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="/Users/Profile"><i class="fas fa-user me-2"></i> My Profile</a></li>
-                                    <li><a class="dropdown-item" href="/Notes/MyNotes"><i class="fas fa-sticky-note me-2"></i> My Notes</a></li>
-                                    <li><a class="dropdown-item" href="/Users/Settings"><i class="fas fa-cog me-2"></i> Settings</a></li>
+                                    <li>
+                                        <a class="dropdown-item" href="/Users/Profile">
+                                            <i class="fas fa-user me-2"></i> My Profile
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="/Notes/MyNotes">
+                                            <i class="fas fa-sticky-note me-2"></i> My Notes
+                                        </a>
+                                    </li>
+                                    <li>
+                                        <a class="dropdown-item" href="/Users/Settings">
+                                            <i class="fas fa-cog me-2"></i> Settings
+                                        </a>
+                                    </li>
                                     <li><hr class="dropdown-divider"></li>
-                                    <li><a class="dropdown-item" href="/User/@userName"><i class="fas fa-external-link-alt me-2"></i> View Public Profile</a></li>
+                                    <li>
+                                        <a class="dropdown-item" href="/User/@userName">
+                                            <i class="fas fa-external-link-alt me-2"></i> View Public Profile
+                                        </a>
+                                    </li>
                                     <li><hr class="dropdown-divider"></li>
                                     <li>
                                         <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
@@ -131,7 +165,7 @@
     </header>
 
     <main role="main" class="main-content" aria-label="Main content">
-        @if (TempData["SuccessMessage"] != null)
+        @if (TempData["SuccessMessage"] is not null)
         {
             <div class="alert alert-success alert-dismissible fade show m-3" role="alert" style="background: rgba(40, 167, 69, 0.1); border: 1px solid rgba(40, 167, 69, 0.3); color: #28a745;">
                 <i class="fas fa-check-circle me-2"></i>
@@ -140,7 +174,7 @@
             </div>
         }
 
-        @if (TempData["ErrorMessage"] != null)
+        @if (TempData["ErrorMessage"] is not null)
         {
             <div class="alert alert-danger alert-dismissible fade show m-3" role="alert">
                 <i class="fas fa-exclamation-circle me-2"></i>
@@ -149,7 +183,7 @@
             </div>
         }
 
-        @if (TempData["InfoMessage"] != null)
+        @if (TempData["InfoMessage"] is not null)
         {
             <div class="alert alert-info alert-dismissible fade show m-3" role="alert" style="background: rgba(88, 166, 255, 0.1); border: 1px solid rgba(88, 166, 255, 0.3); color: var(--accent-primary);">
                 <i class="fas fa-info-circle me-2"></i>
@@ -166,14 +200,14 @@
             <div class="row">
                 <div class="col-md-6">
                     <h5 class="text-primary">CodeStash</h5>
-                    <p class="text-muted">Your personal code snippets library, now open to the world.</p>
+                    <p class="text-muted">A secure and organized place to stash, manage, and share your code snippets with ease.</p>
                 </div>
                 <div class="col-md-6 text-md-end">
-                    <div class="social-links">
+                    @* <div class="social-links">
                         <a href="#" class="text-muted me-3"><i class="fab fa-github"></i></a>
                         <a href="#" class="text-muted me-3"><i class="fab fa-twitter"></i></a>
                         <a href="#" class="text-muted"><i class="fas fa-envelope"></i></a>
-                    </div>
+                    </div> *@
                     <p class="text-muted mt-2">&copy; @(DateTime.UtcNow.Year) CodeStash. All rights reserved.</p>
                 </div>
             </div>

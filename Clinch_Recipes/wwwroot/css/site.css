@@ -253,6 +253,7 @@ body {
 /* Navbar */
 .navbar-dark .navbar-nav .nav-link {
     color: var(--text-primary);
+    padding-block: 0.75rem;
 }
 
     .navbar-dark .navbar-nav .nav-link:hover {
