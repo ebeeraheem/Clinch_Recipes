@@ -4,6 +4,7 @@ using CodeStash.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace CodeStash.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250610071452_IncreaseCountryCodeLengthAndRemoveFromUser")]
+    partial class IncreaseCountryCodeLengthAndRemoveFromUser
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -417,9 +420,6 @@ namespace CodeStash.Infrastructure.Persistence.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
 
-                    b.Property<string>("CountryCode")
-                        .HasColumnType("nvarchar(10)");
-
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime2");
 
@@ -471,8 +471,6 @@ namespace CodeStash.Infrastructure.Persistence.Migrations
 
                     b.Property<string>("WebsiteUrl")
                         .HasColumnType("nvarchar(max)");
-
-                    b.HasIndex("CountryCode");
 
                     b.HasDiscriminator().HasValue("ApplicationUser");
                 });
@@ -552,15 +550,6 @@ namespace CodeStash.Infrastructure.Persistence.Migrations
                         .HasForeignKey("TagsId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("CodeStash.Domain.Entities.ApplicationUser", b =>
-                {
-                    b.HasOne("CodeStash.Domain.Models.Country", "Country")
-                        .WithMany()
-                        .HasForeignKey("CountryCode");
-
-                    b.Navigation("Country");
                 });
 #pragma warning restore 612, 618
         }

@@ -20,6 +20,8 @@ public class ApplicationDbContext(
     public DbSet<Note> Notes { get; set; } = null!;
     public DbSet<Tag> Tags { get; set; } = null!;
 
+    public DbSet<Country> Countries { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         base.OnModelCreating(builder);

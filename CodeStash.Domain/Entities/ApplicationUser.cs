@@ -1,4 +1,5 @@
 ﻿using CodeStash.Domain.Contracts;
+using CodeStash.Domain.Models;
 using Microsoft.AspNetCore.Identity;
 using System.ComponentModel.DataAnnotations;
 
@@ -13,13 +14,13 @@ public class ApplicationUser : IdentityUser, IAuditableEntity
 
     [MaxLength(500)]
     public string? Bio { get; set; }
+    public string? ProfileImageUrl { get; set; }
+    public Country? Country { get; set; }
+
+    // Public profile settings
     public bool IsEmailPublic { get; set; } = false;
     public bool IsLocationPublic { get; set; } = false;
     public bool IsSocialLinksPublic { get; set; } = true;
-
-    [MaxLength(100)]
-    public string? Country { get; set; }
-    public string? ProfileImageUrl { get; set; }
 
     // Social links
     public string? WebsiteUrl { get; set; }

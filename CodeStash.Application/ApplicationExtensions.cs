@@ -107,6 +107,7 @@ public static class ApplicationExtensions
                 services.SeedRoles(logger).GetAwaiter().GetResult();
                 services.SeedUsers(configuration, logger).GetAwaiter().GetResult();
                 services.SeedTags(logger).GetAwaiter().GetResult();
+                services.SeedCountries(logger).GetAwaiter().GetResult();
             }
             catch (Exception ex)
             {

@@ -1,11 +1,13 @@
 ﻿using CodeStash.Domain.Entities;
 using CodeStash.Domain.Enums;
+using CodeStash.Domain.Models;
 using CodeStash.Infrastructure.Persistence.Seeder.SeedData;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using System.Text.Json;
 
 namespace CodeStash.Infrastructure.Persistence.Seeder;
 public static class DbInitializer
@@ -127,5 +129,56 @@ public static class DbInitializer
         }
 
         logger.LogInformation("Default tags seeded successfully.");
+    }
+
+    public static async Task SeedCountries(this IServiceProvider serviceProvider, ILogger logger)
+    {
+        logger.LogInformation("Seeding default countries...");
+
+        var context = serviceProvider.GetRequiredService<ApplicationDbContext>();
+
+        // Check if countries already exist
+        if (await context.Countries.AnyAsync())
+        {
+            logger.LogInformation("Countries already exist. Skipping seeding.");
+            return;
+        }
+
+        // Path to the JSON file
+        var jsonFilePath = Path.Combine(
+            AppContext.BaseDirectory, "Persistence", "Seeder", "SeedData", "countries.json");
+
+        if (!File.Exists(jsonFilePath))
+        {
+            logger.LogError("Countries JSON file not found at path: {JsonFilePath}", jsonFilePath);
+            throw new FileNotFoundException("Countries JSON file not found.", jsonFilePath);
+        }
+
+        var countriesJson = await File.ReadAllTextAsync(jsonFilePath);
+        var countriesDict = JsonSerializer.Deserialize<Dictionary<string, string>>(countriesJson);
+
+        if (countriesDict is null || countriesDict.Count == 0)
+        {
+            logger.LogError("No countries found in the JSON file to seed.");
+            throw new InvalidOperationException("No countries available for seeding.");
+        }
+
+        // Convert the dictionary to a list of Country entities
+        var countries = countriesDict.Select(c => new Country
+        {
+            Code = c.Key,
+            Name = c.Value
+        }).ToList();
+
+        context.Countries.AddRange(countries);
+        var result = await context.SaveChangesAsync();
+
+        if (result <= 0)
+        {
+            logger.LogError("Failed to seed default countries.");
+            throw new InvalidOperationException("Failed to seed default countries. See logs for details.");
+        }
+
+        logger.LogInformation("Default countries seeded successfully.");
     }
 }

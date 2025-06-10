@@ -17,4 +17,10 @@
     <ProjectReference Include="..\CodeStash.Domain\CodeStash.Domain.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Persistence\Seeder\SeedData\countries.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>
