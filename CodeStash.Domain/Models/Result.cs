@@ -4,15 +4,15 @@ namespace CodeStash.Domain.Models;
 public class Result<T> : Result
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-    public T Data { get; }
+    public T Value { get; }
 
     [JsonConstructor]
-    private Result(bool isSuccess, T data, Error error) : base(isSuccess, error)
+    private Result(bool isSuccess, T value, Error error) : base(isSuccess, error)
     {
-        Data = data;
+        Value = value;
     }
 
-    public static Result<T> Success(T data) => new(true, data, null!);
+    public static Result<T> Success(T value) => new(true, value, null!);
 
     public static Result<T> Failure(Error error, bool isSuccess = false) =>
         new(isSuccess, default!, error);
