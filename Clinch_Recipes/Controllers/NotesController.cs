@@ -1,5 +1,6 @@
 ﻿using CodeStash.Application.Contracts;
 using CodeStash.Application.Models;
+using CodeStash.Application.Models.QueryParams;
 using CodeStash.Application.Models.RequestModels;
 using CodeStash.Domain.Entities;
 using CodeStash.ViewModels;
@@ -36,33 +37,15 @@ public class NotesController(INoteService noteService, ITagService tagService) :
     //    return View(pagedResult);
     //}
 
-    [HttpGet]
-    public async Task<IActionResult> MyNotes(string search = "", string language = "",
-        string tag = "", string sort = "newest", bool privateOnly = false, int page = 1)
+    public async Task<IActionResult> MyNotes([FromQuery] MyNotesQueryParams queryParams)
     {
-        var currentUserId = "ebeeraheem"; // Get from User.Identity in real implementation
+        var myNotesData = await noteService.GetMyNotesAndStatsAsync(queryParams);
 
         var viewModel = new MyNotesViewModel
         {
-            Notes = GetDummyUserNotes(currentUserId, search, language, tag, sort, privateOnly, page),
-            Filter = new NotesFilterViewModel
-            {
-                SearchQuery = search,
-                Language = language,
-                Tag = tag,
-                SortBy = sort,
-                IsPrivateFilter = privateOnly,
-                AvailableLanguages = GetDummyLanguages(),
-                AvailableTags = GetDummyUserTags(currentUserId)
-            },
-            Pagination = new PaginationViewModel
-            {
-                CurrentPage = page,
-                TotalPages = 8, // Simulate pagination
-                PageSize = 12,
-                TotalItems = 94 // Simulate total
-            },
-            Stats = GetDummyUserStats(currentUserId)
+            PagedResult = myNotesData.PagedResult,
+            Stats = myNotesData.Extras,
+            Filter = queryParams,
         };
 
         return View(viewModel);
@@ -477,18 +460,6 @@ public class NotesController(INoteService noteService, ITagService tagService) :
         }
 
         return notes;
-    }
-
-    private NotesStatsViewModel GetDummyUserStats(string userId)
-    {
-        return new NotesStatsViewModel
-        {
-            TotalNotes = 94,
-            PublicNotes = 71,
-            PrivateNotes = 23,
-            TotalViews = 12847,
-            NotesThisMonth = 8
-        };
     }
 
     private Note? GetDummyNoteById(string id)

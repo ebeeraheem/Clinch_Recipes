@@ -1,4 +1,5 @@
-﻿using Markdig;
+﻿using CodeStash.Application.Models.Dtos;
+using Markdig;
 using Slugify;
 
 namespace CodeStash.Application.Services;
@@ -246,6 +247,67 @@ public class NoteService(
 
         // Paginate
         return await pagedResultService.GetPagedResultAsync(query, parameters.PageNumber, parameters.PageSize);
+    }
+
+    public async Task<PagedResultWithExtras<Note, UserNotesStatsDto>> GetMyNotesAndStatsAsync(
+        MyNotesQueryParams queryParams)
+    {
+        var userId = userHelper.GetUserId();
+
+        logger.LogInformation("Retrieving notes and stats for user ID: {UserId}. Parameters {@Params}",
+            userId, queryParams);
+
+        var notesQuery = context.Notes
+            .Where(n => n.AuthorId == userId)
+            .Include(n => n.Tags)
+            .AsQueryable();
+
+        // Calculate stats before applying filters
+        var stats = new UserNotesStatsDto
+        {
+            TotalNotes = await notesQuery.CountAsync(),
+            PublicNotes = await notesQuery.CountAsync(n => !n.IsPrivate),
+            PrivateNotes = await notesQuery.CountAsync(n => n.IsPrivate),
+            TotalViews = await notesQuery.SumAsync(n => n.ViewCount),
+            NotesThisMonth = await notesQuery.CountAsync(
+            n => n.CreatedAt.Month == DateTime.UtcNow.Month &&
+                n.CreatedAt.Year == DateTime.UtcNow.Year)
+        };
+
+        // Filter by privacy
+        if (queryParams.IsPrivate)
+        {
+            notesQuery = notesQuery.Where(n => n.IsPrivate);
+        }
+
+        // Filter by search term
+        if (!string.IsNullOrWhiteSpace(queryParams.SearchTerm))
+        {
+            notesQuery = notesQuery.Where(n => n.Title.Contains(queryParams.SearchTerm));
+        }
+
+        // Sort by specified criteria
+        notesQuery = queryParams.SortBy switch
+        {
+            "newest" => notesQuery.OrderByDescending(n => n.CreatedAt),
+            "oldest" => notesQuery.OrderBy(n => n.CreatedAt),
+            "title" => notesQuery.OrderBy(n => n.Title),
+            "views" => notesQuery.OrderByDescending(n => n.ViewCount),
+            "modified" => notesQuery.OrderByDescending(n => n.ModifiedAt),
+            _ => notesQuery.OrderByDescending(n => n.CreatedAt) // Default to newest
+        };
+
+        // Get paginated results
+        var pagedNotes = await pagedResultService
+            .GetPagedResultAsync(notesQuery, queryParams.PageNumber, queryParams.PageSize);
+
+        logger.LogInformation("Retrieved {Count} notes for user ID: {UserId}", pagedNotes.Items.Count, userId);
+
+        return new PagedResultWithExtras<Note, UserNotesStatsDto>
+        {
+            PagedResult = pagedNotes,
+            Extras = stats
+        };
     }
 
     private async Task<string> GenerateUniqueSlugAsync(string title)

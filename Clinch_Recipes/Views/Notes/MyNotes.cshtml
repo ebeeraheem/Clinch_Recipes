@@ -1,7 +1,7 @@
 ﻿@using CodeStash.ViewModels
 @model MyNotesViewModel
 @{
-    ViewData["Title"] = "My Notes - CodeStash";
+    ViewData["Title"] = "My Notes";
 }
 
 <div class="notes-header">
@@ -12,7 +12,7 @@
                     <i class="fas fa-sticky-note text-primary me-3"></i>
                     My Code Snippets
                 </h1>
-                <p class="text-light mb-0">Manage and organize your personal code library</p>
+                <p class="text-light">Manage and organize your personal code library</p>
             </div>
             <div class="col-lg-4 text-lg-end">
                 <a asp-action="Create" class="btn btn-primary btn-lg">
@@ -54,15 +54,15 @@
             <div class="search-bar">
                 <i class="fas fa-search search-icon"></i>
                 <input type="text"
-                       name="search"
-                       value="@Model.Filter.SearchQuery"
+                       name="searchTerm"
+                       value="@Model.Filter.SearchTerm"
                        class="search-input"
                        placeholder="Search your notes..."
                        id="searchInput">
             </div>
 
             <div class="filters-grid">
-                <div class="filter-group">
+                @* <div class="filter-group">
                     <label for="languageFilter">Language</label>
                     <select name="language" id="languageFilter" class="filter-select">
                         <option value="">All Languages</option>
@@ -71,9 +71,9 @@
                             <option value="@lang" selected="@(Model.Filter.Language == lang)">@lang</option>
                         }
                     </select>
-                </div>
+                </div> *@
 
-                <div class="filter-group">
+                @* <div class="filter-group">
                     <label for="tagFilter">Tag</label>
                     <select name="tag" id="tagFilter" class="filter-select">
                         <option value="">All Tags</option>
@@ -82,11 +82,11 @@
                             <option value="@tagName" selected="@(Model.Filter.Tag == tagName)">@tagName</option>
                         }
                     </select>
-                </div>
+                </div> *@
 
                 <div class="filter-group">
-                    <label for="sortFilter">Sort By</label>
-                    <select name="sort" id="sortFilter" class="filter-select">
+                    @* <label for="sortFilter">Sort By</label> *@
+                    <select name="sortBy" id="sortFilter" class="filter-select">
                         <option value="newest" selected="@(Model.Filter.SortBy == "newest")">Newest First</option>
                         <option value="oldest" selected="@(Model.Filter.SortBy == "oldest")">Oldest First</option>
                         <option value="title" selected="@(Model.Filter.SortBy == "title")">Title A-Z</option>
@@ -95,27 +95,41 @@
                     </select>
                 </div>
 
-                <div class="filter-group">
+                @* <div class="filter-group">
                     <label>&nbsp;</label>
                     <div style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0;">
                         <input type="checkbox"
-                               name="privateOnly"
+                               name="isPrivate"
                                value="true"
                                id="privateFilter"
-                               checked="@Model.Filter.IsPrivateFilter"
+                               checked="@Model.Filter.IsPrivate"
                                style="accent-color: var(--accent-primary);">
                         <label for="privateFilter" style="margin: 0; font-size: 0.9rem;">Private only</label>
                     </div>
+                </div> *@
+
+                <div class="filter-group private-only">
+                    <label class="toggle-switch" style="margin-bottom:0;">
+                        <input type="checkbox"
+                               name="isPrivate"
+                               value="true"
+                               id="privateFilter"
+                               checked="@Model.Filter.IsPrivate" />
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <label for="privateFilter" style="margin-left: 0.75rem; font-size: 0.95rem; vertical-align: middle;">
+                        Private Only
+                    </label>
                 </div>
             </div>
         </form>
     </div>
 
     <!-- Notes Grid -->
-    @if (Model.Notes.Any())
+    @if (Model.PagedResult.Items.Any())
     {
         <div class="notes-grid">
-            @foreach (var note in Model.Notes)
+            @foreach (var note in Model.PagedResult.Items)
             {
                 <div class="note-card @(note.IsPrivate ? "private" : "")">
                     <div class="note-header">
@@ -164,9 +178,11 @@
                                 <i class="fas fa-edit"></i> Edit
                             </a>
 
-                            <button class="btn-sm btn-secondary-sm" onclick="togglePrivacy('@note.Id', @note.IsPrivate.ToString().ToLower())">
-                                <i class="fas @(note.IsPrivate ? "fa-eye" : "fa-eye-slash")"></i>
-                                @(note.IsPrivate ? "Make Public" : "Make Private")
+                            <button 
+                                class="btn-sm btn-secondary-sm" 
+                                onclick="togglePrivacy('@note.Id', @note.IsPrivate.ToString().ToLower())">
+                                    <i class="fas @(note.IsPrivate ? "fa-eye" : "fa-eye-slash")"></i>
+                                    @(note.IsPrivate ? "Make Public" : "Make Private")
                             </button>
 
                             <button class="btn-sm btn-danger-sm" onclick="deleteNote('@note.Id', '@note.Title')">
@@ -178,13 +194,13 @@
             }
         </div>
 
-        <!-- Pagination -->
+        @* <!-- Pagination -->
         @if (Model.Pagination.TotalPages > 1) // Implement infinite scroll
         {
             <div class="pagination">
                 @if (Model.Pagination.HasPrevious)
                 {
-                    <a href="?page=@(Model.Pagination.CurrentPage - 1)&search=@Model.Filter.SearchQuery&language=@Model.Filter.Language&tag=@Model.Filter.Tag&sort=@Model.Filter.SortBy&privateOnly=@Model.Filter.IsPrivateFilter"
+                    <a href="?pageNumber=@(Model.Pagination.CurrentPage - 1)&search=@Model.Filter.SearchQuery&tag=@Model.Filter.Tag&sort=@Model.Filter.SortBy&privateOnly=@Model.Filter.IsPrivateFilter"
                        class="page-btn">
                         <i class="fas fa-chevron-left"></i> Previous
                     </a>
@@ -192,7 +208,7 @@
 
                 @for (int i = Math.Max(1, Model.Pagination.CurrentPage - 2); i <= Math.Min(Model.Pagination.TotalPages, Model.Pagination.CurrentPage + 2); i++)
                 {
-                    <a href="?page=@i&search=@Model.Filter.SearchQuery&language=@Model.Filter.Language&tag=@Model.Filter.Tag&sort=@Model.Filter.SortBy&privateOnly=@Model.Filter.IsPrivateFilter"
+                    <a href="?pageNumber=@i&search=@Model.Filter.SearchQuery&tag=@Model.Filter.Tag&sort=@Model.Filter.SortBy&privateOnly=@Model.Filter.IsPrivateFilter"
                        class="page-btn @(i == Model.Pagination.CurrentPage ? "active" : "")">
                         @i
                     </a>
@@ -200,13 +216,13 @@
 
                 @if (Model.Pagination.HasNext)
                 {
-                    <a href="?page=@(Model.Pagination.CurrentPage + 1)&search=@Model.Filter.SearchQuery&language=@Model.Filter.Language&tag=@Model.Filter.Tag&sort=@Model.Filter.SortBy&privateOnly=@Model.Filter.IsPrivateFilter"
+                    <a href="?pageNumber=@(Model.Pagination.CurrentPage + 1)&search=@Model.Filter.SearchQuery&tag=@Model.Filter.Tag&sort=@Model.Filter.SortBy&privateOnly=@Model.Filter.IsPrivateFilter"
                        class="page-btn">
                         Next <i class="fas fa-chevron-right"></i>
                     </a>
                 }
             </div>
-        }
+        } *@
     }
     else
     {
@@ -338,8 +354,6 @@
 <!-- Add CSRF token for AJAX requests -->
 @Html.AntiForgeryToken()
 
-
-
 <style>
     .notes-header {
         background: linear-gradient(135deg, var(--bg-secondary) 0%, var(--bg-tertiary) 100%);
@@ -389,7 +403,6 @@
 
     .search-bar {
         position: relative;
-        margin-bottom: 1.5rem;
     }
 
     .search-input {
@@ -416,24 +429,34 @@
         color: var(--text-secondary);
     }
 
+    #filterForm{
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+    }
+
     .filters-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
         gap: 1rem;
-        align-items: end;
+        align-items: center;
     }
 
     .filter-group label {
         display: block;
         color: var(--text-primary);
         font-weight: 500;
-        margin-bottom: 0.5rem;
         font-size: 0.9rem;
+    }
+
+    .filter-group.private-only{
+        display: flex;
+        align-items: center;
     }
 
     .filter-select {
         width: 100%;
-        padding: 0.5rem;
+        padding: 0.75rem 1rem;
         background: var(--bg-primary);
         border: 1px solid var(--border-primary);
         border-radius: 4px;
@@ -444,6 +467,53 @@
             outline: none;
             border-color: var(--accent-primary);
         }
+
+    .toggle-switch {
+        position: relative;
+        width: 48px;
+        height: 28px;
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: var(--text-secondary, #ccc);
+        transition: 0.4s;
+        border-radius: 28px;
+    }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: 0.4s;
+            border-radius: 50%;
+        }
+
+    input:checked + .toggle-slider {
+        background-color: var(--accent-primary, #007bff);
+    }
+
+        input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+        }
+
 
     .notes-grid {
         display: grid;
