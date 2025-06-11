@@ -9,6 +9,9 @@ public class CreateNoteRequest
     [MaxLength(8000)]
     public string Content { get; set; } = string.Empty;
 
+    [MaxLength(500)]
+    public string? Description { get; set; }
+
     public bool IsPrivate { get; set; } = false;
 
     public List<string> Tags { get; set; } = [];

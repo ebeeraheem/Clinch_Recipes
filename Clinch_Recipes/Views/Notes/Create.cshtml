@@ -2,7 +2,7 @@
 
 @model CreateNoteViewModel
 @{
-    ViewData["Title"] = "Create Note - CodeStash";
+    ViewData["Title"] = "Create Note";
 }
 
 <div class="create-note-container">
@@ -24,9 +24,22 @@
                             <input asp-for="Title"
                                    class="form-control"
                                    placeholder="Enter a descriptive title for your code snippet"
-                                   id="titleInput" />
+                                   id="titleInput"
+                                   autofocus />
                             <span asp-validation-for="Title" class="field-validation-error"></span>
                             <div class="character-count" id="titleCount">0/200</div>
+                        </div>
+
+                        <!-- Description -->
+                        <div class="form-group">
+                            <label asp-for="Description" class="form-label"></label>
+                            <textarea asp-for="Description"
+                                      class="form-control"
+                                      rows="3"
+                                      placeholder="Optional description of what this code does..."
+                                      id="descriptionInput"></textarea>
+                            <span asp-validation-for="Description" class="field-validation-error"></span>
+                            <div class="character-count" id="descriptionCount">0/500</div>
                         </div>
 
                         <!-- Tags -->
@@ -42,12 +55,12 @@
 
                             <div class="tags-display" id="tagsDisplay"></div>
 
-                            <div class="suggested-tags">
-                                <div class="suggested-tags-label">Suggested tags:</div>
-                                <div class="suggested-tags-list">
-                                    @foreach (var tag in Model.SuggestedTags)
+                            <div class="popular-tags">
+                                <div class="popular-tags-label">Popular tags:</div>
+                                <div class="popular-tags-list">
+                                    @foreach (var tagName in Model.PopularTags.Select(tag => tag.Name))
                                     {
-                                        <span class="suggested-tag" onclick="addSuggestedTag('@tag.Name')">@tag.Name</span>
+                                        <span class="popular-tag" onclick="addPopularTag('@tagName')">@tagName</span>
                                     }
                                 </div>
                             </div>
@@ -56,15 +69,15 @@
                         <!-- Code Content -->
                         <div class="form-group">
                             <label asp-for="Content" class="form-label required"></label>
-                            <div id="editor-container" class="editor-container editor-container_classic-editor">
-                                <div id="ckeditor" class="editor-container__editor" style="min-height: 400px;"></div>
+                            <div id="editor-container" class="editor-container">
+                                <div id="ckeditor" style="min-height: 400px;"></div>
                             </div>
                             <input asp-for="Content" type="hidden" id="contentHidden" />
                             <span asp-validation-for="Content" class="field-validation-error"></span>
                             <div class="character-count" id="contentCount">0/8000</div>
                             <div class="form-help">
                                 <i class="fas fa-info-circle me-1"></i>
-                                Use code blocks for syntax highlighting. Supports 20+ languages including JavaScript, Python, C#, SQL, etc.
+                                Use code blocks for syntax highlighting. Supports 40+ languages including JavaScript, Python, C#, SQL, etc.
                             </div>
                         </div>
 
@@ -99,7 +112,8 @@
     document.addEventListener('DOMContentLoaded', () => {
         const form = document.getElementById('createNoteForm');
         const titleInput = document.getElementById('titleInput');
-        // const contentInput = document.querySelector('.ck-content');
+        const descriptionInput = document.getElementById('descriptionInput');
+        const contentInput = document.querySelector('.ck-content');
         const tagsInput = document.getElementById('tagsInput');
         const tagsDisplay = document.getElementById('tagsDisplay');
         const submitBtn = document.getElementById('submitBtn');
@@ -108,7 +122,6 @@
 
         // Character counters
         titleInput.addEventListener('input', () => updateCharacterCount('titleInput', 'titleCount', 200));
-        // contentInput.addEventListener('input', () => updateCharacterCount('ck-content', 'contentCount', 8000));
 
         // Tags handling
         tagsInput.addEventListener('input', handleTagsInput);
@@ -136,7 +149,6 @@
 
         // Initialize character counters
         updateCharacterCount('titleInput', 'titleCount', 200);
-        // updateCharacterCount('ck-content', 'contentCount', 8000);
 
         function updateCharacterCount(inputId, countId, maxLength) {
             const input = document.getElementById(inputId) || document.querySelector(`.${inputId}`);
@@ -193,7 +205,7 @@
             updateTagsDisplay();
         };
 
-        window.addSuggestedTag = (tag) => {
+        window.addPopularTag = (tag) => {
             if (!selectedTags.includes(tag)) {
                 selectedTags.push(tag);
                 updateTagsDisplay();
@@ -216,14 +228,22 @@
                 isValid = false;
             }
 
+            // Validate description
+            if (descriptionInput && descriptionInput.value.length > 500) {
+                showFieldError('Description', 'Description cannot exceed 500 characters');
+                isValid = false;
+            }
+
             // Validate content
-            if (!contentInput.value.trim()) {
+            if (!contentInput.innerText.trim()) {
                 showFieldError('Content', 'Content is required');
                 isValid = false;
-            } else if (contentInput.value.length < 10) {
+            } else if (contentInput.innerText.length < 10) {
                 showFieldError('Content', 'Content must be at least 10 characters long');
                 isValid = false;
             }
+
+            return isValid;
         }
 
         function showFieldError(fieldName, message) {
@@ -438,23 +458,23 @@
             background: rgba(255, 255, 255, 0.2);
         }
 
-    .suggested-tags {
+    .popular-tags {
         margin-top: 1rem;
     }
 
-    .suggested-tags-label {
+    .popular-tags-label {
         font-size: 0.875rem;
         color: var(--text-secondary);
         margin-bottom: 0.5rem;
     }
 
-    .suggested-tags-list {
+    .popular-tags-list {
         display: flex;
         flex-wrap: wrap;
         gap: 0.5rem;
     }
 
-    .suggested-tag {
+    .popular-tag {
         background: var(--bg-primary);
         border: 1px solid var(--border-primary);
         color: var(--text-primary);
@@ -465,7 +485,7 @@
         transition: all 0.2s ease;
     }
 
-        .suggested-tag:hover {
+        .popular-tag:hover {
             background: var(--accent-primary);
             color: white;
             border-color: var(--accent-primary);
@@ -532,7 +552,6 @@
     }
 
         .btn-primary:hover {
-            transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(88, 166, 255, 0.3);
         }
 
@@ -543,7 +562,6 @@
 
         .btn-secondary:hover {
             background: var(--text-primary);
-            transform: translateY(-2px);
         }
 
     .btn:disabled {

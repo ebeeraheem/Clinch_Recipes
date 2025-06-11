@@ -1,4 +1,6 @@
-﻿using CodeStash.Application.Models;
+﻿using CodeStash.Application.Contracts;
+using CodeStash.Application.Models;
+using CodeStash.Application.Models.RequestModels;
 using CodeStash.Domain.Entities;
 using CodeStash.ViewModels;
 using Markdig;
@@ -9,7 +11,7 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace CodeStash.Controllers;
 #pragma warning disable S6934 // A Route attribute should be added to the controller when a route template is specified at the action level
-public class NotesController : Controller
+public class NotesController(INoteService noteService, ITagService tagService) : Controller
 #pragma warning restore S6934 // A Route attribute should be added to the controller when a route template is specified at the action level
 {
     //private const int PageSize = 40;
@@ -269,13 +271,11 @@ public class NotesController : Controller
         return Json(new { success = true, isLiked = true, likeCount = 5 });
     }
 
-    [HttpGet]
     public async Task<IActionResult> Create()
     {
         var viewModel = new CreateNoteViewModel
         {
-            AvailableLanguages = GetDummyLanguages(),
-            SuggestedTags = GetDummySuggestedTags()
+            PopularTags = await tagService.GetPopularTagsAsync(),
         };
 
         return View(viewModel);
@@ -283,24 +283,38 @@ public class NotesController : Controller
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Create(CreateNoteViewModel model)
+    public async Task<IActionResult> Create(CreateNoteViewModel viewModel)
     {
         if (!ModelState.IsValid)
         {
-            model.AvailableLanguages = GetDummyLanguages();
-            model.SuggestedTags = GetDummySuggestedTags();
-            return View(model);
+            viewModel.PopularTags = await tagService.GetPopularTagsAsync();
+            return View(viewModel);
         }
 
-        // Generate slug if not provided
-        if (string.IsNullOrWhiteSpace(model.Slug))
+        var tags = viewModel.TagsInput
+            ?.Split([','], StringSplitOptions.RemoveEmptyEntries)
+            .Select(t => t.Trim())
+            .ToList();
+
+        var request = new CreateNoteRequest
         {
-            model.Slug = GenerateSlug(model.Title);
+            Title = viewModel.Title,
+            Content = viewModel.Content,
+            Description = viewModel.Description,
+            IsPrivate = viewModel.IsPrivate,
+            Tags = tags ?? [],
+        };
+
+        var result = await noteService.CreateNoteAsync(request);
+
+        if (result.IsFailure)
+        {
+            TempData["ErrorMessage"] = result.Error.Message;
+            viewModel.PopularTags = await tagService.GetPopularTagsAsync();
+            return View(viewModel);
         }
 
-        // TODO: Implement actual note creation logic
-        // For now, simulate creation
-        TempData["SuccessMessage"] = $"Note '{model.Title}' created successfully!";
+        TempData["SuccessMessage"] = $"Note '{viewModel.Title}' created successfully!";
         return RedirectToAction(nameof(MyNotes));
     }
 
@@ -323,15 +337,13 @@ public class NotesController : Controller
         {
             Id = note.Id,
             Title = note.Title,
-            Slug = note.Slug,
             Content = note.Content,
             IsPrivate = note.IsPrivate,
             TagsInput = string.Join(", ", note.Tags.Select(t => t.Name)),
             ViewCount = note.ViewCount,
             CreatedAt = note.CreatedAt,
             ModifiedAt = note.ModifiedAt,
-            AvailableLanguages = GetDummyLanguages(),
-            SuggestedTags = GetDummySuggestedTags()
+            PopularTags = GetDummySuggestedTags()
         };
 
         return View(viewModel);
@@ -343,8 +355,7 @@ public class NotesController : Controller
     {
         if (!ModelState.IsValid)
         {
-            model.AvailableLanguages = GetDummyLanguages();
-            model.SuggestedTags = GetDummySuggestedTags();
+            model.PopularTags = GetDummySuggestedTags();
             return View(model);
         }
 

@@ -55,7 +55,7 @@
                             <div class="suggested-tags">
                                 <div class="suggested-tags-label">Suggested tags:</div>
                                 <div class="suggested-tags-list">
-                                    @foreach (var tag in Model.SuggestedTags)
+                                    @foreach (var tag in Model.PopularTags)
                                     {
                                         <span class="suggested-tag" onclick="addSuggestedTag('@tag.Name')">@tag.Name</span>
                                     }

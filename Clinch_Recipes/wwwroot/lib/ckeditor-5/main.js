@@ -238,7 +238,7 @@ ClassicEditor
 		});
 
 		// Focus the editor
-		editor.editing.view.focus();
+		//editor.editing.view.focus();
 
 		// Add helpful keyboard shortcuts tooltip
 		const toolbar = editor.ui.view.toolbar.element;

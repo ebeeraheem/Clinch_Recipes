@@ -34,4 +34,32 @@ public class TagService(ApplicationDbContext context, ILogger<TagService> logger
 
         return tags;
     }
+
+    public async Task<List<Tag>> GetPopularTagsAsync(int count = 10)
+    {
+        logger.LogInformation("Fetching top {Count} popular tags", count);
+
+        if (count <= 0)
+        {
+            logger.LogWarning("Count must be greater than zero. Defaulting to 10.");
+            count = 10;
+        }
+
+        var popularTags = await context.Tags
+            .Include(t => t.Notes)
+            .OrderByDescending(t => t.Notes.Count)
+            .Take(count)
+            .ToListAsync();
+
+        if (popularTags.Count == 0)
+        {
+            logger.LogWarning("No popular tags found");
+        }
+        else
+        {
+            logger.LogInformation("{Count} popular tags found", popularTags.Count);
+        }
+
+        return popularTags;
+    }
 }

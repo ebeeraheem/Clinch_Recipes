@@ -1,5 +1,4 @@
 ﻿using CodeStash.Domain.Entities;
-using System.ComponentModel.DataAnnotations;
 
 namespace CodeStash.ViewModels;
 
@@ -43,40 +42,6 @@ public class NotesStatsViewModel
     public int PrivateNotes { get; set; }
     public int TotalViews { get; set; }
     public int NotesThisMonth { get; set; }
-}
-
-public class CreateNoteViewModel
-{
-    [Required(ErrorMessage = "Title is required")]
-    [StringLength(200, MinimumLength = 3, ErrorMessage = "Title must be between 3 and 200 characters")]
-    [Display(Name = "Title")]
-    public string Title { get; set; } = string.Empty;
-
-    [StringLength(200, ErrorMessage = "Slug cannot exceed 200 characters")]
-    [RegularExpression(@"^[a-z0-9-]*$", ErrorMessage = "Slug can only contain lowercase letters, numbers, and hyphens")]
-    [Display(Name = "URL Slug (optional)")]
-    public string Slug { get; set; } = string.Empty;
-
-    [Required(ErrorMessage = "Content is required")]
-    [StringLength(8000, MinimumLength = 10, ErrorMessage = "Content must be between 10 and 8000 characters")]
-    [Display(Name = "Code Content")]
-    public string Content { get; set; } = string.Empty;
-
-    [Display(Name = "Language")]
-    public string Language { get; set; } = string.Empty;
-
-    [Display(Name = "Tags (comma-separated)")]
-    public string TagsInput { get; set; } = string.Empty;
-
-    [Display(Name = "Make this note private")]
-    public bool IsPrivate { get; set; } = false;
-
-    [Display(Name = "Description (optional)")]
-    [StringLength(500, ErrorMessage = "Description cannot exceed 500 characters")]
-    public string Description { get; set; } = string.Empty;
-
-    public List<string> AvailableLanguages { get; set; } = [];
-    public List<Tag> SuggestedTags { get; set; } = [];
 }
 
 public class EditNoteViewModel : CreateNoteViewModel

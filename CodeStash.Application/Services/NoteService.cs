@@ -22,9 +22,9 @@ public class NoteService(
         {
             // Try to find existing tag
             var existingTag = await context.Tags
-                .FirstOrDefaultAsync(t => string.Equals(tagInput, t.Name, StringComparison.OrdinalIgnoreCase));
+                .FirstOrDefaultAsync(t => t.Name.Equals(tagInput));
 
-            if (existingTag != null)
+            if (existingTag is not null)
             {
                 resolvedTags.Add(existingTag);
             }
@@ -50,7 +50,6 @@ public class NoteService(
             return Result<Note>.Failure(NoteErrors.SlugAlreadyExists);
         }
 
-
         // Convert content to Html
         var contentHtml = Markdown.ToHtml(request.Content);
 
@@ -58,6 +57,7 @@ public class NoteService(
         {
             Title = request.Title,
             Content = contentHtml,
+            Description = request.Description,
             Slug = slug,
             IsPrivate = request.IsPrivate,
             Tags = resolvedTags,
@@ -248,7 +248,6 @@ public class NoteService(
         return await pagedResultService.GetPagedResultAsync(query, parameters.PageNumber, parameters.PageSize);
     }
 
-    // Add this private method to NoteService
     private async Task<string> GenerateUniqueSlugAsync(string title)
     {
         var baseSlug = slugHelper.GenerateSlug(title);

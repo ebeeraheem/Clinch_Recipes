@@ -148,7 +148,6 @@ public partial class AccountController(
         {
             UserName = model.Username,
             Email = model.Email,
-            EmailConfirmed = true // Assuming email confirmation is not required for simplicity
         };
 
         var result = await signInManager.UserManager.CreateAsync(user, model.Password);
@@ -202,8 +201,12 @@ public partial class AccountController(
         if (UsernameConsecutiveSpecialCharacterRegex().IsMatch(username))
             return Json(new { isValid = false, message = "Username cannot contain consecutive non-alphanumeric characters." });
 
-        // Check if username exists (replace with your user manager or db context)
-        var exists = await signInManager.UserManager.FindByNameAsync(username) != null;
+        // Check if the username starts with a reserved prefix
+        if (ReservedUsernames.StartsWithReservedPrefix(username))
+            return Json(new { isValid = false, message = "Username cannot start with a reserved prefix." });
+
+        // Check if username exists
+        var exists = await signInManager.UserManager.FindByNameAsync(username) is not null;
         if (exists)
             return Json(new { isValid = false, message = "This username is already taken." });
 
