@@ -180,7 +180,7 @@
 
                             <button 
                                 class="btn-sm btn-secondary-sm" 
-                                onclick="togglePrivacy('@note.Id', @note.IsPrivate.ToString().ToLower())">
+                                onclick="togglePrivacy('@note.Id')">
                                     <i class="fas @(note.IsPrivate ? "fa-eye" : "fa-eye-slash")"></i>
                                     @(note.IsPrivate ? "Make Public" : "Make Private")
                             </button>
@@ -309,7 +309,7 @@
         }
     }
 
-    async function togglePrivacy(noteId, isCurrentlyPrivate) {
+    async function togglePrivacy(noteId) {
         try {
             const response = await fetch(`/Notes/TogglePrivacy/${noteId}`, {
                 method: 'POST',

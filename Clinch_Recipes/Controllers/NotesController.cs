@@ -349,22 +349,29 @@ public class NotesController(INoteService noteService, ITagService tagService) :
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> TogglePrivacy(string id)
+    public async Task<IActionResult> TogglePrivacy([FromRoute(Name = "id")] string noteId)
     {
-        if (string.IsNullOrEmpty(id))
+        if (string.IsNullOrEmpty(noteId))
         {
             return Json(new { success = false, message = "Invalid note ID" });
         }
 
-        // TODO: Implement actual privacy toggle logic
+        var result = await noteService.ToggleNotePrivacyAsync(noteId);
+
+        if (result.IsFailure)
+        {
+            return Json(new { success = false, message = result.Error.Message });
+        }
+
+        TempData["SuccessMessage"] = $"Note privacy updated successfully!";
         return Json(new { success = true, message = "Note privacy updated" });
     }
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Delete(string id)
+    public async Task<IActionResult> Delete([FromRoute(Name = "id")] string noteId)
     {
-        if (string.IsNullOrEmpty(id))
+        if (string.IsNullOrEmpty(noteId))
         {
             return Json(new { success = false, message = "Invalid note ID" });
         }

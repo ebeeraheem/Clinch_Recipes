@@ -228,6 +228,41 @@ public class NoteService(
         return Result.Success();
     }
 
+    public async Task<Result> ToggleNotePrivacyAsync(string noteId)
+    {
+        logger.LogInformation("Toggling privacy for note with ID: {NoteId}", noteId);
+
+        var userId = userHelper.GetUserId();
+
+        var note = await context.Notes.FindAsync(noteId);
+
+        if (note is null)
+        {
+            logger.LogWarning("Note with ID {NoteId} not found.", noteId);
+            return Result.Failure(NoteErrors.NotFound);
+        }
+
+        if (note.AuthorId != userId)
+        {
+            logger.LogWarning("Unauthorized access attempt to toggle privacy for note with ID: {NoteId}", noteId);
+            return Result.Failure(NoteErrors.ForbiddenAccess);
+        }
+
+        // Toggle the privacy status
+        note.IsPrivate = !note.IsPrivate;
+        context.Notes.Update(note);
+        var result = await context.SaveChangesAsync();
+
+        if (result <= 0)
+        {
+            logger.LogError("Failed to toggle privacy for note with ID: {NoteId}", noteId);
+            return Result.Failure(NoteErrors.UpdateFailed);
+        }
+
+        logger.LogInformation("Privacy toggled successfully for note with ID: {NoteId}", note.Id);
+        return Result.Success();
+    }
+
     public async Task<PagedResult<Note>> GetNotesAsync(NoteQueryParams parameters)
     {
         logger.LogInformation("Retrieving notes with parameters: {@Parameters}", parameters);
