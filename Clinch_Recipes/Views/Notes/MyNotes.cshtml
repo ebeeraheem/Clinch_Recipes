@@ -231,7 +231,7 @@
             <h3>No notes found</h3>
             <p>You haven't created any notes yet, or none match your current filters.</p>
             <a asp-action="Create" class="btn btn-primary btn-lg mt-3">
-                <i class="fas fa-plus me-2"></i>Create Your First Note
+                <i class="fas fa-plus me-2 mb-0"></i>Create Your First Note
             </a>
         </div>
     }
@@ -241,6 +241,34 @@
 <button class="create-note-fab" onclick="window.location.href = '@Url.Action("Create")'">
     <i class="fas fa-plus"></i>
 </button>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteNoteModal" tabindex="-1" aria-labelledby="deleteNoteModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content custom-modal-content">
+            <div class="modal-header custom-modal-header">
+                <h5 class="modal-title" id="deleteNoteModalLabel">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Delete Note
+                </h5>
+                <button type="button" class="btn-close custom-btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center custom-modal-body">
+                <p class="mb-3" id="deleteNoteModalMessage">
+                    Are you sure you want to delete this note? This action cannot be undone.
+                </p>
+                <div class="fw-bold text-danger" id="deleteNoteModalTitle"></div>
+            </div>
+            <div class="modal-footer justify-content-center custom-modal-footer">
+                <button type="button" class="btn custom-btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Cancel
+                </button>
+                <button type="button" class="btn custom-btn-danger" id="confirmDeleteNoteBtn">
+                    <i class="fas fa-trash me-1"></i>Delete
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
@@ -267,47 +295,51 @@
         });
     });
 
-    async function deleteNote(noteId, noteTitle) {
-        if (!confirm(`Are you sure you want to delete "${noteTitle}"? This action cannot be undone.`)) {
-            return;
-        }
+    let noteToDelete = { id: null, title: null };
 
-        try {
-            const response = await fetch(`/Notes/Delete/${noteId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
-                }
-            });
+    function deleteNote(noteId, noteTitle) {
+        noteToDelete.id = noteId;
+        noteToDelete.title = noteTitle;
 
-            const result = await response.json();
+        // Set modal title
+        document.getElementById('deleteNoteModalTitle').textContent = noteTitle;
 
-            if (result.success) {
-                // Remove the note card from the UI
-                const noteCard = document.querySelector(`[onclick*="${noteId}"]`).closest('.note-card');
-                noteCard.style.opacity = '0';
-                noteCard.style.transform = 'scale(0.8)';
+        // Show modal
+        const modal = new bootstrap.Modal(document.getElementById('deleteNoteModal'));
+        modal.show();
 
-                setTimeout(() => {
-                    noteCard.remove();
+        // Attach event handler for confirm button
+        const confirmBtn = document.getElementById('confirmDeleteNoteBtn');
+        confirmBtn.onclick = async function () {
+            confirmBtn.disabled = true;
+            confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Deleting...';
 
-                    // Show success message
-                    showNotification('Note deleted successfully', 'success');
-
-                    // Reload if no notes left
-                    if (document.querySelectorAll('.note-card').length === 0) {
-                        location.reload();
+            try {
+                const response = await fetch(`/Notes/Delete/${noteToDelete.id}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
                     }
-                }, 300);
-            } else {
-                showNotification(result.message || 'Failed to delete note', 'error');
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    location.reload();
+                } else {
+                    showNotification(result.message || 'Failed to delete note', 'error');
+                    confirmBtn.disabled = false;
+                    confirmBtn.innerHTML = '<i class="fas fa-trash me-1"></i>Delete';
+                }
+            } catch (error) {
+                showNotification('An error occurred while deleting the note', 'error');
+                confirmBtn.disabled = false;
+                confirmBtn.innerHTML = '<i class="fas fa-trash me-1"></i>Delete';
             }
-        } catch (error) {
-            console.error('Error deleting note:', error);
-            showNotification('An error occurred while deleting the note', 'error');
-        }
+        };
     }
+
 
     async function togglePrivacy(noteId) {
         try {
@@ -674,6 +706,100 @@
             box-shadow: 0 6px 25px rgba(88, 166, 255, 0.6);
         }
 
+    .custom-modal-content {
+        background: var(--bg-tertiary);
+        border-radius: 1.25rem;
+        border: 1px solid var(--border-primary);
+        box-shadow: 0 12px 40px rgba(0,0,0,0.4);
+        overflow: hidden;
+    }
+
+    .custom-modal-header {
+        background: linear-gradient(135deg, var(--accent-secondary) 0%, var(--accent-primary) 100%);
+        color: #fff;
+        border-bottom: 1px solid var(--border-primary);
+        border-top-left-radius: 1.25rem;
+        border-top-right-radius: 1.25rem;
+        padding: 1.5rem 2rem;
+        align-items: center;
+    }
+
+        .custom-modal-header .modal-title {
+            font-weight: 700;
+            font-size: 1.25rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+    .custom-btn-close {
+        filter: invert(1);
+        opacity: 0.8;
+        transition: opacity 0.2s;
+    }
+
+        .custom-btn-close:hover {
+            opacity: 1;
+        }
+
+    .custom-modal-body {
+        padding: 2rem 2.5rem 1.5rem 2.5rem;
+        background: var(--bg-tertiary);
+        color: var(--text-primary);
+        font-size: 1.1rem;
+    }
+
+    #deleteNoteModalTitle {
+        font-size: 1.1rem;
+        color: var(--accent-primary);
+        margin-top: 0.5rem;
+        word-break: break-word;
+    }
+
+    .custom-modal-footer {
+        background: var(--bg-tertiary);
+        border-top: 1px solid var(--border-primary);
+        padding: 1.5rem 2rem;
+        border-bottom-left-radius: 1.25rem;
+        border-bottom-right-radius: 1.25rem;
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+    }
+
+    .custom-btn-secondary {
+        background: var(--text-secondary);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: background 0.2s, color 0.2s;
+    }
+
+        .custom-btn-secondary:hover {
+            background: var(--text-primary);
+        }
+
+    .custom-btn-danger {
+        background: #dc3545;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 0.75rem 2rem;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: background 0.2s, color 0.2s;
+        box-shadow: 0 2px 8px rgba(220,53,69,0.08);
+    }
+
+        .custom-btn-danger:hover {
+            background: #c82333;
+            color: #fff;
+        }
+
+
     .pagination {
         display: flex;
         justify-content: center;
@@ -720,6 +846,16 @@
             margin-bottom: 1rem;
             opacity: 0.5;
         }
+
+    @@media (max-width: 576px) {
+        .custom-modal-body {
+            padding: 1.25rem 1rem 1rem 1rem;
+        }
+
+        .custom-modal-header, .custom-modal-footer {
+            padding: 1rem;
+        }
+    }
 
     @@media (max-width: 768px) {
         .stats-grid {

@@ -363,7 +363,6 @@ public class NotesController(INoteService noteService, ITagService tagService) :
             return Json(new { success = false, message = result.Error.Message });
         }
 
-        TempData["SuccessMessage"] = $"Note privacy updated successfully!";
         return Json(new { success = true, message = "Note privacy updated" });
     }
 
@@ -376,7 +375,13 @@ public class NotesController(INoteService noteService, ITagService tagService) :
             return Json(new { success = false, message = "Invalid note ID" });
         }
 
-        // TODO: Implement actual note deletion logic
+        var result = await noteService.DeleteNoteAsync(noteId);
+
+        if (result.IsFailure)
+        {
+            return Json(new { success = false, message = result.Error.Message });
+        }
+
         return Json(new { success = true, message = "Note deleted successfully" });
     }
 
