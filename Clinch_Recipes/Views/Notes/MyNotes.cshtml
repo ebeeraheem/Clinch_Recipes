@@ -125,10 +125,14 @@
         </form>
     </div>
 
+
+    <input type="hidden" id="currentPage" value="@Model.PagedResult.CurrentPage" />
+    <input type="hidden" id="totalPages" value="@Model.PagedResult.TotalPages" />
+
     <!-- Notes Grid -->
     @if (Model.PagedResult.Items.Any())
     {
-        <div class="notes-grid">
+        <div class="notes-grid" id="notesGrid">
             @foreach (var note in Model.PagedResult.Items)
             {
                 <div class="note-card @(note.IsPrivate ? "private" : "")">
@@ -192,6 +196,15 @@
                     </div>
                 </div>
             }
+        </div>
+
+        <div id="infiniteScrollLoader" style="display:none;text-align:center;padding:2rem;">
+            <span class="spinner-border text-primary"></span>
+        </div>
+
+        <div id="infiniteScrollEnd" style="display:none;text-align:center;padding:2rem;color:var(--text-secondary);font-weight:500;">
+            <i class="fas fa-check-circle me-2" style="color:var(--accent-primary);"></i>
+            No more notes to load.
         </div>
 
         @* <!-- Pagination -->
@@ -381,6 +394,47 @@
             }
         }, 5000);
     }
+</script>
+
+<script>
+    let isLoading = false;
+    let currentPage = parseInt(document.getElementById('currentPage').value, 10);
+    const totalPages = parseInt(document.getElementById('totalPages').value, 10);
+
+    window.addEventListener('scroll', async () => {
+        if (isLoading) return;
+        if (currentPage >= totalPages) return;
+
+        // Check if user is near the bottom (300px from bottom)
+        if ((window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 300)) {
+            isLoading = true;
+            document.getElementById('infiniteScrollLoader').style.display = 'block';
+            currentPage++;
+
+            // Build query string from current filters
+            const params = new URLSearchParams(window.location.search);
+            params.set('pageNumber', currentPage);
+
+            try {
+                const response = await fetch('/Notes/MyNotesGrid?' + params.toString(), {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+
+                if (response.ok) {
+                    const html = await response.text();
+                    document.getElementById('notesGrid').insertAdjacentHTML('beforeend', html);
+                }
+            } finally {
+                isLoading = false;
+                document.getElementById('infiniteScrollLoader').style.display = 'none';
+
+                // Show "No more notes" message if last page loaded
+                if (currentPage >= totalPages) {
+                    document.getElementById('infiniteScrollEnd').style.display = 'block';
+                }
+            }
+        }
+    });
 </script>
 
 <!-- Add CSRF token for AJAX requests -->

@@ -1,0 +1,64 @@
+﻿@using CodeStash.Domain.Entities
+@model IEnumerable<Note>
+
+@foreach (var note in Model)
+{
+    <div class="note-card @(note.IsPrivate ? "private" : "")">
+        <div class="note-header">
+            <h3 class="note-title">
+                <a href="/Note/@note.Slug">@note.Title</a>
+            </h3>
+
+            <div class="note-meta">
+                <span>
+                    <i class="fas fa-calendar me-1"></i>
+                    @note.CreatedAt.ToString("MMM dd, yyyy")
+                </span>
+                <span>
+                    <i class="fas fa-eye me-1"></i>
+                    @note.ViewCount views
+                </span>
+                @if (note.IsPrivate)
+                {
+                    <span class="privacy-badge private">
+                        <i class="fas fa-lock me-1"></i>Private
+                    </span>
+                }
+                else
+                {
+                    <span class="privacy-badge public">
+                        <i class="fas fa-globe me-1"></i>Public
+                    </span>
+                }
+            </div>
+        </div>
+
+        <div class="note-footer">
+            <div class="note-tags">
+                @foreach (var tag in note.Tags.Take(3))
+                {
+                    <span class="tag-badge">@tag.Name</span>
+                }
+                @if (note.Tags.Count > 3)
+                {
+                    <span class="tag-badge">+@(note.Tags.Count - 3)</span>
+                }
+            </div>
+
+            <div class="action-buttons">
+                <a asp-action="Edit" asp-route-id="@note.Id" class="btn-sm btn-primary-sm">
+                    <i class="fas fa-edit"></i> Edit
+                </a>
+
+                <button class="btn-sm btn-secondary-sm" onclick="togglePrivacy('@note.Id')">
+                    <i class="fas @(note.IsPrivate ? "fa-eye" : "fa-eye-slash")"></i>
+                    @(note.IsPrivate ? "Make Public" : "Make Private")
+                </button>
+
+                <button class="btn-sm btn-danger-sm" onclick="deleteNote('@note.Id', '@note.Title')">
+                    <i class="fas fa-trash"></i> Delete
+                </button>
+            </div>
+        </div>
+    </div>
+}

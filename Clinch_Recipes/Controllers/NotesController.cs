@@ -51,6 +51,15 @@ public class NotesController(INoteService noteService, ITagService tagService) :
         return View(viewModel);
     }
 
+    public async Task<IActionResult> MyNotesGrid([FromQuery] MyNotesQueryParams queryParams)
+    {
+        var myNotesData = await noteService.GetMyNotesAndStatsAsync(queryParams);
+
+        // Only return the notes grid, not the full page
+        return PartialView("_MyNotesGrid", myNotesData.PagedResult.Items);
+    }
+
+
     //private async Task<PagedResult<Note>?> GetCachedOrFreshNotesAsync(int pageNumber)
     //{
     //    var cacheKey = $"notes_page_{pageNumber}";
