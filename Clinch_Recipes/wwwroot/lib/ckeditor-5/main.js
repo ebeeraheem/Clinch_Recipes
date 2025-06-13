@@ -205,8 +205,6 @@ const editorConfig = {
 };
 
 // Add client-side validation to editor content
-let editorInstance;
-
 ClassicEditor
 	.create(document.querySelector('#ckeditor'), editorConfig)
 	.then(editor => {
@@ -226,6 +224,9 @@ ClassicEditor
 			const data = editor.getData();
 			contentHidden.value = data;
 			updateContentCharacterCount(data);
+
+			// Clear any existing error messages
+            clearFieldError('Content');
 		});
 
 		// Initial character count
@@ -236,9 +237,6 @@ ClassicEditor
 			editor.execute('codeBlock');
 			cancel();
 		});
-
-		// Focus the editor
-		//editor.editing.view.focus();
 
 		// Add helpful keyboard shortcuts tooltip
 		const toolbar = editor.ui.view.toolbar.element;
@@ -253,17 +251,97 @@ ClassicEditor
 		showTextareaFallback();
 	});
 
-function updateContentCharacterCount(content) {
-	// Strip HTML tags for character counting but preserve basic structure
-	const textContent = content
-		.replace(/<pre[^>]*><code[^>]*>/g, '') // Remove opening code tags
-		.replace(/<\/code><\/pre>/g, '\n') // Replace closing code tags with newlines
-		.replace(/<[^>]*>/g, '') // Remove other HTML tags
-		.replace(/&nbsp;/g, ' ') // Replace non-breaking spaces
-		.replace(/&lt;/g, '<') // Decode HTML entities
-		.replace(/&gt;/g, '>')
-		.replace(/&amp;/g, '&');
+//function updateContentCharacterCount(content) {
+//	// Strip HTML tags for character counting but preserve basic structure
+//	const textContent = content
+//		.replace(/<pre[^>]*><code[^>]*>/g, '') // Remove opening code tags
+//		.replace(/<\/code><\/pre>/g, '\n') // Replace closing code tags with newlines
+//		.replace(/<[^>]*>/g, '') // Remove other HTML tags
+//		.replace(/&nbsp;/g, ' ') // Replace non-breaking spaces
+//		.replace(/&lt;/g, '<') // Decode HTML entities
+//		.replace(/&gt;/g, '>')
+//		.replace(/&amp;/g, '&');
 
+//	const length = textContent.length;
+//	const maxLength = 8000;
+
+//	const counter = document.getElementById('contentCount');
+//	counter.textContent = `${length}/${maxLength}`;
+
+//	if (length > maxLength * 0.9) {
+//		counter.className = 'character-count danger';
+//	} else if (length > maxLength * 0.75) {
+//		counter.className = 'character-count warning';
+//	} else {
+//		counter.className = 'character-count';
+//	}
+//}
+
+// Shared function to extract text content from HTML
+
+function extractTextFromHtml(content) {
+	// Create a temporary div to parse HTML content
+	const tempDiv = document.createElement('div');
+	tempDiv.innerHTML = content;
+
+	// Walk through all nodes and extract text content
+	function extractTextContent(node) {
+		if (node.nodeType === Node.TEXT_NODE) {
+			return node.textContent;
+		} else if (node.nodeType === Node.ELEMENT_NODE) {
+			let result = '';
+
+			// Handle specific elements that should add spacing/structure
+			const tagName = node.tagName.toLowerCase();
+
+			// Add newlines for block elements
+			if (['div', 'p', 'br', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li'].includes(tagName)) {
+				result += '\n';
+			}
+
+			// For pre/code blocks, preserve the content as-is (these are intentional code blocks)
+			if (tagName === 'pre' || (tagName === 'code' && node.parentNode.tagName.toLowerCase() === 'pre')) {
+				result += node.textContent;
+			} else {
+				// For other elements, recursively extract content
+				for (let child of node.childNodes) {
+					result += extractTextContent(child);
+				}
+			}
+
+			// Add newlines after certain block elements
+			if (['div', 'p', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'li'].includes(tagName)) {
+				result += '\n';
+			}
+
+			return result;
+		}
+		return '';
+	}
+
+	let textContent = extractTextContent(tempDiv);
+
+	// Clean up the extracted content
+	textContent = textContent
+		.replace(/&nbsp;/g, ' ') // Replace non-breaking spaces
+		.replace(/&lt;/g, '<')   // Decode HTML entities
+		.replace(/&gt;/g, '>')
+		.replace(/&amp;/g, '&')
+		.replace(/&quot;/g, '"')
+		.replace(/&#39;/g, "'")
+		.replace(/\n\s*\n/g, '\n') // Collapse multiple newlines
+		.trim();
+
+	return textContent;
+}
+
+window.extractTextFromHtml = extractTextFromHtml; // Expose for global use
+
+// Updated character count function using the shared extraction logic
+function updateContentCharacterCount(content) {
+	console.log('Updating character count for content');
+
+	const textContent = extractTextFromHtml(content);
 	const length = textContent.length;
 	const maxLength = 8000;
 
@@ -304,75 +382,15 @@ function showTextareaFallback() {
 	updateContentCharacterCount(currentContent);
 }
 
-// Update form submission to ensure content is synced
-const form = document.getElementById('createNoteForm');
-if (form) {
-	const originalSubmitHandler = form.onsubmit;
-	form.onsubmit = function (e) {
-		// Ensure content is synced before validation
-		if (editorInstance) {
-			const data = editorInstance.getData();
-			document.getElementById('contentHidden').value = data;
-		}
-
-		// Validate content
-		if (!validateContent()) {
-			e.preventDefault();
-			return false;
-		}
-
-		// Call original submit handler if it exists
-		if (originalSubmitHandler) {
-			return originalSubmitHandler.call(this, e);
-		}
-
-		return true;
-	};
+function clearFieldError(fieldName) {
+	const form = document.getElementById('editorForm');
+    const field = form.querySelector(`[name="${fieldName}"]`);
+	if (field) {
+        field.classList.remove('error');
+        const errorSpan = field.parentNode.querySelector('.field-validation-error');
+		if (errorSpan) {
+            errorSpan.textContent = '';
+        }
+    }
 }
-
-function validateContent() {
-	const contentHidden = document.getElementById('contentHidden');
-	const content = contentHidden.value;
-
-	// Strip HTML for validation
-	const textContent = content
-		.replace(/<pre[^>]*><code[^>]*>/g, '')
-		.replace(/<\/code><\/pre>/g, '\n')
-		.replace(/<[^>]*>/g, '')
-		.replace(/&nbsp;/g, ' ')
-		.replace(/&lt;/g, '<')
-		.replace(/&gt;/g, '>')
-		.replace(/&amp;/g, '&')
-		.trim();
-
-	const errorSpan = document.querySelector('[asp-validation-for="Content"]');
-
-	if (!textContent) {
-		showFieldError(errorSpan, 'Content is required');
-		return false;
-	} else if (textContent.length < 10) {
-		showFieldError(errorSpan, 'Content must be at least 10 characters long');
-		return false;
-	} else if (textContent.length > 8000) {
-		showFieldError(errorSpan, 'Content cannot exceed 8000 characters');
-		return false;
-	}
-
-	// Clear any existing errors
-	if (errorSpan) {
-		errorSpan.textContent = '';
-		errorSpan.style.display = 'none';
-	}
-
-	return true;
-}
-
-function showFieldError(errorElement, message) {
-	if (errorElement) {
-		errorElement.textContent = message;
-		errorElement.style.display = 'block';
-	}
-}
-
-
 

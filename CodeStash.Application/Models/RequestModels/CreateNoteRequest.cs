@@ -11,8 +11,6 @@ public class CreateNoteRequest
 
     [MaxLength(500)]
     public string? Description { get; set; }
-
     public bool IsPrivate { get; set; } = false;
-
     public List<string> Tags { get; set; } = [];
 }

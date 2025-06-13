@@ -1,7 +1,8 @@
 ﻿@using CodeStash.ViewModels
+
 @model EditNoteViewModel
 @{
-    ViewData["Title"] = $"Edit {Model.Title} - CodeStash";
+    ViewData["Title"] = $"Edit {Model.Title}";
 }
 
 <div class="edit-note-container">
@@ -13,14 +14,14 @@
                 <div><strong>@Model.ViewCount</strong> views</div>
                 <div>Created: @Model.CreatedAt.ToString("MMM dd, yyyy")</div>
                 <div>Last Updated: @(Model.ModifiedAt?.ToString("MMM dd, yyyy") ?? "Never")</div>
-                <div>Status: @(Model.IsPrivate ? "Private" : "Public")</div>
+                <div>Visibility: @(Model.IsPrivate ? "Private" : "Public")</div>
             </div>
         </div>
 
         <div class="row justify-content-center">
             <div class="col-lg-10">
                 <div class="form-card">
-                    <form asp-action="Edit" method="post" id="editNoteForm" novalidate>
+                    <form asp-action="Edit" method="post" id="editorForm" novalidate>
                         <input asp-for="Id" type="hidden" />
                         <input asp-for="ViewCount" type="hidden" />
                         <input asp-for="CreatedAt" type="hidden" />
@@ -39,6 +40,18 @@
                             <div class="character-count" id="titleCount">0/200</div>
                         </div>
 
+                        <!-- Description -->
+                        <div class="form-group">
+                            <label asp-for="Description" class="form-label"></label>
+                            <textarea asp-for="Description"
+                                      class="form-control"
+                                      rows="3"
+                                      placeholder="Optional description of what this code does..."
+                                      id="descriptionInput"></textarea>
+                            <span asp-validation-for="Description" class="field-validation-error"></span>
+                            <div class="character-count" id="descriptionCount">0/500</div>
+                        </div>
+
                         <!-- Tags -->
                         @* TODO: Fetch from database *@
                         <div class="form-group">
@@ -52,7 +65,7 @@
 
                             <div class="tags-display" id="tagsDisplay"></div>
 
-                            <div class="suggested-tags">
+                            @* <div class="suggested-tags">
                                 <div class="suggested-tags-label">Suggested tags:</div>
                                 <div class="suggested-tags-list">
                                     @foreach (var tag in Model.PopularTags)
@@ -60,21 +73,21 @@
                                         <span class="suggested-tag" onclick="addSuggestedTag('@tag.Name')">@tag.Name</span>
                                     }
                                 </div>
-                            </div>
+                            </div> *@
                         </div>
 
                         <!-- Code Content -->
                         <div class="form-group">
                             <label asp-for="Content" class="form-label required"></label>
-                            <div id="editor-container" class="editor-container editor-container_classic-editor">
-                                <div id="ckeditor" class="editor-container__editor" style="min-height: 400px;"></div>
+                            <div id="editor-container" class="editor-container">
+                                <div id="ckeditor" style="min-height: 400px;"></div>
                             </div>
                             <input asp-for="Content" type="hidden" id="contentHidden" />
                             <span asp-validation-for="Content" class="field-validation-error"></span>
                             <div class="character-count" id="contentCount">0/8000</div>
                             <div class="form-help">
                                 <i class="fas fa-info-circle me-1"></i>
-                                Use code blocks for syntax highlighting. Supports 20+ languages including JavaScript, Python, C#, SQL, etc.
+                                Use code blocks for syntax highlighting. Supports 40+ languages including JavaScript, Python, C#, SQL, etc.
                             </div>
                         </div>
 
@@ -91,18 +104,12 @@
 
                         <!-- Form Actions -->
                         <div class="form-actions">
-                            <button type="button" class="btn btn-danger" onclick="confirmDelete()">
-                                <i class="fas fa-trash"></i> Delete Note
+                            <a href="/Notes/MyNotes" class="btn btn-secondary">
+                                <i class="fas fa-times"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary" id="submitBtn">
+                                <i class="fas fa-save"></i> Save Changes
                             </button>
-
-                            <div class="action-group">
-                                <a href="/Notes/MyNotes" class="btn btn-secondary">
-                                    <i class="fas fa-times"></i> Cancel
-                                </a>
-                                <button type="submit" class="btn btn-primary" id="submitBtn">
-                                    <i class="fas fa-save"></i> Save Changes
-                                </button>
-                            </div>
                         </div>
                     </form>
                 </div>
@@ -113,9 +120,10 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const form = document.getElementById('editNoteForm');
+        const form = document.getElementById('editorForm');
         const titleInput = document.getElementById('titleInput');
-        // const contentInput = document.querySelector('.ck-content');
+        const descriptionInput = document.getElementById('descriptionInput');
+        const contentHidden = document.getElementById('contentHidden');
         const tagsInput = document.getElementById('tagsInput');
         const tagsDisplay = document.getElementById('tagsDisplay');
         const submitBtn = document.getElementById('submitBtn');
@@ -124,9 +132,14 @@
         let selectedTags = tagsInput.value.split(',').map(t => t.trim()).filter(t => t);
         updateTagsDisplay();
 
+        // Clear the tagsInput
+        tagsInput.value = '';
+
         // Character counters
         titleInput.addEventListener('input', () => updateCharacterCount('titleInput', 'titleCount', 200));
-        // contentInput.addEventListener('input', () => updateCharacterCount('ck-content', 'contentCount', 8000));
+        if (descriptionInput) {
+            descriptionInput.addEventListener('input', () => updateCharacterCount('descriptionInput', 'descriptionCount', 500));
+        }
 
         // Tags handling
         tagsInput.addEventListener('input', handleTagsInput);
@@ -154,7 +167,9 @@
 
         // Initialize character counters
         updateCharacterCount('titleInput', 'titleCount', 200);
-        // updateCharacterCount('ck-content', 'contentCount', 8000);
+        if (descriptionInput) {
+            updateCharacterCount('descriptionInput', 'descriptionCount', 500);
+        }
 
         function updateCharacterCount(inputId, countId, maxLength) {
             const input = document.getElementById(inputId) || document.querySelector(`.${inputId}`);
@@ -211,13 +226,7 @@
             updateTagsDisplay();
         };
 
-        window.addSuggestedTag = (tag) => {
-            if (!selectedTags.includes(tag)) {
-                selectedTags.push(tag);
-                updateTagsDisplay();
-            }
-        };
-
+        // Validate form before submission
         function validateForm() {
             let isValid = true;
 
@@ -226,32 +235,60 @@
             errorElements.forEach(el => el.textContent = '');
 
             // Validate title
-            if (!titleInput.value.trim()) {
+            const title = titleInput.value.trim();
+            if (!title) {
                 showFieldError('Title', 'Title is required');
                 isValid = false;
-            } else if (titleInput.value.length < 3) {
+            } else if (title.length < 3) {
                 showFieldError('Title', 'Title must be at least 3 characters long');
+                isValid = false;
+            } else if (title.length > 200) {
+                showFieldError('Title', 'Title cannot exceed 200 characters');
+                isValid = false;
+            }
+
+            // Validate description
+            if (descriptionInput && descriptionInput.value.length > 500) {
+                showFieldError('Description', 'Description cannot exceed 500 characters');
                 isValid = false;
             }
 
             // Validate content
-            if (!contentInput.value.trim()) {
-                showFieldError('Content', 'Content is required');
-                isValid = false;
-            } else if (contentInput.value.length < 10) {
-                showFieldError('Content', 'Content must be at least 10 characters long');
+            if (!validateContent()) {
                 isValid = false;
             }
 
             return isValid;
         }
 
+        // Function to validate editor content
+        function validateContent(){
+            const content = contentHidden.value;
+
+            const textContent = window.extractTextFromHtml(content);
+
+            if (!textContent) {
+                showFieldError('Content', 'Content is required');
+                return false;
+            } else if (textContent.length < 10) {
+                showFieldError('Content', 'Content must be at least 10 characters long');
+                return false;
+            } else if (textContent.length > 8000) {
+                showFieldError('Content', 'Content cannot exceed 8000 characters');
+                return false;
+            }
+
+            return true;
+        }
+
+        // Show field error with styling
         function showFieldError(fieldName, message) {
             const field = form.querySelector(`[name="${fieldName}"]`);
             if (field) {
                 field.classList.add('error');
                 const errorSpan = field.parentNode.querySelector('.field-validation-error');
                 if (errorSpan) {
+                    console.error(`Validation error for ${fieldName}: ${message}`);
                     errorSpan.textContent = message;
                 }
             }
@@ -264,41 +301,7 @@
             });
         });
     });
-
-    async function confirmDelete() {
-        const noteTitle = document.getElementById('titleInput').value;
-
-        if (!confirm(`Are you sure you want to delete "${noteTitle}"?\n\nThis action cannot be undone and will permanently remove your note.`)) {
-            return;
-        }
-
-        try {
-            const noteId = document.querySelector('input[name="Id"]').value;
-            const response = await fetch(`/Notes/Delete/${noteId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
-                }
-            });
-
-            const result = await response.json();
-
-            if (result.success) {
-                alert('Note deleted successfully');
-                window.location.href = '/Notes/MyNotes';
-            } else {
-                alert(result.message || 'Failed to delete note');
-            }
-        } catch (error) {
-            console.error('Error deleting note:', error);
-            alert('An error occurred while deleting the note');
-        }
-    }
 </script>
-
-<!-- Add CSRF token for AJAX requests -->
-@Html.AntiForgeryToken()
 
 @section Scripts {
     @{
@@ -435,9 +438,8 @@
         min-height: 400px;
     }
 
-    .slug-input {
-        font-family: 'Courier New', monospace;
-        font-size: 0.9rem;
+    .ck.ck-editor__editable pre[data-language]::after {
+        display: none !important;
     }
 
     .form-help {
@@ -581,7 +583,7 @@
     .form-actions {
         display: flex;
         gap: 1rem;
-        justify-content: space-between;
+        justify-content: end;
         margin-top: 3rem;
         padding-top: 2rem;
         border-top: 1px solid var(--border-primary);

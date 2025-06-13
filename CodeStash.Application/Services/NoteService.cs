@@ -101,22 +101,35 @@ public class NoteService(
             return Result.Failure(NoteErrors.ForbiddenAccess);
         }
 
-        // Validate tags
-        var tags = await context.Tags
-            .Where(t => request.TagIds.Contains(t.Id))
-            .ToListAsync();
+        // Get or create tags
+        var resolvedTags = new List<Tag>();
 
-        if (tags.Count != request.TagIds.Count)
+        foreach (var tagInput in request.Tags)
         {
-            logger.LogWarning("Some tags in the request do not exist.");
-            return Result.Failure(NoteErrors.InvalidTags);
+            // Try to find existing tag
+            var existingTag = await context.Tags
+                .FirstOrDefaultAsync(t => t.Name.Equals(tagInput));
+
+            if (existingTag is not null)
+            {
+                resolvedTags.Add(existingTag);
+            }
+            else
+            {
+                // Create new tag if it doesn't exist
+                var newTag = new Tag { Name = tagInput.Trim() };
+
+                await context.Tags.AddAsync(newTag);
+                resolvedTags.Add(newTag);
+            }
         }
 
         // Update properties
         note.Title = string.IsNullOrWhiteSpace(request.Title) ? note.Title : request.Title;
+        note.Description = string.IsNullOrWhiteSpace(request.Description) ? note.Description : request.Description;
         note.Content = string.IsNullOrWhiteSpace(request.Content) ? note.Content : Markdown.ToHtml(request.Content);
         note.IsPrivate = request.IsPrivate;
-        note.Tags = tags;
+        note.Tags = resolvedTags;
         //note.Slug = slug; // Do not update slugs to avoid breaking existing links
 
         context.Notes.Update(note);
@@ -148,12 +161,12 @@ public class NoteService(
             return Result<Note>.Failure(NoteErrors.NotFound);
         }
 
-        //// Check if the note is private and if the user has access
-        //if (note.IsPrivate && note.AuthorId != userId)
-        //{
-        //    logger.LogWarning("Unauthorized access attempt to private note with slug: {Slug}", slug);
-        //    return Result<Note>.Failure(NoteErrors.UnauthorizedAccess);
-        //}
+        // Check if the note is private and if the user has access
+        if (note.IsPrivate && note.AuthorId != userId)
+        {
+            logger.LogWarning("Unauthorized access attempt to private note with slug: {Slug}", slug);
+            return Result<Note>.Failure(NoteErrors.UnauthorizedAccess);
+        }
 
         // Increment view count
         note.ViewCount++;
@@ -164,6 +177,7 @@ public class NoteService(
         return Result<Note>.Success(note);
     }
 
+    // Get note by ID doesn't increment view count, as it's typically used for editing or management purposes.
     public async Task<Result<Note>> GetNoteByIdAsync(string noteId)
     {
         logger.LogInformation("Retrieving note with ID: {NoteId}", noteId);
@@ -179,17 +193,12 @@ public class NoteService(
             return Result<Note>.Failure(NoteErrors.NotFound);
         }
 
-        //// Check if the note is private and if the user has access
-        //if (note.IsPrivate && note.AuthorId != userId)
-        //{
-        //    logger.LogWarning("Unauthorized access attempt to private note with ID: {NoteId}", noteId);
-        //    return Result<Note>.Failure(NoteErrors.UnauthorizedAccess);
-        //}
-
-        // Increment view count
-        note.ViewCount++;
-        context.Notes.Update(note);
-        await context.SaveChangesAsync();
+        // Check if the note is private and if the user has access
+        if (note.IsPrivate && note.AuthorId != userId)
+        {
+            logger.LogWarning("Unauthorized access attempt to private note with ID: {NoteId}", noteId);
+            return Result<Note>.Failure(NoteErrors.UnauthorizedAccess);
+        }
 
         logger.LogInformation("Note retrieved successfully with ID: {NoteId}", note.Id);
         return Result<Note>.Success(note);

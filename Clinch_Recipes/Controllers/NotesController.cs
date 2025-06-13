@@ -15,28 +15,6 @@ namespace CodeStash.Controllers;
 public class NotesController(INoteService noteService, ITagService tagService) : Controller
 #pragma warning restore S6934 // A Route attribute should be added to the controller when a route template is specified at the action level
 {
-    //private const int PageSize = 40;
-
-    //public async Task<IActionResult> Index()
-    //{
-    //    const int pageNumber = 1;
-
-    //    var pagedResult = await GetCachedOrFreshNotesAsync(pageNumber);
-
-    //    if (pagedResult is null)
-    //    {
-    //        return View(new PagedResult<Note>()
-    //        {
-    //            CurrentPage = pageNumber,
-    //            PageSize = PageSize,
-    //            Items = [],
-    //            TotalCount = 0
-    //        });
-    //    }
-
-    //    return View(pagedResult);
-    //}
-
     public async Task<IActionResult> MyNotes([FromQuery] MyNotesQueryParams queryParams)
     {
         var myNotesData = await noteService.GetMyNotesAndStatsAsync(queryParams);
@@ -58,107 +36,6 @@ public class NotesController(INoteService noteService, ITagService tagService) :
         // Only return the notes grid, not the full page
         return PartialView("_MyNotesGrid", myNotesData.PagedResult.Items);
     }
-
-
-    //private async Task<PagedResult<Note>?> GetCachedOrFreshNotesAsync(int pageNumber)
-    //{
-    //    var cacheKey = $"notes_page_{pageNumber}";
-
-    //    // Check if the cache contains the notes
-    //    if (memoryCache.TryGetValue(cacheKey, out PagedResult<Note>? cachedResult))
-    //    {
-    //        return cachedResult;
-    //    }
-
-    //    // Get the notes from the database
-    //    var query = noteRepository.GetAllNotesAsync();
-
-    //    var ordered = query.OrderByDescending(n => n.CreatedDate);
-
-    //    var pagedResult = await pagedResultService
-    //        .GetPagedResultAsync(ordered, pageNumber, PageSize);
-
-    //    // Cache the notes if they exist
-    //    if (pagedResult.Items.Count != 0)
-    //    {
-    //        var cacheOptions = new MemoryCacheEntryOptions()
-    //            .SetPriority(CacheItemPriority.NeverRemove)
-    //            .SetSize(2048);
-
-    //        memoryCache.Set(cacheKey, pagedResult, cacheOptions);
-    //    }
-
-    //    return pagedResult;
-    //}
-
-    //public async Task<IActionResult> GetNotes(int pageNumber = 2)
-    //{
-    //    var pagedResult = await GetCachedOrFreshNotesAsync(pageNumber);
-
-    //    if (pagedResult is null)
-    //    {
-    //        return Json(new { success = false });
-    //    }
-
-    //    return Json(pagedResult);
-    //}
-
-    //public async Task<IActionResult> Search(string term)
-    //{
-    //    if (string.IsNullOrWhiteSpace(term))
-    //    {
-    //        return Json(Array.Empty<Note>());
-    //    }
-
-    //    var notes = await noteRepository.GetAllNotesAsync()
-    //        .Where(n => n.Title.Contains(term))
-    //        .ToListAsync();
-
-    //    return Json(notes);
-    //}
-
-    //[Authorize]
-    //public async Task<IActionResult> Upsert(Guid? id)
-    //{
-    //    var note = new Note();
-
-    //    if (id is null) return View(note);
-
-    //    // Get the note with the specified id
-    //    note = await noteRepository.GetNoteByIdAsync((Guid)id);
-
-    //    return note is null ? NotFound() : View(note);
-    //}
-
-    //[Authorize]
-    //[HttpPost]
-    //public async Task<IActionResult> Upsert(Note note)
-    //{
-    //    if (!ModelState.IsValid) return View(note);
-
-    //    note.LastUpdatedDate = DateTime.UtcNow;
-    //    note.Content = Markdown.ToHtml(note.Content);
-
-    //    // Remove cache for updated note
-    //    var noteCacheKey = $"note_{note.Id}";
-    //    memoryCache.Remove(noteCacheKey);
-
-    //    // Invalidate cache for all notes
-    //    if (memoryCache is MemoryCache concreteCache)
-    //        concreteCache.Clear();
-
-    //    if (note.Id == Guid.Empty)
-    //    {
-    //        note.CreatedDate = DateTime.UtcNow;
-    //        await noteRepository.AddNoteAsync(note);
-
-    //        return RedirectToAction(nameof(Index));
-    //    }
-
-    //    await noteRepository.UpdateNoteAsync(note);
-
-    //    return RedirectToAction(nameof(Details), new { id = note.Id });
-    //}
 
     [Route("Note/{slug}")]
     public async Task<IActionResult> Details(string slug)
@@ -310,7 +187,6 @@ public class NotesController(INoteService noteService, ITagService tagService) :
         return RedirectToAction(nameof(MyNotes));
     }
 
-    [HttpGet]
     public async Task<IActionResult> Edit(string id)
     {
         if (string.IsNullOrEmpty(id))
@@ -318,24 +194,27 @@ public class NotesController(INoteService noteService, ITagService tagService) :
             return NotFound();
         }
 
-        // TODO: Get actual note from database
-        var note = GetDummyNoteById(id);
-        if (note == null)
+        var result = await noteService.GetNoteByIdAsync(id);
+
+        if (result.IsFailure)
         {
+            TempData["ErrorMessage"] = result.Error.Message;
             return NotFound();
         }
+
+        var note = result.Value;
 
         var viewModel = new EditNoteViewModel
         {
             Id = note.Id,
             Title = note.Title,
             Content = note.Content,
+            Description = note.Description,
             IsPrivate = note.IsPrivate,
             TagsInput = string.Join(", ", note.Tags.Select(t => t.Name)),
             ViewCount = note.ViewCount,
             CreatedAt = note.CreatedAt,
             ModifiedAt = note.ModifiedAt,
-            PopularTags = GetDummySuggestedTags()
         };
 
         return View(viewModel);
@@ -343,16 +222,36 @@ public class NotesController(INoteService noteService, ITagService tagService) :
 
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Edit(EditNoteViewModel model)
+    public async Task<IActionResult> Edit(EditNoteViewModel viewModel)
     {
         if (!ModelState.IsValid)
         {
-            model.PopularTags = GetDummySuggestedTags();
-            return View(model);
+            return View(viewModel);
         }
 
-        // TODO: Implement actual note update logic
-        TempData["SuccessMessage"] = $"Note '{model.Title}' updated successfully!";
+        var tags = viewModel.TagsInput
+            ?.Split([','], StringSplitOptions.RemoveEmptyEntries)
+            .Select(t => t.Trim())
+            .ToList();
+
+        var request = new UpdateNoteRequest()
+        {
+            Title = viewModel.Title,
+            Description = viewModel.Description,
+            Content = viewModel.Content,
+            IsPrivate = viewModel.IsPrivate,
+            Tags = tags ?? [],
+        };
+
+        var result = await noteService.UpdateNoteAsync(viewModel.Id, request);
+
+        if (result.IsFailure)
+        {
+            TempData["ErrorMessage"] = result.Error.Message;
+            return View(viewModel);
+        }
+
+        TempData["SuccessMessage"] = $"Note '{viewModel.Title}' updated successfully!";
         return RedirectToAction(nameof(MyNotes));
     }
 
@@ -393,55 +292,6 @@ public class NotesController(INoteService noteService, ITagService tagService) :
 
         return Json(new { success = true, message = "Note deleted successfully" });
     }
-
-    //[Authorize]
-    //[HttpPost]
-    //public async Task<IActionResult> Delete(Guid id)
-    //{
-    //    var result = await noteRepository.DeleteNoteAsync(id);
-
-    //    if (result <= 0)
-    //    {
-    //        return Json(new { success = false });
-    //    }
-
-    //    if (memoryCache is MemoryCache concreteCache)
-    //    {
-    //        concreteCache.Clear();
-    //    }
-
-    //    return Json(new { success = true });
-    //}
-
-    //public IActionResult Details(Guid id)
-    //{
-    //    return View();
-    //}
-
-    //public async Task<IActionResult> GetNoteFromServer(Guid id)
-    //{
-    //    var cacheKey = $"note_{id}";
-
-    //    if (!memoryCache.TryGetValue(cacheKey, out Note? note))
-    //    {
-    //        note = await noteRepository.GetNoteByIdAsync(id);
-
-    //        var cacheOptions = new MemoryCacheEntryOptions()
-    //            .SetSlidingExpiration(TimeSpan.FromMinutes(30))
-    //            .SetPriority(CacheItemPriority.Normal);
-
-    //        memoryCache.Set(cacheKey, note, cacheOptions);
-    //    }
-
-    //    if (note is null)
-    //    {
-    //        return NotFound();
-    //    }
-
-    //    return View(nameof(Details), note);
-    //}
-
-    // Dummy data methods (replace with actual service calls)
     private List<Note> GetDummyUserNotes(string userId, string search, string language,
         string tag, string sort, bool privateOnly, int page)
     {
@@ -481,50 +331,6 @@ public class NotesController(INoteService noteService, ITagService tagService) :
         }
 
         return notes;
-    }
-
-    private Note? GetDummyNoteById(string id)
-    {
-        return new Note
-        {
-            Id = id,
-            Title = "JavaScript Array Methods Cheat Sheet",
-            Slug = "javascript-array-methods-cheat-sheet",
-            Content = @"// Essential JavaScript Array Methods
-
-// Map - Transform each element
-const numbers = [1, 2, 3, 4, 5];
-const doubled = numbers.map(n => n * 2);
-console.log(doubled); // [2, 4, 6, 8, 10]
-
-// Filter - Select elements based on condition
-const evens = numbers.filter(n => n % 2 === 0);
-console.log(evens); // [2, 4]
-
-// Reduce - Accumulate values
-const sum = numbers.reduce((acc, n) => acc + n, 0);
-console.log(sum); // 15
-
-// Find - Get first matching element
-const found = numbers.find(n => n > 3);
-console.log(found); // 4
-
-// Some & Every - Boolean checks
-const hasEven = numbers.some(n => n % 2 === 0);
-const allPositive = numbers.every(n => n > 0);",
-            IsPrivate = false,
-            ViewCount = 245,
-            CreatedAt = DateTime.UtcNow.AddDays(-15),
-            ModifiedAt = DateTime.UtcNow.AddDays(-3),
-            AuthorId = "ebeeraheem",
-            Author = new ApplicationUser { UserName = "ebeeraheem" },
-            Tags = new List<Tag>
-            {
-                new Tag { Name = "JavaScript" },
-                new Tag { Name = "Arrays" },
-                new Tag { Name = "Cheat Sheet" }
-            }
-        };
     }
 
     private string GetSampleCode(string language, string topic)

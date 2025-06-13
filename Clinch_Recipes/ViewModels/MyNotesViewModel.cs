@@ -11,11 +11,3 @@ public class MyNotesViewModel
     public UserNotesStatsDto Stats { get; set; } = new();
     public MyNotesQueryParams Filter { get; set; } = new();
 }
-
-public class EditNoteViewModel : CreateNoteViewModel
-{
-    public string Id { get; set; } = string.Empty;
-    public int ViewCount { get; set; }
-    public DateTime CreatedAt { get; set; }
-    public DateTime? ModifiedAt { get; set; }
-}

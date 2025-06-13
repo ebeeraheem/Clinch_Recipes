@@ -15,7 +15,7 @@
         <div class="row justify-content-center">
             <div class="col-lg-10">
                 <div class="form-card">
-                    <form asp-action="Create" method="post" id="createNoteForm" novalidate>
+                    <form asp-action="Create" method="post" id="editorForm" novalidate>
                         <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
 
                         <!-- Title -->
@@ -110,10 +110,10 @@
 
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const form = document.getElementById('createNoteForm');
+        const form = document.getElementById('editorForm');
         const titleInput = document.getElementById('titleInput');
         const descriptionInput = document.getElementById('descriptionInput');
-        const contentInput = document.querySelector('.ck-content');
+        const contentHidden = document.getElementById('contentHidden');
         const tagsInput = document.getElementById('tagsInput');
         const tagsDisplay = document.getElementById('tagsDisplay');
         const submitBtn = document.getElementById('submitBtn');
@@ -122,6 +122,9 @@
 
         // Character counters
         titleInput.addEventListener('input', () => updateCharacterCount('titleInput', 'titleCount', 200));
+        if (descriptionInput) {
+            descriptionInput.addEventListener('input', () => updateCharacterCount('descriptionInput', 'descriptionCount', 500));
+        }
 
         // Tags handling
         tagsInput.addEventListener('input', handleTagsInput);
@@ -149,6 +152,9 @@
 
         // Initialize character counters
         updateCharacterCount('titleInput', 'titleCount', 200);
+        if (descriptionInput) {
+            updateCharacterCount('descriptionInput', 'descriptionCount', 500);
+        }
 
         function updateCharacterCount(inputId, countId, maxLength) {
             const input = document.getElementById(inputId) || document.querySelector(`.${inputId}`);
@@ -212,6 +218,7 @@
             }
         };
 
+        // Validate form before submission
         function validateForm() {
             let isValid = true;
 
@@ -220,11 +227,15 @@
             errorElements.forEach(el => el.textContent = '');
 
             // Validate title
-            if (!titleInput.value.trim()) {
+            const title = titleInput.value.trim();
+            if (!title) {
                 showFieldError('Title', 'Title is required');
                 isValid = false;
-            } else if (titleInput.value.length < 3) {
+            } else if (title.length < 3) {
                 showFieldError('Title', 'Title must be at least 3 characters long');
+                isValid = false;
+            } else if (title.length > 200) {
+                showFieldError('Title', 'Title cannot exceed 200 characters');
                 isValid = false;
             }
 
@@ -235,23 +246,41 @@
             }
 
             // Validate content
-            if (!contentInput.innerText.trim()) {
-                showFieldError('Content', 'Content is required');
-                isValid = false;
-            } else if (contentInput.innerText.length < 10) {
-                showFieldError('Content', 'Content must be at least 10 characters long');
+            if (!validateContent()) {
                 isValid = false;
             }
 
             return isValid;
         }
 
+        // Function to validate editor content
+        function validateContent(){
+            const content = contentHidden.value;
+
+            const textContent = window.extractTextFromHtml(content);
+
+            if (!textContent) {
+                showFieldError('Content', 'Content is required');
+                return false;
+            } else if (textContent.length < 10) {
+                showFieldError('Content', 'Content must be at least 10 characters long');
+                return false;
+            } else if (textContent.length > 8000) {
+                showFieldError('Content', 'Content cannot exceed 8000 characters');
+                return false;
+            }
+
+            return true;
+        }
+
+        // Show field error with styling
         function showFieldError(fieldName, message) {
             const field = form.querySelector(`[name="${fieldName}"]`);
             if (field) {
                 field.classList.add('error');
                 const errorSpan = field.parentNode.querySelector('.field-validation-error');
                 if (errorSpan) {
+                    console.error(`Validation error for ${fieldName}: ${message}`);
                     errorSpan.textContent = message;
                 }
             }
@@ -380,9 +409,8 @@
         min-height: 400px;
     }
 
-    .slug-input {
-        font-family: 'Courier New', monospace;
-        font-size: 0.9rem;
+    .ck.ck-editor__editable pre[data-language]::after{
+        display: none !important;
     }
 
     .form-help {
