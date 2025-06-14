@@ -111,4 +111,60 @@ public class UserService(ApplicationDbContext context, UserHelper userHelper, IL
         logger.LogInformation("User profile retrieved successfully for user ID: {UserId}", userId);
         return Result<UserProfileDto>.Success(user);
     }
+    public async Task<Result<UserSettingsDto>> GetUserSettingsAsync()
+    {
+        var userId = userHelper.GetUserId();
+        logger.LogInformation("Retrieving user settings for user ID: {UserId}", userId);
+
+        var user = await context.ApplicationUsers
+            .Select(u => new UserSettingsDto
+            {
+                Id = u.Id,
+                IsEmailPublic = u.IsEmailPublic,
+                IsLocationPublic = u.IsLocationPublic,
+                IsSocialLinksPublic = u.IsSocialLinksPublic,
+            })
+            .FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user is null)
+        {
+            logger.LogWarning("User settings not found for user ID: {UserId}", userId);
+            return Result<UserSettingsDto>.Failure(UserErrors.NotFound);
+        }
+
+        logger.LogInformation("User settings retrieved successfully for user ID: {UserId}", userId);
+        return Result<UserSettingsDto>.Success(user);
+    }
+    public async Task<Result> UpdateUserSettingsAsync(UserSettingsDto settings)
+    {
+        var userId = userHelper.GetUserId();
+        logger.LogInformation("Updating user settings for user ID: {UserId}", userId);
+
+        var user = await context.ApplicationUsers
+            .FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user is null)
+        {
+            logger.LogWarning("User not found for updating settings: {UserId}", userId);
+            return Result.Failure(UserErrors.NotFound);
+        }
+
+        // Update settings
+        user.IsEmailPublic = settings.IsEmailPublic;
+        user.IsLocationPublic = settings.IsLocationPublic;
+        user.IsSocialLinksPublic = settings.IsSocialLinksPublic;
+
+        context.ApplicationUsers.Update(user);
+
+        var result = await context.SaveChangesAsync();
+
+        if (result <= 0)
+        {
+            logger.LogError("Failed to update user settings for user ID: {UserId}", userId);
+            return Result.Failure(UserErrors.SettingsUpdateFailed);
+        }
+
+        logger.LogInformation("User settings updated successfully for user ID: {UserId}", userId);
+        return Result.Success();
+    }
 }

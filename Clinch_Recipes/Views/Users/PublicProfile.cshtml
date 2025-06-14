@@ -50,7 +50,7 @@
                             <span>Joined @Model.JoinedAt.ToString("MMMM yyyy")</span>
                         </div>
 
-                        @if (Model.IsLocationPublic)
+                        @if (Model.IsLocationPublic && !string.IsNullOrEmpty(Model.Location))
                         {
                             <div class="profile-meta-item">
                                 <i class="fas fa-map-marker-alt"></i>

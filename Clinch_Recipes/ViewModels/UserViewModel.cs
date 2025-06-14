@@ -78,59 +78,6 @@ public class EditProfileViewModel
     public List<string> AvailableLanguages { get; set; } = [];
 }
 
-public class UserSettingsViewModel
-{
-    // Privacy Settings
-    [Display(Name = "Make profile public")]
-    public bool IsProfilePublic { get; set; } = true;
-
-    [Display(Name = "Show email address")]
-    public bool ShowEmail { get; set; } = false;
-
-    [Display(Name = "Show location")]
-    public bool ShowLocation { get; set; } = true;
-
-    [Display(Name = "Show social links")]
-    public bool ShowSocialLinks { get; set; } = true;
-
-    [Display(Name = "Show statistics")]
-    public bool ShowStats { get; set; } = true;
-
-    // Notification Settings
-    [Display(Name = "Email notifications for new followers")]
-    public bool EmailOnNewFollower { get; set; } = true;
-
-    [Display(Name = "Email notifications for note comments")]
-    public bool EmailOnNoteComment { get; set; } = true;
-
-    [Display(Name = "Email notifications for note likes")]
-    public bool EmailOnNoteLike { get; set; } = false;
-
-    [Display(Name = "Weekly digest email")]
-    public bool WeeklyDigest { get; set; } = true;
-
-    [Display(Name = "Marketing emails")]
-    public bool MarketingEmails { get; set; } = false;
-
-    // Display Settings
-    [Display(Name = "Theme")]
-    public string Theme { get; set; } = "dark";
-
-    [Display(Name = "Notes per page")]
-    public int NotesPerPage { get; set; } = 12;
-
-    [Display(Name = "Default note visibility")]
-    public string DefaultNoteVisibility { get; set; } = "public";
-
-    [Display(Name = "Code editor font size")]
-    public int EditorFontSize { get; set; } = 14;
-
-    [Display(Name = "Show line numbers in code")]
-    public bool ShowLineNumbers { get; set; } = true;
-
-    public List<string> AvailableThemes { get; set; } = ["dark", "light", "auto"];
-}
-
 public class ChangePasswordViewModel
 {
     [Required(ErrorMessage = "Current password is required")]

@@ -1,4 +1,5 @@
 ﻿using CodeStash.Application.Contracts;
+using CodeStash.Application.Models.Dtos;
 using CodeStash.Domain.Entities;
 using CodeStash.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -126,23 +127,38 @@ public class UsersController(IUserService userService, INoteService noteService)
     [HttpGet]
     public async Task<IActionResult> Settings()
     {
-        var viewModel = GetDummyUserSettings();
-        return View(viewModel);
+        var result = await userService.GetUserSettingsAsync();
+
+        if (result.IsFailure)
+        {
+            return NotFound();
+        }
+
+        var settings = result.Value;
+        return View(settings);
     }
 
     [Authorize]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> Settings(UserSettingsViewModel model)
+    public async Task<IActionResult> Settings(UserSettingsDto model)
     {
         if (!ModelState.IsValid)
         {
             return View(model);
         }
 
-        // TODO: Implement actual settings update logic
+        var result = await userService.UpdateUserSettingsAsync(model);
+
+        if (result.IsFailure)
+        {
+            ModelState.AddModelError(result.Error.Code, result.Error.Message);
+            TempData["ErrorMessage"] = result.Error.Message;
+            return View(model);
+        }
+
         TempData["SuccessMessage"] = "Settings updated successfully!";
-        return View(model);
+        return RedirectToAction(nameof(Settings));
     }
 
     [Authorize]
@@ -265,29 +281,6 @@ public class UsersController(IUserService userService, INoteService noteService)
             MostUsedLanguage = "C#",
             FirstNoteDate = DateTime.Parse("2024-01-20"),
             LastNoteDate = DateTime.Parse("2025-06-06")
-        };
-    }
-
-    private UserSettingsViewModel GetDummyUserSettings()
-    {
-        return new UserSettingsViewModel
-        {
-            IsProfilePublic = true,
-            ShowEmail = false,
-            ShowLocation = true,
-            ShowSocialLinks = true,
-            ShowStats = true,
-            EmailOnNewFollower = true,
-            EmailOnNoteComment = true,
-            EmailOnNoteLike = false,
-            WeeklyDigest = true,
-            MarketingEmails = false,
-            Theme = "dark",
-            NotesPerPage = 12,
-            DefaultNoteVisibility = "public",
-            EditorFontSize = 14,
-            ShowLineNumbers = true,
-            AvailableThemes = new List<string> { "dark", "light", "auto" }
         };
     }
 

@@ -1,14 +1,15 @@
-﻿@using CodeStash.ViewModels
-@model UserSettingsViewModel
+﻿@using CodeStash.Application.Models.Dtos
+
+@model UserSettingsDto
 @{
-    ViewData["Title"] = "Settings - CodeStash";
+    ViewData["Title"] = "Settings";
 }
 
 <div class="settings-container">
     <div class="container">
         <div class="settings-header">
             <h1><i class="fas fa-cog text-primary me-3"></i>Account Settings</h1>
-            <p>Manage your account preferences, privacy settings, and notifications</p>
+            <p>Manage your account preferences and privacy settings</p>
         </div>
 
         <!-- Settings Navigation -->
@@ -67,7 +68,7 @@
                             </div>
                             <div class="setting-control">
                                 <label class="toggle-switch">
-                                    <input asp-for="ShowEmail" type="checkbox">
+                                    <input asp-for="IsEmailPublic" type="checkbox">
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
@@ -80,7 +81,7 @@
                             </div>
                             <div class="setting-control">
                                 <label class="toggle-switch">
-                                    <input asp-for="ShowLocation" type="checkbox">
+                                    <input asp-for="IsLocationPublic" type="checkbox">
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
@@ -93,7 +94,7 @@
                             </div>
                             <div class="setting-control">
                                 <label class="toggle-switch">
-                                    <input asp-for="ShowSocialLinks" type="checkbox">
+                                    <input asp-for="IsSocialLinksPublic" type="checkbox">
                                     <span class="toggle-slider"></span>
                                 </label>
                             </div>
@@ -294,6 +295,18 @@
 
                         <div class="setting-item">
                             <div class="setting-info">
+                                <h4>Change Email</h4>
+                                <p>Update your account email address</p>
+                            </div>
+                            <div class="setting-control">
+                                <a asp-action="ChangeEmail" class="btn btn-secondary">
+                                    <i class="fas fa-envelope"></i> Change Password
+                                </a>
+                            </div>
+                        </div>
+
+                        @* <div class="setting-item">
+                            <div class="setting-info">
                                 <h4>Export Data</h4>
                                 <p>Download a copy of all your notes and data</p>
                             </div>
@@ -302,7 +315,7 @@
                                     <i class="fas fa-download"></i> Export Data
                                 </button>
                             </div>
-                        </div>
+                        </div> *@
 
                         @* <div class="setting-item">
                             <div class="setting-info">
@@ -317,20 +330,18 @@
                         </div> *@
                     </div>
 
-                    <div class="danger-zone">
+                    @* <div class="danger-zone">
                         <h3><i class="fas fa-exclamation-triangle"></i> Danger Zone</h3>
                         <p>These actions are irreversible. Please be certain before proceeding.</p>
                         <button type="button" class="btn btn-danger" onclick="confirmDeleteAccount()">
                             <i class="fas fa-trash"></i> Delete Account
                         </button>
-                    </div>
+                    </div> *@
                 </div>
 
                 <!-- Save Actions -->
                 <div class="save-actions">
-                    @* <div class="save-status" id="saveStatus">
-                        Last saved: <span id="lastSavedTime">2025-06-08 at 3:20 PM</span>
-                    </div> *@
+                    <div class="save-status" id="saveStatus"></div>
                     <button type="submit" class="btn btn-primary" id="saveBtn">
                         <i class="fas fa-save"></i> Save Changes
                     </button>
@@ -347,7 +358,7 @@
         const form = document.getElementById('settingsForm');
         const saveBtn = document.getElementById('saveBtn');
         const saveStatus = document.getElementById('saveStatus');
-        const lastSavedTime = document.getElementById('lastSavedTime');
+        let hasUnsavedChanges;
 
         // Navigation handling
         navLinks.forEach(link => {
@@ -374,13 +385,14 @@
             });
         });
 
-        // Form submission
-        form.addEventListener('submit', (e) => {
-            e.preventDefault();
-            saveSettings();
-        });
+        // // Form submission
+        // form.addEventListener('submit', (e) => {
+        //     e.preventDefault();
+        //     saveSettings();
+        // });
 
         function markAsUnsaved() {
+            hasUnsavedChanges = true;
             saveStatus.className = 'save-status';
             saveStatus.innerHTML = '<i class="fas fa-circle text-warning me-1"></i> Unsaved changes';
         }
@@ -405,7 +417,6 @@
                     hour12: true
                 });
 
-                lastSavedTime.textContent = timeString;
                 saveStatus.className = 'save-status saved';
                 saveStatus.innerHTML = '<i class="fas fa-check-circle text-success me-1"></i> All changes saved';
 
@@ -468,8 +479,6 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 }
-
-
 
 <style>
     .settings-container {
@@ -750,7 +759,7 @@
         border-top: 1px solid var(--border-primary);
         padding: 1.5rem 2.5rem;
         display: flex;
-        justify-content: end;
+        justify-content: space-between;
         align-items: center;
     }
 

@@ -5,4 +5,6 @@ public interface IUserService
 {
     Task<Result<UserProfileDto>> GetUserProfileAsync();
     Task<Result<UserPublicProfileDto>> GetUserPublicProfileAsync(string userName);
+    Task<Result<UserSettingsDto>> GetUserSettingsAsync();
+    Task<Result> UpdateUserSettingsAsync(UserSettingsDto settings);
 }
