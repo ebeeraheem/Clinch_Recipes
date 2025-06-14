@@ -1,11 +1,12 @@
-﻿using CodeStash.Domain.Entities;
+﻿using CodeStash.Application.Contracts;
+using CodeStash.Domain.Entities;
 using CodeStash.ViewModels;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CodeStash.Controllers;
 #pragma warning disable S6934 // A Route attribute should be added to the controller when a route template is specified at the action level
-public class UsersController : Controller
+public class UsersController(IUserService userService, INoteService noteService) : Controller
 #pragma warning restore S6934 // A Route attribute should be added to the controller when a route template is specified at the action level
 {
     public IActionResult Index()
@@ -22,24 +23,57 @@ public class UsersController : Controller
         return View(viewModel);
     }
 
-    [Route("User/{username}")] // TODO: Change url to [HttpGet("{username}")]; i.e /users/{username}
-    public async Task<IActionResult> PublicProfile(string username)
+    [AllowAnonymous]
+    [Route("User/{username}")]
+    public async Task<IActionResult> PublicProfile(string userName)
     {
-        if (string.IsNullOrEmpty(username))
+        if (string.IsNullOrEmpty(userName))
         {
             return NotFound();
         }
 
-        var currentUserId = "ebeeraheem"; // Get from User.Identity in real implementation
-        var viewModel = GetDummyPublicProfile(username, currentUserId);
+        var result = await userService.GetUserPublicProfileAsync(userName);
 
-        if (viewModel == null)
+        if (result.IsFailure)
         {
             return NotFound();
         }
+
+        var profile = result.Value;
+        var viewModel = new PublicUserProfileViewModel()
+        {
+            Id = profile.Id,
+            UserName = profile.UserName,
+            FirstName = profile.FirstName,
+            LastName = profile.LastName,
+            Email = profile.IsEmailPublic ? profile.Email : null,
+            Bio = profile.Bio,
+            Location = profile.Location,
+            WebsiteUrl = profile.WebsiteUrl,
+            GitHubUsername = profile.GitHubUsername,
+            TwitterHandle = profile.TwitterHandle,
+            LinkedInProfile = profile.LinkedInProfile,
+            ProfileImageUrl = profile.ProfileImageUrl,
+            JoinedAt = profile.JoinedAt,
+            PublicNotes = profile.PublicNotes,
+            PublicNotesTotalCount = profile.PublicNotesTotalCount,
+            IsEmailPublic = profile.IsEmailPublic,
+            IsLocationPublic = profile.IsLocationPublic,
+            IsSocialLinksPublic = profile.IsSocialLinksPublic,
+        };
 
         return View(viewModel);
     }
+
+    [AllowAnonymous]
+    [HttpGet]
+    public async Task<IActionResult> PublicNotesGrid(string userName, int page = 1, int pageSize = 50)
+    {
+        var pagedNotes = await noteService.GetUserPublicNotesAsync(userName, page, pageSize);
+
+        return PartialView("_PublicNotesGrid", pagedNotes);
+    }
+
 
     [Authorize]
     [HttpGet]
@@ -187,70 +221,6 @@ public class UsersController : Controller
             Stats = GetDummyUserStats(),
             RecentNotes = GetDummyUserRecentNotes(),
             PopularNotes = GetDummyUserPopularNotes()
-        };
-    }
-
-    private PublicUserProfileViewModel GetDummyPublicProfile(string username, string currentUserId)
-    {
-        if (username == "ebeeraheem")
-        {
-            return new PublicUserProfileViewModel
-            {
-                Id = "ebeeraheem",
-                Username = "ebeeraheem",
-                FirstName = "Ebee",
-                LastName = "Raheem",
-                Bio = "Full-stack developer passionate about clean code and elegant solutions. Love working with modern web technologies and sharing knowledge with the community.",
-                Location = "Nigeria",
-                Website = "https://ebeeraheem.dev",
-                GitHubUsername = "ebeeraheem",
-                TwitterHandle = "ebeeraheem",
-                LinkedInProfile = "https://linkedin.com/in/ebeeraheem",
-                JoinedAt = DateTime.Parse("2024-01-15"),
-                LastActiveAt = DateTime.Parse("2025-06-08 14:30:00"),
-                ProfileImageUrl = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
-                IsEmailPublic = true,
-                Email = "ebeeraheem@example.com",
-                FavoriteLanguages = new List<string> { "C#", "JavaScript", "TypeScript", "Python", "SQL" },
-                Stats = GetDummyUserStats(),
-                PublicNotes = GetDummyUserPublicNotes(),
-                IsCurrentUser = currentUserId == "ebeeraheem",
-                IsFollowing = false
-            };
-        }
-
-        // Return another dummy user for testing
-        return new PublicUserProfileViewModel
-        {
-            Id = "johndoe",
-            Username = "johndoe",
-            FirstName = "John",
-            LastName = "Doe",
-            Bio = "Frontend developer specializing in React and Vue.js. Always learning something new!",
-            Location = "San Francisco, CA",
-            Website = "https://johndoe.dev",
-            GitHubUsername = "johndoe",
-            TwitterHandle = "johndoe",
-            JoinedAt = DateTime.Parse("2023-08-20"),
-            LastActiveAt = DateTime.Parse("2025-06-07 10:15:00"),
-            ProfileImageUrl = "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face",
-            IsEmailPublic = true,
-            Email = "john@example.com",
-            FavoriteLanguages = new List<string> { "JavaScript", "TypeScript", "CSS", "HTML" },
-            Stats = new UserStatsViewModel
-            {
-                TotalNotes = 42,
-                PublicNotes = 38,
-                PrivateNotes = 4,
-                TotalViews = 8420,
-                Followers = 156,
-                Following = 89,
-                NotesThisMonth = 5,
-                MostUsedLanguage = "JavaScript"
-            },
-            PublicNotes = GetDummyUserPublicNotes().Take(6).ToList(),
-            IsCurrentUser = false,
-            IsFollowing = true
         };
     }
 

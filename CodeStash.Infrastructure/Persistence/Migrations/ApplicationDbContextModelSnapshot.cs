@@ -74,7 +74,7 @@ namespace CodeStash.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("AuditLogs");
+                    b.ToTable("AuditLogs", (string)null);
                 });
 
             modelBuilder.Entity("CodeStash.Domain.Entities.Note", b =>
@@ -135,7 +135,7 @@ namespace CodeStash.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("Title");
 
-                    b.ToTable("Notes");
+                    b.ToTable("Notes", (string)null);
                 });
 
             modelBuilder.Entity("CodeStash.Domain.Entities.Tag", b =>
@@ -167,7 +167,7 @@ namespace CodeStash.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("Name");
 
-                    b.ToTable("Tags");
+                    b.ToTable("Tags", (string)null);
                 });
 
             modelBuilder.Entity("CodeStash.Domain.Models.Country", b =>
@@ -183,7 +183,7 @@ namespace CodeStash.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Code");
 
-                    b.ToTable("Countries");
+                    b.ToTable("Countries", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -405,7 +405,7 @@ namespace CodeStash.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("TagsId");
 
-                    b.ToTable("NoteTag");
+                    b.ToTable("NoteTag", (string)null);
                 });
 
             modelBuilder.Entity("CodeStash.Domain.Entities.ApplicationUser", b =>

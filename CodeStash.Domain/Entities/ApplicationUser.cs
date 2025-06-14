@@ -34,6 +34,8 @@ public class ApplicationUser : IdentityUser, IAuditableEntity
     [MaxLength(100)]
     public string? LinkedInProfile { get; set; }
 
+    public List<Note> Notes { get; set; } = [];
+
     // Audit related properties
     public string CreatedBy { get; set; } = string.Empty;
     public DateTime CreatedAt { get; set; }

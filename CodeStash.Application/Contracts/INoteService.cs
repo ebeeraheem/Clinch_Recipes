@@ -10,6 +10,7 @@ public interface INoteService
     Task<Result<Note>> GetNoteByIdAsync(string noteId);
     Task<Result<Note>> GetNoteBySlugAsync(string slug);
     Task<PagedResult<Note>> GetNotesAsync(NoteQueryParams parameters);
+    Task<List<Note>> GetUserPublicNotesAsync(string userName, int pageNumber = 1, int pageSize = 50);
     Task<Result> ToggleNotePrivacyAsync(string noteId);
     Task<Result> UpdateNoteAsync(string noteId, UpdateNoteRequest request);
 }

@@ -30,6 +30,7 @@ public static class ApplicationExtensions
         services.AddScoped<ITagService, TagService>();
         services.AddScoped<INoteService, NoteService>();
         services.AddScoped<ILocationService, LocationService>();
+        services.AddScoped<IUserService, UserService>();
 
         // Register other services
         services.AddScoped<IPagedResultService, PagedResultService>();

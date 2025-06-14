@@ -31,7 +31,7 @@ public class NotesController(INoteService noteService, ITagService tagService) :
 
     public async Task<IActionResult> MyNotesGrid([FromQuery] MyNotesQueryParams queryParams)
     {
-        var myNotesData = await noteService.GetMyNotesAndStatsAsync(queryParams);
+        var myNotesData = await noteService.GetMyNotesAndStatsAsync(queryParams); // PERF: Consider fetching only necessary data for grid
 
         // Only return the notes grid, not the full page
         return PartialView("_MyNotesGrid", myNotesData.PagedResult.Items);

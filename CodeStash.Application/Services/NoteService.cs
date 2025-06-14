@@ -293,6 +293,21 @@ public class NoteService(
         return await pagedResultService.GetPagedResultAsync(query, parameters.PageNumber, parameters.PageSize);
     }
 
+    public async Task<List<Note>> GetUserPublicNotesAsync(string userName, int pageNumber = 1, int pageSize = 50)
+    {
+        logger.LogInformation("Retrieving public notes for user: {UserName}, Page: {PageNumber}, Size: {PageSize}",
+            userName, pageNumber, pageSize);
+
+        return await context.Notes
+            .Include(n => n.Author)
+            .Include(n => n.Tags)
+            .Where(n => n.Author.UserName == userName && !n.IsPrivate)
+            .OrderByDescending(n => n.CreatedAt)
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync();
+    }
+
     public async Task<PagedResultWithExtras<Note, UserNotesStatsDto>> GetMyNotesAndStatsAsync(
         MyNotesQueryParams queryParams)
     {

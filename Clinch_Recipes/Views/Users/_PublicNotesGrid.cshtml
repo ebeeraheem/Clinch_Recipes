@@ -1,0 +1,35 @@
+﻿@using CodeStash.Domain.Entities
+@model List<Note>
+
+@foreach (var note in Model)
+{
+    <div class="note-card">
+        <div class="note-header">
+            <h3 class="note-title">
+                <a href="/Note/@note.Slug">@note.Title</a>
+            </h3>
+        </div>
+        <div class="note-footer">
+            <div class="note-meta">
+                <span>
+                    <i class="fas fa-calendar me-1"></i>
+                    @note.CreatedAt.ToString("MMM dd, yyyy")
+                </span>
+                <span>
+                    <i class="fas fa-eye me-1"></i>
+                    @note.ViewCount views
+                </span>
+            </div>
+            <div class="note-tags">
+                @foreach (var tag in note.Tags.Take(3))
+                {
+                    <span class="tag-badge">@tag.Name</span>
+                }
+                @if (note.Tags.Count > 3)
+                {
+                    <span class="tag-badge">+@(note.Tags.Count - 3)</span>
+                }
+            </div>
+        </div>
+    </div>
+}

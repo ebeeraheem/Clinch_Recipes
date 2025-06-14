@@ -405,8 +405,8 @@
         if (isLoading) return;
         if (currentPage >= totalPages) return;
 
-        // Check if user is near the bottom (300px from bottom)
-        if ((window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 300)) {
+        // Check if user is near the bottom (600px from bottom)
+        if ((window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 600)) {
             isLoading = true;
             document.getElementById('infiniteScrollLoader').style.display = 'block';
             currentPage++;
@@ -609,7 +609,7 @@
     }
 
     .note-card {
-        background: var(--bg-tertiary);
+        background: var(--bg-secondary);
         border: 1px solid var(--border-primary);
         border-radius: 8px;
         overflow: hidden;
@@ -626,6 +626,7 @@
         padding: 1rem;
         border-bottom: 1px solid var(--border-primary);
         position: relative;
+        background: var(--bg-tertiary);
     }
 
     .note-title {

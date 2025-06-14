@@ -5,9 +5,11 @@
 @inject UserHelper UserHelper
 
 @{
-    ViewData["Title"] = $"{Model.DisplayName} (@{Model.Username}) - CodeStash";
+    ViewData["Title"] = $"@{Model.UserName}";
+    ViewData["Description"] = Model.Bio
+        ?? $"Public profile of @{Model.UserName} on CodeStash. View their notes, stats, and more.";
 
-    var currentUserId = UserHelper.TryGetUserId();
+    ViewData["OgImage"] = Model.ProfileImageUrl; // TODO: Consider adding a fallback image
 }
 
 <div class="public-profile-container">
@@ -18,36 +20,24 @@
                 <button class="btn btn-secondary" onclick="shareProfile()">
                     <i class="fas fa-share"></i> Share Profile
                 </button>
-
-                @* Hide action buttons to better capture the public view *@
-                @* @if (Model.Id == currentUserId) // TODO: verify that the current user can edit their profile
-                {
-                    <a asp-controller="Users" asp-action="EditProfile" class="btn btn-secondary">
-                        <i class="fas fa-edit"></i> Edit Profile
-                    </a>
-                    <a asp-controller="Users" asp-action="Settings" class="btn btn-secondary">
-                        <i class="fas fa-cog"></i> Settings
-                    </a>
-                } *@
             </div>
 
             <div class="profile-info">
                 @if (!string.IsNullOrWhiteSpace(Model.ProfileImageUrl))
                 {
                     <img src="@Model.ProfileImageUrl"
-                         alt="@Model.Username"
+                         alt="@Model.UserName"
                          class="profile-avatar" />
                 }
                 else
                 {
-                    <span class="profile-avatar profile-avatar-emoji" title="@Model.Username" aria-label="User">
+                    <span class="profile-avatar profile-avatar-emoji" title="@Model.UserName" aria-label="User">
                         <i class="fas fa-user"></i>
                     </span>
                 }
 
                 <div class="profile-details">
-                    <h1>@Model.DisplayName</h1>
-                    <div class="profile-username">@@@Model.Username</div>
+                    <h1 class="profile-username">@@@Model.UserName</h1>
 
                     @if (!string.IsNullOrEmpty(Model.Bio))
                     {
@@ -60,7 +50,7 @@
                             <span>Joined @Model.JoinedAt.ToString("MMMM yyyy")</span>
                         </div>
 
-                        @if (!string.IsNullOrEmpty(Model.Location)) // TODO: Check if location is public
+                        @if (Model.IsLocationPublic)
                         {
                             <div class="profile-meta-item">
                                 <i class="fas fa-map-marker-alt"></i>
@@ -98,13 +88,12 @@
                         </div> *@
                     </div>
 
-                    @* TODO: Check if social links is public *@
-                    @if (!string.IsNullOrEmpty(Model.Website) || !string.IsNullOrEmpty(Model.GitHubUsername) || !string.IsNullOrEmpty(Model.TwitterHandle) || !string.IsNullOrEmpty(Model.LinkedInProfile))
+                    @if (Model.IsSocialLinksPublic)
                     {
                         <div class="social-links">
-                            @if (!string.IsNullOrEmpty(Model.Website))
+                            @if (!string.IsNullOrEmpty(Model.WebsiteUrl))
                             {
-                                <a href="@Model.Website" target="_blank" class="social-link">
+                                <a href="@Model.WebsiteUrl" target="_blank" class="social-link">
                                     <i class="fas fa-globe"></i>
                                     <span>Website</span>
                                 </a>
@@ -120,9 +109,9 @@
 
                             @if (!string.IsNullOrEmpty(Model.TwitterHandle))
                             {
-                                <a href="https://twitter.com/@Model.TwitterHandle" target="_blank" class="social-link">
+                                <a href="https://x.com/@Model.TwitterHandle" target="_blank" class="social-link">
                                     <i class="fab fa-twitter"></i>
-                                    <span>Twitter</span>
+                                    <span>X (Twitter)</span>
                                 </a>
                             }
 
@@ -147,12 +136,12 @@
                 <div class="section-card">
                     <h2 class="section-title">
                         <i class="fas fa-code"></i>
-                        Public Notes (@Model.Stats.PublicNotes)
+                        Public Notes (@Model.PublicNotesTotalCount)
                     </h2>
 
                     @if (Model.PublicNotes.Any())
                     {
-                        <div class="notes-grid">
+                        @* <div class="notes-grid" id="publicNotesGrid">
                             @foreach (var note in Model.PublicNotes)
                             {
                                 <div class="note-card">
@@ -175,29 +164,66 @@
                                     </div>
                                 </div>
                             }
+                        </div> *@
+
+                        <div class="notes-grid" id="publicNotesGrid">
+                            @foreach (var note in Model.PublicNotes)
+                            {
+                                <div class="note-card">
+                                    <div class="note-header">
+                                        <h3 class="note-title">
+                                            <a href="/Note/@note.Slug">@note.Title</a>
+                                        </h3>
+                                    </div>
+                                    <div class="note-footer">
+                                        <div class="note-meta">
+                                            <span>
+                                                <i class="fas fa-calendar me-1"></i>
+                                                @note.CreatedAt.ToString("MMM dd, yyyy")
+                                            </span>
+                                            <span>
+                                                <i class="fas fa-eye me-1"></i>
+                                                @note.ViewCount views
+                                            </span>
+                                        </div>
+                                        <div class="note-tags">
+                                            @foreach (var tag in note.Tags.Take(3))
+                                            {
+                                                <span class="tag-badge">@tag.Name</span>
+                                            }
+                                            @if (note.Tags.Count > 3)
+                                            {
+                                                <span class="tag-badge">+@(note.Tags.Count - 3)</span>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            }
                         </div>
 
-                        @if (Model.Stats.PublicNotes > 6) // Implement infinite scroll
-                        {
-                            <div class="text-center mt-4">
-                                <a href="/User/@Model.Username/notes" class="btn btn-secondary">
-                                    <i class="fas fa-list me-2"></i>View All Notes (@Model.Stats.PublicNotes)
-                                </a>
-                            </div>
-                        }
+                        <div id="publicNotesLoader" style="display:none;text-align:center;padding:2rem;">
+                            <span class="spinner-border text-primary"></span>
+                        </div>
+                        <div id="publicNotesEnd" style="display:none;text-align:center;padding:2rem;color:var(--text-secondary);font-weight:500;">
+                            <i class="fas fa-check-circle me-2" style="color:var(--accent-primary);"></i>
+                            No more notes to load.
+                        </div>
+                        <input type="hidden" id="publicNotesCurrentPage" value="1" />
+                        <input type="hidden" id="publicNotesTotalNotes" value="@Model.PublicNotesTotalCount" />
+                        <input type="hidden" id="publicNotesPageSize" value="50" />
                     }
                     else
                     {
                         <div class="empty-state">
                             <i class="fas fa-code"></i>
                             <h3>No public notes yet</h3>
-                            <p>@Model.DisplayName hasn't shared any public notes.</p>
+                            <p>@@@Model.UserName hasn't shared any public notes.</p>
                         </div>
                     }
                 </div>
             </div>
 
-            <!-- Sidebar -->
+            @* <!-- Sidebar -->
             <div class="sidebar">
                 <!-- Statistics -->
                 <div class="section-card">
@@ -219,18 +245,18 @@
                             <span class="stat-number">@Model.Stats.NotesThisMonth</span>
                             <div class="stat-label">This Month</div>
                         </div>
-                        @* <div class="stat-item">
+                        <div class="stat-item">
                             <span class="stat-number">@Model.Stats.Followers</span>
                             <div class="stat-label">Followers</div>
                         </div>
                         <div class="stat-item">
                             <span class="stat-number">@Model.Stats.Following</span>
                             <div class="stat-label">Following</div>
-                        </div> *@
+                        </div>
                     </div>
                 </div>
 
-                @* <!-- Favorite Languages -->
+                <!-- Favorite Languages -->
                 @if (Model.FavoriteLanguages.Any())
                 {
                     <div class="section-card">
@@ -246,9 +272,9 @@
                             }
                         </div>
                     </div>
-                } *@
+                }
 
-                @* <!-- Activity Stats -->
+                <!-- Activity Stats -->
                 <div class="section-card">
                     <h3 class="section-title">
                         <i class="fas fa-tachometer-alt"></i>
@@ -265,8 +291,8 @@
                             <div class="stat-label">Top Language</div>
                         </div>
                     </div>
-                </div> *@
-            </div>
+                </div>
+            </div> *@
         </div>
     </div>
 </div>
@@ -321,8 +347,8 @@
     function shareProfile() {
         if (navigator.share) {
             navigator.share({
-                title: '@Model.DisplayName (@Model.Username) - CodeStash',
-                text: 'Check out @Model.DisplayName\'s profile on CodeStash',
+                title: '@Model.UserName - CodeStash',
+                text: 'Check out @Model.UserName\'s profile on CodeStash',
                 url: window.location.href
             }).catch(console.error);
         } else {
@@ -353,6 +379,54 @@
         }, 5000);
     }
 </script>
+
+@* Infinite Scroll Script *@
+<script>
+    let publicNotesLoading = false;
+    let publicNotesCurrentPage = 1;
+    const publicNotesPageSize = parseInt(document.getElementById('publicNotesPageSize').value, 10);
+    const publicNotesTotalNotes = parseInt(document.getElementById('publicNotesTotalNotes').value, 10);
+    const publicNotesGrid = document.getElementById('publicNotesGrid');
+    const publicNotesLoader = document.getElementById('publicNotesLoader');
+    const publicNotesEnd = document.getElementById('publicNotesEnd');
+    const userName = '@Model.UserName';
+
+    window.addEventListener('scroll', async () => {
+        if (publicNotesLoading) return;
+
+        // If all notes loaded, stop
+        if ((publicNotesCurrentPage * publicNotesPageSize) >= publicNotesTotalNotes) {
+            publicNotesEnd.style.display = 'block';
+            return;
+        }
+
+        // Near bottom of page
+        if ((window.innerHeight + window.scrollY) >= (document.body.offsetHeight - 600)) {
+            publicNotesLoading = true;
+            publicNotesLoader.style.display = 'block';
+            publicNotesCurrentPage++;
+
+            try {
+                const response = await fetch(`/Users/PublicNotesGrid?userName=${encodeURIComponent(userName)}&page=${publicNotesCurrentPage}&pageSize=${publicNotesPageSize}`, {
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+                });
+                if (response.ok) {
+                    const html = await response.text();
+                    publicNotesGrid.insertAdjacentHTML('beforeend', html);
+                }
+            } finally {
+                publicNotesLoading = false;
+                publicNotesLoader.style.display = 'none';
+
+                // If last page loaded, show end message
+                if ((publicNotesCurrentPage * publicNotesPageSize) >= publicNotesTotalNotes) {
+                    publicNotesEnd.style.display = 'block';
+                }
+            }
+        }
+    });
+</script>
+
 
 <!-- Add CSRF token for AJAX requests -->
 @Html.AntiForgeryToken()
@@ -540,7 +614,7 @@
 
     .content-grid {
         display: grid;
-        grid-template-columns: 1fr 350px;
+        grid-template-columns: 1fr;
         gap: 2rem;
     }
 
@@ -628,28 +702,37 @@
 
     .notes-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
         gap: 1.5rem;
+        margin-bottom: 2rem;
     }
 
     .note-card {
-        background: var(--bg-primary);
+        background: var(--bg-secondary);
         border: 1px solid var(--border-primary);
         border-radius: 8px;
-        padding: 1.5rem;
-        transition: all 0.2s ease;
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
     }
 
         .note-card:hover {
-            border-color: var(--accent-primary);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+            border-color: var(--accent-secondary);
         }
 
+    .note-header {
+        padding: 1rem;
+        border-bottom: 1px solid var(--border-primary);
+        position: relative;
+        background: var(--bg-tertiary);
+    }
+
     .note-title {
-        color: var(--text-primary);
-        font-size: 1.1rem;
+        font-size: 1.5rem;
         font-weight: 600;
-        margin-bottom: 0.75rem;
+        color: var(--text-primary);
+        margin-bottom: 1.5rem;
         line-height: 1.3;
     }
 
@@ -669,22 +752,32 @@
         align-items: center;
         font-size: 0.85rem;
         color: var(--text-secondary);
-        margin-bottom: 0.75rem;
+    }
+
+        .note-meta i {
+            color: var(--accent-primary);
+        }
+
+    .note-footer {
+        padding: 1rem;
+        border-top: 1px solid var(--border-primary);
+        background: var(--bg-secondary);
     }
 
     .note-tags {
         display: flex;
         flex-wrap: wrap;
         gap: 0.5rem;
+        padding-top: 1.5rem;
     }
 
-    .note-tag {
-        background: var(--bg-secondary);
-        color: var(--text-primary);
-        padding: 0.25rem 0.6rem;
+    .tag-badge {
+        background: var(--accent-secondary);
+        color: white;
+        padding: 0.2rem 0.6rem;
         border-radius: 12px;
         font-size: 0.75rem;
-        border: 1px solid var(--border-primary);
+        font-weight: 500;
     }
 
     .empty-state {

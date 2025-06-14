@@ -1,6 +1,4 @@
-﻿using CodeStash.Domain.Models;
-
-namespace CodeStash.Application.Errors;
+﻿namespace CodeStash.Application.Errors;
 public static class NoteErrors
 {
     public static Error NotFound =>
