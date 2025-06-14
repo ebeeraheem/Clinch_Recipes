@@ -159,69 +159,83 @@
         <div class="content-grid">
             <!-- Main Content -->
             <div class="main-content" style="padding-top:0;">
-                <!-- Recent Notes -->
-                <div class="section-card">
-                    <h2 class="section-title">
-                        <i class="fas fa-clock"></i>
-                        Recent Notes
-                    </h2>
+                @if (Model.RecentNotes.Count > 0 || Model.PopularNotes.Count > 0)
+                {
+                    <!-- Recent Notes -->
+                    <div class="section-card">
+                        <h2 class="section-title">
+                            <i class="fas fa-clock"></i>
+                            Recent Notes
+                        </h2>
 
-                    <div class="notes-list">
-                        @foreach (var note in Model.RecentNotes.Take(3))
-                        {
-                            <div class="note-item">
-                                <h3 class="note-title">
-                                    <a href="/Note/@note.Slug">@note.Title</a>
-                                </h3>
-                                <div class="note-meta">
-                                    <span><i class="fas fa-eye me-1"></i> @note.ViewCount views</span>
-                                    <span>@note.CreatedAt.ToString("MMM dd, yyyy")</span>
+                        <div class="notes-list">
+                            @foreach (var note in Model.RecentNotes.Take(3))
+                            {
+                                <div class="note-item">
+                                    <h3 class="note-title">
+                                        <a href="/Note/@note.Slug">@note.Title</a>
+                                    </h3>
+                                    <div class="note-meta">
+                                        <span><i class="fas fa-eye me-1"></i> @note.ViewCount views</span>
+                                        <span>@note.CreatedAt.ToString("MMM dd, yyyy")</span>
+                                    </div>
+                                    <div class="note-tags">
+                                        @foreach (var tag in note.Tags)
+                                        {
+                                            <span class="note-tag">@tag.Name</span>
+                                        }
+                                    </div>
                                 </div>
-                                <div class="note-tags">
-                                    @foreach (var tag in note.Tags)
-                                    {
-                                        <span class="note-tag">@tag.Name</span>
-                                    }
-                                </div>
-                            </div>
-                        }
+                            }
+                        </div>
+
+                        <div class="text-center mt-3">
+                            <a asp-controller="Notes" asp-action="MyNotes" class="btn btn-secondary">
+                                <i class="fas fa-list me-2"></i>View All Notes
+                            </a>
+                        </div>
                     </div>
 
-                    <div class="text-center mt-3">
-                        <a asp-controller="Notes" asp-action="MyNotes" class="btn btn-secondary">
-                            <i class="fas fa-list me-2"></i>View All Notes
+                    <!-- Popular Notes -->
+                    <div class="section-card">
+                        <h2 class="section-title">
+                            <i class="fas fa-fire"></i>
+                            Most Popular Notes
+                        </h2>
+
+                        <div class="notes-list">
+                            @foreach (var note in Model.PopularNotes.Take(3))
+                            {
+                                <div class="note-item">
+                                    <h3 class="note-title">
+                                        <a href="/Note/@note.Slug">@note.Title</a>
+                                    </h3>
+                                    <div class="note-meta">
+                                        <span><i class="fas fa-fire me-1 text-warning"></i> @note.ViewCount views</span>
+                                        <span>@note.CreatedAt.ToString("MMM dd, yyyy")</span>
+                                    </div>
+                                    <div class="note-tags">
+                                        @foreach (var tag in note.Tags)
+                                        {
+                                            <span class="note-tag">@tag.Name</span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="empty-state">
+                        <i class="fas fa-code"></i>
+                        <h3>No notes found</h3>
+                        <p>You haven't created any notes yet.</p>
+                        <a asp-controller="Notes" asp-action="Create" class="btn btn-primary btn-lg mt-3">
+                            <i class="fas fa-plus me-2 mb-0"></i>Create Your First Note
                         </a>
                     </div>
-                </div>
-
-                <!-- Popular Notes -->
-                <div class="section-card">
-                    <h2 class="section-title">
-                        <i class="fas fa-fire"></i>
-                        Most Popular Notes
-                    </h2>
-
-                    <div class="notes-list">
-                        @foreach (var note in Model.PopularNotes.Take(3))
-                        {
-                            <div class="note-item">
-                                <h3 class="note-title">
-                                    <a href="/Note/@note.Slug">@note.Title</a>
-                                </h3>
-                                <div class="note-meta">
-                                    <span><i class="fas fa-fire me-1 text-warning"></i> @note.ViewCount views</span>
-                                    <span>@note.CreatedAt.ToString("MMM dd, yyyy")</span>
-                                </div>
-                                <div class="note-tags">
-                                    @foreach (var tag in note.Tags)
-                                    {
-                                        <span class="note-tag">@tag.Name</span>
-                                    }
-                                </div>
-                            </div>
-                        }
-                    </div>
-                </div>
+                }
             </div>
 
             <!-- Sidebar -->
@@ -764,6 +778,18 @@
         color: var(--accent-primary);
         font-weight: 600;
     }
+
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: var(--text-secondary);
+    }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
 
     @@media (max-width: 1024px) {
         .content-grid
