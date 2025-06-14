@@ -72,7 +72,6 @@ public class UsersController(IUserService userService, INoteService noteService)
     }
 
     [AllowAnonymous]
-    [HttpGet]
     public async Task<IActionResult> PublicNotesGrid(string userName, int page = 1, int pageSize = 50)
     {
         var pagedNotes = await noteService.GetUserPublicNotesAsync(userName, page, pageSize);
@@ -80,9 +79,7 @@ public class UsersController(IUserService userService, INoteService noteService)
         return PartialView("_PublicNotesGrid", pagedNotes);
     }
 
-
     [Authorize]
-    [HttpGet]
     public async Task<IActionResult> EditProfile()
     {
         var currentUserId = "ebeeraheem";
@@ -124,7 +121,6 @@ public class UsersController(IUserService userService, INoteService noteService)
     }
 
     [Authorize]
-    [HttpGet]
     public async Task<IActionResult> Settings()
     {
         var result = await userService.GetUserSettingsAsync();
@@ -162,11 +158,7 @@ public class UsersController(IUserService userService, INoteService noteService)
     }
 
     [Authorize]
-    [HttpGet]
-    public IActionResult ChangePassword()
-    {
-        return View();
-    }
+    public IActionResult ChangePassword() => View();
 
     [Authorize]
     [HttpPost]

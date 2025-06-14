@@ -1,4 +1,6 @@
-﻿using CodeStash.Application.Utilities;
+﻿using CodeStash.Application.Contracts;
+using CodeStash.Application.Models.Dtos;
+using CodeStash.Application.Utilities;
 using CodeStash.Domain.Entities;
 using CodeStash.ViewModels;
 using Microsoft.AspNetCore.Authorization;
@@ -10,6 +12,7 @@ using System.Text.RegularExpressions;
 namespace CodeStash.Controllers;
 public partial class AccountController(
     SignInManager<ApplicationUser> signInManager,
+    IUserService userService,
     UserHelper userHelper) : Controller
 {
     [AllowAnonymous]
@@ -180,6 +183,80 @@ public partial class AccountController(
         await signInManager.SignOutAsync();
         return RedirectToAction("Index", "Home");
     }
+
+    [AllowAnonymous]
+    public IActionResult ForgotPassword()
+    {
+        return View();
+    }
+
+    [AllowAnonymous]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel viewModel)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(viewModel);
+        }
+
+        await userService.ForgotPasswordAsync(viewModel.Email);
+
+        return RedirectToAction(nameof(ForgotPasswordConfirmation));
+    }
+
+    [AllowAnonymous]
+    public IActionResult ForgotPasswordConfirmation() => View();
+
+    [AllowAnonymous]
+    public IActionResult ResetPassword(string id, string token)
+    {
+        // Validate userId and token
+        if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(token))
+        {
+            return BadRequest("Invalid password reset link.");
+        }
+
+        var viewModel = new ResetPasswordViewModel
+        {
+            Id = id,
+            Token = token
+        };
+
+        return View(viewModel);
+    }
+
+    [AllowAnonymous]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ResetPassword(ResetPasswordViewModel viewModel)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(viewModel);
+        }
+
+        var request = new ResetPasswordDto
+        {
+            Id = viewModel.Id,
+            Token = viewModel.Token,
+            Password = viewModel.Password,
+            ConfirmPassword = viewModel.ConfirmPassword
+        };
+
+        var result = await userService.ResetPasswordAsync(request);
+        if (result.IsFailure)
+        {
+            ModelState.AddModelError(result.Error.Code, result.Error.Message);
+            TempData["ErrorMessage"] = result.Error.Message;
+            return View(viewModel);
+        }
+
+        return RedirectToAction(nameof(ResetPasswordConfirmation));
+    }
+
+    [AllowAnonymous]
+    public IActionResult ResetPasswordConfirmation() => View();
 
     [HttpGet]
     [AllowAnonymous]

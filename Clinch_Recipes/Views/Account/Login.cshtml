@@ -58,7 +58,7 @@
                                 </a>
                             </p>
                             <p class="text-muted">
-                                <a href="#" id="forgotPasswordLink">Forgot your password?</a>
+                                <a asp-action="ForgotPassword" asp-controller="Account">Forgot your password?</a>
                             </p>
                         </div>
                     </div>
@@ -125,12 +125,6 @@
                     clearFieldError(input);
                 }
             });
-        });
-
-        // Forgot password link
-        document.getElementById('forgotPasswordLink').addEventListener('click', (e) => {
-            e.preventDefault();
-            alert('Password reset functionality will be implemented soon!');
         });
 
         function validateField(field) {

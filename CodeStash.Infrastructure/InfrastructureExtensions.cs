@@ -1,4 +1,5 @@
 ﻿using CodeStash.Domain.Entities;
+using CodeStash.Infrastructure.EmailService;
 using CodeStash.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,21 @@ public static class InfrastructureExtensions
            .AddDefaultTokenProviders();
 
         services.AddHttpContextAccessor();
+
+        var emailServiceConfig = configuration
+            .GetSection("EmailService")
+            .Get<EmailServiceOptions>()
+            ?? throw new InvalidOperationException("EmailService configuration is missing.");
+
+        services.AddHttpClient("EmailService", client =>
+        {
+            client.BaseAddress = new Uri(emailServiceConfig.BaseUrl);
+            client.DefaultRequestHeaders.Add("Accept", "application/json");
+        });
+
+        services.Configure<EmailServiceOptions>(configuration.GetSection("EmailService"));
+
+        services.AddScoped<IEmailSender, EmailSender>();
 
         return services;
     }

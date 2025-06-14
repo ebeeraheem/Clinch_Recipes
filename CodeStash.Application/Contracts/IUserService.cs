@@ -7,5 +7,7 @@ public interface IUserService
     Task<Result<UserProfileDto>> GetUserProfileAsync();
     Task<Result<UserPublicProfileDto>> GetUserPublicProfileAsync(string userName);
     Task<Result<UserSettingsDto>> GetUserSettingsAsync();
+    Task<Result> ForgotPasswordAsync(string email);
+    Task<Result> ResetPasswordAsync(ResetPasswordDto request);
     Task<Result> UpdateUserSettingsAsync(UserSettingsDto settings);
 }

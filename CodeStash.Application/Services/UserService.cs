@@ -1,8 +1,17 @@
 ﻿using CodeStash.Application.Models.Dtos;
+using CodeStash.Infrastructure.EmailService;
+using Hangfire;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 
 namespace CodeStash.Application.Services;
-public class UserService(ApplicationDbContext context, UserManager<ApplicationUser> userManager, UserHelper userHelper, ILogger<UserService> logger) : IUserService
+public class UserService(
+    ApplicationDbContext context,
+    UserManager<ApplicationUser> userManager,
+    IEmailSender emailSender,
+    IConfiguration configuration,
+    UserHelper userHelper,
+    ILogger<UserService> logger) : IUserService
 {
     public async Task<Result<UserPublicProfileDto>> GetUserPublicProfileAsync(string userName)
     {
@@ -192,6 +201,68 @@ public class UserService(ApplicationDbContext context, UserManager<ApplicationUs
         }
 
         logger.LogInformation("Password changed successfully for user ID: {UserId}", userId);
+        return Result.Success();
+    }
+    public async Task<Result> ForgotPasswordAsync(string email)
+    {
+        logger.LogInformation("Processing forgot password for email: {Email}", email);
+
+        var user = await context.ApplicationUsers
+            .FirstOrDefaultAsync(u => u.Email != null && u.Email.Equals(email));
+
+        if (user is null)
+        {
+            logger.LogWarning("User not found for forgot password: {Email}", email);
+            return Result.Failure(UserErrors.NotFound);
+        }
+
+        // Generate password reset token
+        var token = await userManager.GeneratePasswordResetTokenAsync(user);
+
+        // Create reset link
+        var baseUrl = configuration["CodeStash:BaseUrl"]
+            ?? throw new InvalidOperationException("Application base url missing from configurations.");
+
+        var resetLink = $"{baseUrl}/Account/ResetPassword" +
+            $"?id={Uri.EscapeDataString(user.Id)}&token={Uri.EscapeDataString(token)}";
+
+        // Send email
+        var emailRequest = new EmailRequest
+        {
+            To = user.Email ?? string.Empty,
+            Subject = "Password Reset Request",
+            Body = $"Please click the following link to reset your password: <a href=\"{resetLink}\">Reset Password</a>",
+            IsHtmlBody = true
+        };
+
+        BackgroundJob.Enqueue(() => emailSender.SendEmailAsync(emailRequest));
+
+        logger.LogInformation("Forgot password email sent successfully to: {Email}", email);
+        return Result.Success();
+    }
+    public async Task<Result> ResetPasswordAsync(ResetPasswordDto request)
+    {
+        logger.LogInformation("Processing password reset for user ID: {UserId}", request.Id);
+
+        var user = await context.ApplicationUsers
+            .FirstOrDefaultAsync(u => u.Id == request.Id);
+
+        if (user is null)
+        {
+            logger.LogWarning("User not found for password reset: {UserId}", request.Id);
+            return Result.Failure(UserErrors.NotFound);
+        }
+
+        // Reset password
+        var result = await userManager.ResetPasswordAsync(user, request.Token, request.Password);
+        if (!result.Succeeded)
+        {
+            logger.LogError("Failed to reset password for user ID: {UserId}. Errors: {@Errors}",
+                request.Id, result.Errors);
+            return Result.Failure(UserErrors.PasswordChangeFailed);
+        }
+
+        logger.LogInformation("Password reset successfully for user ID: {UserId}", request.Id);
         return Result.Success();
     }
 }
