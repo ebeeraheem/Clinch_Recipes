@@ -163,27 +163,35 @@ public class UsersController(IUserService userService, INoteService noteService)
 
     [Authorize]
     [HttpGet]
-    public async Task<IActionResult> ChangePassword()
+    public IActionResult ChangePassword()
     {
-        return View(new ChangePasswordViewModel());
+        return View();
     }
 
     [Authorize]
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> ChangePassword(ChangePasswordViewModel model)
+    public async Task<IActionResult> ChangePassword(ChangePasswordViewModel viewModel)
     {
         if (!ModelState.IsValid)
         {
-            return View(model);
+            return View(viewModel);
         }
 
-        // TODO: Implement actual password change logic
-        // For demo, simulate password validation
-        if (model.CurrentPassword != "password123")
+        var request = new ChangePasswordDto
         {
-            ModelState.AddModelError("CurrentPassword", "Current password is incorrect.");
-            return View(model);
+            CurrentPassword = viewModel.CurrentPassword,
+            NewPassword = viewModel.NewPassword,
+            ConfirmPassword = viewModel.ConfirmPassword
+        };
+
+        var result = await userService.ChangePasswordAsync(request);
+
+        if (result.IsFailure)
+        {
+            ModelState.AddModelError(result.Error.Code, result.Error.Message);
+            TempData["ErrorMessage"] = result.Error.Message;
+            return View(viewModel);
         }
 
         TempData["SuccessMessage"] = "Password changed successfully!";

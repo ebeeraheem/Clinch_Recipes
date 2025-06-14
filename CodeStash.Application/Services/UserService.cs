@@ -1,7 +1,8 @@
 ﻿using CodeStash.Application.Models.Dtos;
+using Microsoft.AspNetCore.Identity;
 
 namespace CodeStash.Application.Services;
-public class UserService(ApplicationDbContext context, UserHelper userHelper, ILogger<UserService> logger) : IUserService
+public class UserService(ApplicationDbContext context, UserManager<ApplicationUser> userManager, UserHelper userHelper, ILogger<UserService> logger) : IUserService
 {
     public async Task<Result<UserPublicProfileDto>> GetUserPublicProfileAsync(string userName)
     {
@@ -165,6 +166,32 @@ public class UserService(ApplicationDbContext context, UserHelper userHelper, IL
         }
 
         logger.LogInformation("User settings updated successfully for user ID: {UserId}", userId);
+        return Result.Success();
+    }
+    public async Task<Result> ChangePasswordAsync(ChangePasswordDto request)
+    {
+        var userId = userHelper.GetUserId();
+        logger.LogInformation("Changing password for user ID: {UserId}", userId);
+
+        var user = await context.ApplicationUsers
+            .FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user is null)
+        {
+            logger.LogWarning("User not found for changing password: {UserId}", userId);
+            return Result.Failure(UserErrors.NotFound);
+        }
+
+        var result = await userManager.ChangePasswordAsync(user, request.CurrentPassword, request.NewPassword);
+
+        if (!result.Succeeded)
+        {
+            logger.LogError("Failed to change password for user ID: {UserId}. Errors: {@Errors}",
+                userId, result.Errors);
+            return Result.Failure(UserErrors.PasswordChangeFailed);
+        }
+
+        logger.LogInformation("Password changed successfully for user ID: {UserId}", userId);
         return Result.Success();
     }
 }
