@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace CodeStash.Domain.Entities;
 
-[Index(nameof(Name))]
+[Index(nameof(Name), IsUnique = true)]
 public class Tag : IAuditableEntity
 {
     public string Id { get; set; } = Guid.NewGuid().ToString();

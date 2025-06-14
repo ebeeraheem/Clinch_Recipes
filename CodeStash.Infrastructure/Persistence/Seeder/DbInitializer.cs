@@ -119,6 +119,13 @@ public static class DbInitializer
             throw new InvalidOperationException("No tags available for seeding.");
         }
 
+        // Convert the list of tags to lowercase and ensure uniqueness
+        tags = tags
+            .Select(t => t.Name.ToLowerInvariant())
+            .Distinct()
+            .Select(t => new Tag { Name = t })
+            .ToList();
+
         context.Tags.AddRange(tags);
         var result = await context.SaveChangesAsync();
 

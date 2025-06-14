@@ -32,7 +32,7 @@ public class NoteService(
             else
             {
                 // Create new tag if it doesn't exist
-                var newTag = new Tag { Name = tagInput.Trim() };
+                var newTag = new Tag { Name = tagInput.Trim().ToLowerInvariant() };
 
                 await context.Tags.AddAsync(newTag);
                 resolvedTags.Add(newTag);
@@ -117,7 +117,7 @@ public class NoteService(
             else
             {
                 // Create new tag if it doesn't exist
-                var newTag = new Tag { Name = tagInput.Trim() };
+                var newTag = new Tag { Name = tagInput.Trim().ToLowerInvariant() };
 
                 await context.Tags.AddAsync(newTag);
                 resolvedTags.Add(newTag);
