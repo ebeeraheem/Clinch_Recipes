@@ -3,6 +3,7 @@
 namespace CodeStash.Application.Contracts;
 public interface IUserService
 {
+    Task<Result> ChangeEmailAsync(ChangeEmailDto request);
     Task<Result> ChangePasswordAsync(ChangePasswordDto request);
     Task<Result<UserProfileDto>> GetUserProfileAsync();
     Task<Result<UserPublicProfileDto>> GetUserPublicProfileAsync(string userName);
@@ -10,4 +11,5 @@ public interface IUserService
     Task<Result> ForgotPasswordAsync(string email);
     Task<Result> ResetPasswordAsync(ResetPasswordDto request);
     Task<Result> UpdateUserSettingsAsync(UserSettingsDto settings);
+    Task<Result> ConfirmChangeEmailAsync(string userId, string token, string newEmail);
 }

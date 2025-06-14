@@ -8,6 +8,7 @@ namespace CodeStash.Application.Services;
 public class UserService(
     ApplicationDbContext context,
     UserManager<ApplicationUser> userManager,
+    SignInManager<ApplicationUser> signInManager,
     IEmailSender emailSender,
     IConfiguration configuration,
     UserHelper userHelper,
@@ -263,6 +264,92 @@ public class UserService(
         }
 
         logger.LogInformation("Password reset successfully for user ID: {UserId}", request.Id);
+        return Result.Success();
+    }
+    public async Task<Result> ChangeEmailAsync(ChangeEmailDto request)
+    {
+        var userId = userHelper.GetUserId();
+        logger.LogInformation("Changing email for user ID: {UserId}", userId);
+
+        var user = await context.ApplicationUsers
+            .FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user is null)
+        {
+            logger.LogWarning("User not found for changing email: {UserId}", userId);
+            return Result.Failure(UserErrors.NotFound);
+        }
+
+        // Validate password before changing email
+        var passwordCheckResult = await userManager.CheckPasswordAsync(user, request.CurrentPassword);
+
+        if (!passwordCheckResult)
+        {
+            logger.LogWarning("Invalid password provided for user ID: {UserId}", userId);
+            return Result.Failure(UserErrors.InvalidCredentials);
+        }
+
+        // Check if the new email is already in use
+        var emailExists = await context.ApplicationUsers.AnyAsync(u => u.Email == request.NewEmail);
+        if (emailExists)
+        {
+            logger.LogWarning("Email already in use: {NewEmail}", request.NewEmail);
+            return Result.Failure(UserErrors.EmailAlreadyInUse);
+        }
+
+        // Generate email change token
+        var token = await userManager.GenerateChangeEmailTokenAsync(user, request.NewEmail);
+
+        // Create email change link
+        var baseUrl = configuration["CodeStash:BaseUrl"]
+            ?? throw new InvalidOperationException("Application base url missing from configurations.");
+
+        var changeEmailLink = $"{baseUrl}/Users/ChangeEmailConfirmation" +
+            $"?id={Uri.EscapeDataString(user.Id)}" +
+            $"&token={Uri.EscapeDataString(token)}" +
+            $"&email={Uri.EscapeDataString(request.NewEmail)}";
+
+        // Send email
+        var emailRequest = new EmailRequest
+        {
+            To = request.NewEmail,
+            Subject = "Email Change Request",
+            Body = $"Please click the following link to confirm your email change: <a href=\"{changeEmailLink}\">Change Email</a>",
+            IsHtmlBody = true
+        };
+
+        BackgroundJob.Enqueue(() => emailSender.SendEmailAsync(emailRequest));
+
+        logger.LogInformation("Email change request sent successfully to: {NewEmail}", request.NewEmail);
+        return Result.Success();
+    }
+    public async Task<Result> ConfirmChangeEmailAsync(string userId, string token, string newEmail)
+    {
+        logger.LogInformation("Confirming email change for user ID: {UserId}", userId);
+
+        var user = await context.ApplicationUsers
+            .FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user is null)
+        {
+            logger.LogWarning("User not found for confirming email change: {UserId}", userId);
+            return Result.Failure(UserErrors.NotFound);
+        }
+
+        // Confirm email change
+        var result = await userManager.ChangeEmailAsync(user, newEmail, token);
+
+        if (!result.Succeeded)
+        {
+            logger.LogError("Failed to confirm email change for user ID: {UserId}. Errors: {@Errors}",
+                userId, result.Errors);
+            return Result.Failure(UserErrors.EmailChangeFailed);
+        }
+
+        // Sign out the user to ensure they log in with the new email
+        await signInManager.SignOutAsync();
+
+        logger.LogInformation("Email change confirmed successfully for user ID: {UserId}", userId);
         return Result.Success();
     }
 }

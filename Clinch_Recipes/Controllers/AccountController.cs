@@ -211,7 +211,7 @@ public partial class AccountController(
     [AllowAnonymous]
     public IActionResult ResetPassword(string id, string token)
     {
-        // Validate userId and token
+        // Validate the id and token
         if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(token))
         {
             return BadRequest("Invalid password reset link.");

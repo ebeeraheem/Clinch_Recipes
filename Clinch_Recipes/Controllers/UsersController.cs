@@ -191,6 +191,53 @@ public class UsersController(IUserService userService, INoteService noteService)
     }
 
     [Authorize]
+    public IActionResult ChangeEmail() => View();
+
+    [Authorize]
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> ChangeEmail(ChangeEmailViewModel viewModel)
+    {
+        if (!ModelState.IsValid)
+        {
+            return View(viewModel);
+        }
+
+        var request = new ChangeEmailDto
+        {
+            CurrentPassword = viewModel.CurrentPassword,
+            NewEmail = viewModel.NewEmail,
+            ConfirmEmail = viewModel.ConfirmEmail
+        };
+
+        var result = await userService.ChangeEmailAsync(request);
+
+        if (result.IsFailure)
+        {
+            ModelState.AddModelError(result.Error.Code, result.Error.Message);
+            TempData["ErrorMessage"] = result.Error.Message;
+            return View(viewModel);
+        }
+
+        TempData["SuccessMessage"] = "Email change request submitted successfully! Please check your email for confirmation.";
+        return RedirectToAction(nameof(Profile));
+    }
+
+    [AllowAnonymous]
+    public async Task<IActionResult> ChangeEmailConfirmation(string id, string token, string email)
+    {
+        // Validate the token and ID
+        if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(token) || string.IsNullOrEmpty(email))
+        {
+            return View(false);
+        }
+
+        var result = await userService.ConfirmChangeEmailAsync(id, token, email);
+
+        return View(result.IsSuccess);
+    }
+
+    [Authorize]
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> FollowUser(string userId)
