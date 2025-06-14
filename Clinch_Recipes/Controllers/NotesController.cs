@@ -45,18 +45,14 @@ public class NotesController(INoteService noteService, ITagService tagService) :
             return NotFound();
         }
 
-        var currentUserId = "ebeeraheem"; // Get from User.Identity in real implementation
-        var viewModel = GetDummyNoteDetails(slug, currentUserId);
+        var result = await noteService.GetNoteBySlugAsync(slug);
 
-        if (viewModel == null)
+        if (result.IsFailure)
         {
             return NotFound();
         }
 
-        // Increment view count (in real implementation)
-        // await _noteService.IncrementViewCountAsync(viewModel.Note.Id, currentUserId);
-
-        return View(viewModel);
+        return View(result.Value);
     }
 
     [HttpPost]

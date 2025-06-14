@@ -145,36 +145,56 @@ public class NoteService(
         return Result.Success();
     }
 
-    public async Task<Result<Note>> GetNoteBySlugAsync(string slug)
+    public async Task<Result<NoteDetailsDto>> GetNoteBySlugAsync(string slug)
     {
+        const int topCount = 3; // Number of related notes to retrieve
+
         logger.LogInformation("Retrieving note with slug: {Slug}", slug);
 
         var userId = userHelper.GetUserId();
 
-        var note = await context.Notes
+        var noteDetails = await context.Notes
+            .AsSplitQuery()
+            .Include(n => n.Author)
             .Include(n => n.Tags)
-            .FirstOrDefaultAsync(n => n.Slug == slug);
+            .Select(n => new NoteDetailsDto
+            {
+                Note = n,
+                AuthorOtherNotes = context.Notes
+                    .Where(o => o.AuthorId == n.AuthorId && o.Id != n.Id && !o.IsPrivate)
+                    .OrderByDescending(o => o.CreatedAt)
+                    .Take(topCount)
+                    .ToList(),
+                RelatedNotes = context.Notes
+                    .Where(o => o.Tags.Any(
+                        t => n.Tags.Select(nt => nt.Name).Contains(t.Name))
+                        && o.Id != n.Id && !o.IsPrivate)
+                    .OrderByDescending(o => o.CreatedAt)
+                    .Take(topCount)
+                    .ToList(),
+            })
+            .FirstOrDefaultAsync(n => n.Note.Slug == slug);
 
-        if (note is null)
+        if (noteDetails is null)
         {
             logger.LogWarning("Note with slug {Slug} not found.", slug);
-            return Result<Note>.Failure(NoteErrors.NotFound);
+            return Result<NoteDetailsDto>.Failure(NoteErrors.NotFound);
         }
 
         // Check if the note is private and if the user has access
-        if (note.IsPrivate && note.AuthorId != userId)
+        if (noteDetails.Note.IsPrivate && noteDetails.Note.AuthorId != userId)
         {
             logger.LogWarning("Unauthorized access attempt to private note with slug: {Slug}", slug);
-            return Result<Note>.Failure(NoteErrors.UnauthorizedAccess);
+            return Result<NoteDetailsDto>.Failure(NoteErrors.UnauthorizedAccess);
         }
 
         // Increment view count
-        note.ViewCount++;
-        context.Notes.Update(note);
+        noteDetails.Note.ViewCount++;
+        context.Notes.Update(noteDetails.Note);
         await context.SaveChangesAsync();
 
-        logger.LogInformation("Note retrieved successfully with ID: {NoteId}", note.Id);
-        return Result<Note>.Success(note);
+        logger.LogInformation("Note retrieved successfully with ID: {NoteId}", noteDetails.Note.Id);
+        return Result<NoteDetailsDto>.Success(noteDetails);
     }
 
     // Get note by ID doesn't increment view count, as it's typically used for editing or management purposes.

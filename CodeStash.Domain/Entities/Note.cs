@@ -21,7 +21,7 @@ public class Note : IAuditableEntity
     public string Content { get; set; } = string.Empty;
 
     [MaxLength(500)]
-    public string? Description { get; set; } // TODO: Add description back into the UI
+    public string? Description { get; set; }
 
     public bool IsPrivate { get; set; } = false;
     public int ViewCount { get; set; }

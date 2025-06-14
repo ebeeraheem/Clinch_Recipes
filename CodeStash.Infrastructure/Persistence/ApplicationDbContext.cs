@@ -61,6 +61,12 @@ public class ApplicationDbContext(
                 .Where(entry => entry.State is not (EntityState.Detached or EntityState.Unchanged)
                     && entry.Entity is not AuditLog);
 
+        // Check if only Sensitive or Technical fields are modified
+        if (ShouldSkipAudit(auditableEntries))
+        {
+            return; // Skip audit if no meaningful changes
+        }
+
         foreach (var entry in auditableEntries)
         {
             // Create a new audit entry based on the current entity
@@ -152,8 +158,6 @@ public class ApplicationDbContext(
 
         // Add all audit logs to the context
         AuditLogs.AddRange(auditEntries.Select(a => a.ToAuditLog()));
-
-
     }
 
     // Technical fields that should be excluded from audit logs
@@ -164,6 +168,7 @@ public class ApplicationDbContext(
         "RowVersion",
         "Version",
         "Timestamp",
+        "ViewCount",
         "CreatedAt",
         "CreatedBy",
         "ModifiedAt",
@@ -192,6 +197,28 @@ public class ApplicationDbContext(
         // Check if this is a sensitive field that should be redacted
         return SensitiveFields.Any(sensitivePattern =>
             propertyName.Contains(sensitivePattern, StringComparison.OrdinalIgnoreCase));
+    }
+
+    private static bool ShouldSkipAudit(IEnumerable<EntityEntry> auditableEntries)
+    {
+        foreach (var entry in auditableEntries)
+        {
+            // Always audit Added and Deleted entries
+            if (entry.State is (EntityState.Added or EntityState.Deleted))
+                return false;
+
+            // For Modified, check if any changed property is not technical or sensitive
+            if (entry.State == EntityState.Modified)
+            {
+                var changedProps = entry.Properties
+                    .Where(p => p.IsModified && !Equals(p.CurrentValue, p.OriginalValue));
+
+                if (changedProps.Any(p => !ShouldIgnoreProperty(p.Metadata.Name) && !IsSensitiveProperty(p.Metadata.Name)))
+                    return false;
+            }
+        }
+        // If we reach here, it means all changes are either technical or sensitive
+        return true;
     }
 
     private static string GenerateDescription(EntityEntry entry, AuditEntry auditEntry)

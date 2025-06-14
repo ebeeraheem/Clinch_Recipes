@@ -52,12 +52,13 @@ public class UserService(ApplicationDbContext context, UserHelper userHelper, IL
 
     public async Task<Result<UserProfileDto>> GetUserProfileAsync()
     {
-        const int topCount = 3;
+        const int topCount = 3; // Number of recent/popular notes to retrieve
         var userId = userHelper.GetUserId();
 
         logger.LogInformation("Retrieving user profile for user ID: {UserId}", userId);
 
         var user = await context.ApplicationUsers
+            .AsSplitQuery()
             .Include(u => u.Country)
             .Include(u => u.Notes)
             .ThenInclude(n => n.Tags)
