@@ -80,7 +80,7 @@ public static class DbInitializer
             FirstName = seedUser.FirstName,
             LastName = seedUser.LastName,
             Email = seedUser.Email,
-            UserName = seedUser.Email,
+            UserName = seedUser.UserName,
         };
 
         var result = await userManager.CreateAsync(admin, seedUser.Password);
