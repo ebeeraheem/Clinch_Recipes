@@ -15,12 +15,17 @@ public class UsersController(IUserService userService, INoteService noteService)
     }
 
     [Authorize]
-    [HttpGet]
     public async Task<IActionResult> Profile()
     {
-        var currentUserId = "ebeeraheem"; // Get from User.Identity in real implementation
-        var viewModel = GetDummyUserProfile(currentUserId);
-        return View(viewModel);
+        var result = await userService.GetUserProfileAsync();
+
+        if (result.IsFailure)
+        {
+            return NotFound();
+        }
+
+        // Consider using a view model
+        return View(result.Value);
     }
 
     [AllowAnonymous]
@@ -84,7 +89,7 @@ public class UsersController(IUserService userService, INoteService noteService)
 
         var viewModel = new EditProfileViewModel
         {
-            Username = userProfile.Username,
+            Username = userProfile.UserName,
             FirstName = userProfile.FirstName,
             LastName = userProfile.LastName,
             Bio = userProfile.Bio,
@@ -94,7 +99,7 @@ public class UsersController(IUserService userService, INoteService noteService)
             TwitterHandle = userProfile.TwitterHandle,
             LinkedInProfile = userProfile.LinkedInProfile,
             IsEmailPublic = userProfile.IsEmailPublic,
-            FavoriteLanguagesInput = string.Join(", ", userProfile.FavoriteLanguages),
+            //FavoriteLanguagesInput = string.Join(", ", userProfile.FavoriteLanguages),
             AvailableLanguages = GetDummyLanguages()
         };
 
@@ -203,7 +208,7 @@ public class UsersController(IUserService userService, INoteService noteService)
         return new UserProfileViewModel
         {
             Id = userId,
-            Username = "ebeeraheem",
+            UserName = "ebeeraheem",
             Email = "ebeeraheem@example.com",
             FirstName = "Ebee",
             LastName = "Raheem",
@@ -217,7 +222,7 @@ public class UsersController(IUserService userService, INoteService noteService)
             LastActiveAt = DateTime.Parse("2025-06-08 14:30:00"),
             ProfileImageUrl = "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face",
             IsEmailPublic = true,
-            FavoriteLanguages = new List<string> { "C#", "JavaScript", "TypeScript", "Python", "SQL" },
+            //FavoriteLanguages = new List<string> { "C#", "JavaScript", "TypeScript", "Python", "SQL" },
             Stats = GetDummyUserStats(),
             RecentNotes = GetDummyUserRecentNotes(),
             PopularNotes = GetDummyUserPopularNotes()

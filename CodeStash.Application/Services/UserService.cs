@@ -1,7 +1,7 @@
 ﻿using CodeStash.Application.Models.Dtos;
 
 namespace CodeStash.Application.Services;
-public class UserService(ApplicationDbContext context, ILogger<UserService> logger) : IUserService
+public class UserService(ApplicationDbContext context, UserHelper userHelper, ILogger<UserService> logger) : IUserService
 {
     public async Task<Result<UserPublicProfileDto>> GetUserPublicProfileAsync(string userName)
     {
@@ -48,5 +48,66 @@ public class UserService(ApplicationDbContext context, ILogger<UserService> logg
 
         logger.LogInformation("User public profile retrieved successfully: {UserName}", userName);
         return Result<UserPublicProfileDto>.Success(user);
+    }
+
+    public async Task<Result<UserProfileDto>> GetUserProfileAsync()
+    {
+        const int topCount = 3;
+        var userId = userHelper.GetUserId();
+
+        logger.LogInformation("Retrieving user profile for user ID: {UserId}", userId);
+
+        var user = await context.ApplicationUsers
+            .Include(u => u.Country)
+            .Include(u => u.Notes)
+            .ThenInclude(n => n.Tags)
+            .Select(u => new UserProfileDto
+            {
+                Id = u.Id,
+                UserName = u.UserName ?? string.Empty,
+                FirstName = u.FirstName,
+                LastName = u.LastName,
+                Email = u.Email,
+                Bio = u.Bio,
+                Location = u.Country == null ? null : u.Country.Name,
+                WebsiteUrl = u.WebsiteUrl,
+                GitHubUsername = u.GitHubUsername,
+                TwitterHandle = u.TwitterHandle,
+                LinkedInProfile = u.LinkedInProfile,
+                ProfileImageUrl = u.ProfileImageUrl,
+                JoinedAt = u.CreatedAt,
+                RecentNotes = u.Notes
+                    .OrderByDescending(n => n.CreatedAt)
+                    .Take(topCount)
+                    .ToList(),
+                PopularNotes = u.Notes
+                    .OrderByDescending(n => n.ViewCount)
+                    .Take(topCount)
+                    .ToList(),
+                TotalNotes = u.Notes.Count,
+                AverageViewsPerNote = u.Notes.Any() ? u.Notes.Average(n => n.ViewCount) : 0,
+                TotalViews = u.Notes.Sum(n => n.ViewCount),
+                NotesThisWeek = u.Notes.Count(n => n.CreatedAt >= DateTime.UtcNow.AddDays(-7)),
+                NotesThisMonth = u.Notes.Count(n => n.CreatedAt >= DateTime.UtcNow.AddMonths(-1)),
+                NotesThisYear = u.Notes.Count(n => n.CreatedAt >= DateTime.UtcNow.AddYears(-1)),
+                NotesPerMonth = new()
+            })
+            .FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user is null)
+        {
+            logger.LogWarning("User profile not found for user ID: {UserId}", userId);
+            return Result<UserProfileDto>.Failure(UserErrors.NotFound);
+        }
+
+        //// Calculate notes per month
+        //user.NotesPerMonth = await context.Notes
+        //    .Where(n => n.AuthorId == userId)
+        //    .GroupBy(n => new { n.CreatedAt.Year, n.CreatedAt.Month })
+        //    .Select(g => new { Month = $"{g.Key.Year}-{g.Key.Month:D2}", Count = g.Count() })
+        //    .ToDictionaryAsync(g => g.Month, g => g.Count); //
+
+        logger.LogInformation("User profile retrieved successfully for user ID: {UserId}", userId);
+        return Result<UserProfileDto>.Success(user);
     }
 }

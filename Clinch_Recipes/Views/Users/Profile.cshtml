@@ -1,7 +1,12 @@
-﻿@using CodeStash.ViewModels
-@model UserProfileViewModel
+﻿@using System.Text.Json
+@using CodeStash.Application.Models.Dtos
+@model UserProfileDto
 @{
-    ViewData["Title"] = $"{Model.Username} - Profile";
+    ViewData["Title"] = $"@{Model.UserName}'s Profile";
+    ViewData["Description"] = Model.Bio
+        ?? $"Profile of @{Model.UserName} on CodeStash. View notes, stats, and more.";
+
+    ViewData["OgImage"] = Model.ProfileImageUrl; // TODO: Consider adding a fallback image
 }
 
 <div class="profile-container">
@@ -9,7 +14,7 @@
         <!-- Profile Header -->
         <div class="profile-header">
             <div class="profile-actions">
-                <button class="btn btn-secondary" onclick="shareProfile('@Model.Username')">
+                <button class="btn btn-secondary" onclick="shareProfile('@Model.UserName')">
                     <i class="fas fa-share"></i> Share Profile
                 </button>
                 <a asp-action="EditProfile" class="btn btn-secondary">
@@ -24,19 +29,18 @@
                 @if (!string.IsNullOrWhiteSpace(Model.ProfileImageUrl))
                 {
                     <img src="@Model.ProfileImageUrl"
-                         alt="@Model.Username"
+                         alt="@Model.UserName"
                          class="profile-avatar" />
                 }
                 else
                 {
-                    <span class="profile-avatar profile-avatar-emoji" title="@Model.Username" aria-label="User">
+                    <span class="profile-avatar profile-avatar-emoji" title="@Model.UserName" aria-label="User">
                         <i class="fas fa-user"></i>
                     </span>
                 }
 
                 <div class="profile-details">
-                    <h1>@(!string.IsNullOrEmpty(Model.FirstName) || !string.IsNullOrEmpty(Model.LastName) ? $"{Model.FirstName} {Model.LastName}".Trim() : Model.Username)</h1>
-                    <div class="profile-username">@@@Model.Username</div>
+                    <h1 class="profile-username">@@@Model.UserName</h1>
 
                     @if (!string.IsNullOrEmpty(Model.Bio))
                     {
@@ -51,14 +55,13 @@
 
                         @if (!string.IsNullOrEmpty(Model.Location))
                         {
-                            @* TODO: Display only country name *@
                             <div class="profile-meta-item">
                                 <i class="fas fa-map-marker-alt"></i>
                                 <span>@Model.Location</span>
                             </div>
                         }
 
-                        @if (Model.IsEmailPublic && !string.IsNullOrEmpty(Model.Email))
+                        @if (!string.IsNullOrEmpty(Model.Email))
                         {
                             <div class="profile-meta-item">
                                 <i class="fas fa-envelope"></i>
@@ -72,42 +75,39 @@
                         </div> *@
                     </div>
 
-                    @if (!string.IsNullOrEmpty(Model.Website) || !string.IsNullOrEmpty(Model.GitHubUsername) || !string.IsNullOrEmpty(Model.TwitterHandle) || !string.IsNullOrEmpty(Model.LinkedInProfile))
-                    {
-                        <div class="social-links">
-                            @if (!string.IsNullOrEmpty(Model.Website))
-                            {
-                                <a href="@Model.Website" target="_blank" class="social-link">
-                                    <i class="fas fa-globe"></i>
-                                    <span>Website</span>
-                                </a>
-                            }
+                    <div class="social-links">
+                        @if (!string.IsNullOrEmpty(Model.WebsiteUrl))
+                        {
+                            <a href="@Model.WebsiteUrl" target="_blank" class="social-link">
+                                <i class="fas fa-globe"></i>
+                                <span>Website</span>
+                            </a>
+                        }
 
-                            @if (!string.IsNullOrEmpty(Model.GitHubUsername))
-                            {
-                                <a href="https://github.com/@Model.GitHubUsername" target="_blank" class="social-link">
-                                    <i class="fab fa-github"></i>
-                                    <span>GitHub</span>
-                                </a>
-                            }
+                        @if (!string.IsNullOrEmpty(Model.GitHubUsername))
+                        {
+                            <a href="https://github.com/@Model.GitHubUsername" target="_blank" class="social-link">
+                                <i class="fab fa-github"></i>
+                                <span>GitHub</span>
+                            </a>
+                        }
 
-                            @if (!string.IsNullOrEmpty(Model.TwitterHandle))
-                            {
-                                <a href="https://twitter.com/@Model.TwitterHandle" target="_blank" class="social-link">
-                                    <i class="fab fa-twitter"></i>
-                                    <span>Twitter</span>
-                                </a>
-                            }
+                        @if (!string.IsNullOrEmpty(Model.TwitterHandle))
+                        {
+                            <a href="https://x.com/@Model.TwitterHandle" target="_blank" class="social-link">
+                                <i class="fab fa-twitter"></i>
+                                <span>X (Twitter)</span>
+                            </a>
+                        }
 
-                            @if (!string.IsNullOrEmpty(Model.LinkedInProfile))
-                            {
-                                <a href="@Model.LinkedInProfile" target="_blank" class="social-link">
-                                    <i class="fab fa-linkedin"></i>
-                                    <span>LinkedIn</span>
-                                </a>
-                            }
-                        </div>
-                    }
+                        @if (!string.IsNullOrEmpty(Model.LinkedInProfile))
+                        {
+                            <a href="@Model.LinkedInProfile" target="_blank" class="social-link">
+                                <i class="fab fa-linkedin"></i>
+                                <span>LinkedIn</span>
+                            </a>
+                        }
+                    </div>
                 </div>
             </div>
         </div>
@@ -121,36 +121,36 @@
 
             <div class="stats-grid">
                 <div class="stat-item">
-                    <span class="stat-number">@Model.Stats.TotalNotes</span>
+                    <span class="stat-number">@Model.TotalNotes</span>
                     <div class="stat-label">Total Notes</div>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-number">@Model.Stats.TotalViews.ToString("N0")</span>
+                    <span class="stat-number">@Model.TotalViews.ToString("N0")</span>
                     <div class="stat-label">Total Views</div>
                 </div>
                 @* <div class="stat-item">
-                    <span class="stat-number">@Model.Stats.TotalLikes</span>
+                    <span class="stat-number">@Model.TotalLikes</span>
                     <div class="stat-label">Likes Received</div>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-number">@Model.Stats.Followers</span>
+                    <span class="stat-number">@Model.Followers</span>
                     <div class="stat-label">Followers</div>
                 </div>
                 <div class="stat-item">
-                    <span class="stat-number">@Model.Stats.Following</span>
+                    <span class="stat-number">@Model.Following</span>
                     <div class="stat-label">Following</div>
                 </div> *@
                 <div class="stat-item">
-                    <span class="stat-number">@Model.Stats.AverageViewsPerNote.ToString("F1")</span>
+                    <span class="stat-number">@Model.AverageViewsPerNote.ToString("F1")</span>
                     <div class="stat-label">Avg Views/Note</div>
                 </div>
             </div>
 
             @* <div class="activity-chart">
                 <div class="chart-title">Activity Over Time</div>
-                <div class="chart-placeholder">
-                    <i class="fas fa-chart-area me-2"></i>
-                    Activity chart will be implemented with Chart.js
+                <div class="activity-chart">
+                    <div class="chart-title">Activity Over Time</div>
+                    <canvas id="activityChart" height="200"></canvas>
                 </div>
             </div> *@
         </div>
@@ -167,7 +167,7 @@
                     </h2>
 
                     <div class="notes-list">
-                        @foreach (var note in Model.RecentNotes) // TODO: List a maximum of 5
+                        @foreach (var note in Model.RecentNotes.Take(3))
                         {
                             <div class="note-item">
                                 <h3 class="note-title">
@@ -202,7 +202,7 @@
                     </h2>
 
                     <div class="notes-list">
-                        @foreach (var note in Model.PopularNotes) // TODO: List a maximum of 5
+                        @foreach (var note in Model.PopularNotes.Take(3))
                         {
                             <div class="note-item">
                                 <h3 class="note-title">
@@ -252,7 +252,7 @@
                     </h3>
 
                     <div class="language-distribution">
-                        @foreach (var lang in Model.Stats.LanguageDistribution.OrderByDescending(x => x.Value).Take(5))
+                        @foreach (var lang in Model.LanguageDistribution.OrderByDescending(x => x.Value).Take(5))
                         {
                             <div class="language-item">
                                 <span class="language-name">@lang.Key</span>
@@ -272,22 +272,22 @@
                     <div class="language-distribution">
                         <div class="language-item">
                             <span class="language-name">Notes This Week</span>
-                            <span class="language-count">@Model.Stats.NotesThisWeek</span>
+                            <span class="language-count">@Model.NotesThisWeek</span>
                         </div>
                         <div class="language-item">
                             <span class="language-name">Notes This Month</span>
-                            <span class="language-count">@Model.Stats.NotesThisMonth</span>
+                            <span class="language-count">@Model.NotesThisMonth</span>
                         </div>
                         <div class="language-item">
                             <span class="language-name">Notes This Year</span>
-                            <span class="language-count">@Model.Stats.NotesThisYear</span>
+                            <span class="language-count">@Model.NotesThisYear</span>
                         </div>
                         @* <div class="language-item">
                             <span class="language-name">Busiest Month</span>
                             <span class="language-count">
-                                @if (Model.Stats.BusiestMonth != null)
+                                @if (Model.BusiestMonth != null)
                                 {
-                                    @($"{Model.Stats.BusiestMonth} ({Model.Stats.BusiestMonthNoteCount} notes)")
+                                    @($"{Model.BusiestMonth} ({Model.BusiestMonthNoteCount} notes)")
                                 }
                                 else
                                 {
@@ -303,6 +303,54 @@
 </div>
 
 @section Scripts{
+    @* Chart Script
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Example: Use Model.NotesPerMonth for data
+            const notesPerMonth = @Html.Raw(JsonSerializer.Serialize(Model.NotesPerMonth ?? []));
+
+            // Prepare labels and data
+            const labels = Object.keys(notesPerMonth);
+            const data = Object.values(notesPerMonth);
+
+            const ctx = document.getElementById('activityChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Notes Created',
+                        data: data,
+                        backgroundColor: 'rgba(88, 166, 255, 0.5)',
+                        borderColor: 'rgba(31, 111, 235, 1)',
+                        borderWidth: 2,
+                        borderRadius: 6,
+                        maxBarThickness: 40
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: {
+                            ticks: { color: getComputedStyle(document.body).getPropertyValue('--text-secondary') },
+                            grid: { color: getComputedStyle(document.body).getPropertyValue('--border-primary') }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { color: getComputedStyle(document.body).getPropertyValue('--text-secondary') },
+                            grid: { color: getComputedStyle(document.body).getPropertyValue('--border-primary') }
+                        }
+                    }
+                }
+            });
+        });
+    </script> *@
+
+
     <script>
             function shareProfile(username) {
                 const url = '/User/' + encodeURIComponent(username);
@@ -310,8 +358,8 @@
                 // Check if the browser supports the Web Share API
                 if (navigator.share) {
                     navigator.share({
-                        title: '@Model.DisplayName (@Model.Username) - CodeStash',
-                        text: 'Check out @Model.DisplayName\'s profile on CodeStash',
+                        title: '@Model.UserName - CodeStash',
+                        text: 'Check out @Model.UserName\'s profile on CodeStash',
                         url: url
                     }).catch(console.error);
                 } else {
@@ -756,7 +804,7 @@
     }
 
     .profile-details h1 {
-        font-size: 2rem;
+        font-size: 1.25rem;
     }
 
     .stats-grid {
