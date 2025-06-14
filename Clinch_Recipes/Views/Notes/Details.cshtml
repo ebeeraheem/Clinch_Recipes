@@ -9,9 +9,6 @@
     ViewData["Description"] = !string.IsNullOrEmpty(Model.Note.Description) ? Model.Note.Description : Model.Note.Title;
 
     var currentUserId = UserHelper.TryGetUserId();
-
-    // TODO: Prevent horizontal sroll
-    // TODO: Do not update modified at date when a note is viewed
 }
 
 <div class="note-details-container">
@@ -34,7 +31,7 @@
                     <span>Share Note</span>
                 </button>
                 
-                @if (Model.Note.Author.Id == currentUserId) // TODO: Verify that an author can edit their note
+                @if (Model.Note.Author.Id == currentUserId)
                 {
                     <a asp-action="Edit" asp-route-id="@Model.Note.Id" class="action-btn">
                         <i class="fas fa-edit"></i>

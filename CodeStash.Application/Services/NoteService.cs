@@ -151,7 +151,7 @@ public class NoteService(
 
         logger.LogInformation("Retrieving note with slug: {Slug}", slug);
 
-        var userId = userHelper.GetUserId();
+        var userId = userHelper.TryGetUserId();
 
         var noteDetails = await context.Notes
             .AsSplitQuery()
@@ -186,6 +186,16 @@ public class NoteService(
         {
             logger.LogWarning("Unauthorized access attempt to private note with slug: {Slug}", slug);
             return Result<NoteDetailsDto>.Failure(NoteErrors.UnauthorizedAccess);
+        }
+
+        // If related notes are empty, fetch the latest public notes (excluding the current note) as fallback
+        if (noteDetails.RelatedNotes.Count == 0)
+        {
+            noteDetails.RelatedNotes = await context.Notes
+                .Where(o => o.Id != noteDetails.Note.Id && !o.IsPrivate)
+                .OrderByDescending(o => o.CreatedAt)
+                .Take(topCount)
+                .ToListAsync();
         }
 
         // Increment view count
